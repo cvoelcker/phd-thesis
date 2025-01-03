@@ -1,0 +1,35 @@
+\chapter{Introduction}
+
+When tasked with discovering how to act in unkown environments, autonomous agents are faced with a large amount of information to process.
+In order to make decisions, agents need to learn about the structure of the environment, the consequences of their actions, and the associated reward with different choices.
+
+In supervised learning, \acp{nn} have been shown to be able to automatically extract relevant information from raw data, such as images or text, to solve complex tasks \parencite{lecun2015deep}.
+However, in reinforcement learning, where an agent needs to learn how to act in an environment through trial and error, the problem is more difficult.
+
+
+\emph{Decision awareness} describes the idea that the learning algorithms for complex decision making pipelines should account for the final decision task that the pipeline is being used for \parencite{vaml,grimm2020value,abachi2020policy,nikishin2021control}.
+One of the most prominent examples of such a decision making task is reinforcement learning (RL), in which an agent aims to obtain a reward through repeated interaction with an environment.
+Machine learning based reinforcement learning pipelines can contain many complex components, such as predictive models of the environment \parencite{dyna,mbpo,hafner2019learning,Hafner2020Dream,schrittwieser2020mastering} or representation functions that map observations into space in which computation is more tractable \parencite{ferns2004metrics,le2021metrics}.
+In many cases, these components are trained in a general purpose way using objectives such as maximum likelihood estimation, but this can be inefficient or suboptimal, as computational resources are for example wasted on learning irrelevant aspects of the decision making task.
+
+Therefore, the core question underlying this thesis is: \textbf{How should the decision task influence the individual components of an RL agent to improve its performance?}
+
+Experimental evidence highlights that while \emph{decision aware} algorithms are often more resource efficient, training \emph{general purpose} methods such fitting world models with a maximum likelihood objective is easier in practice \parencite{vagram}.
+One of the core challenges that leads to this is that decision aware algorithms need to continually adapt to the decision task as more information becomes available, while \emph{general purpose} methods only have one training objective throughout the learning process.
+Especially in the beginning of training, the available information about the decision task is limited, which can lead to instability or suboptimal convergence of the learning algorithm.
+To address this challenge and the dichotomy between the two main approaches, this thesis analyzes how the difficulties with decision aware algorithms emerge in practice.
+Then, algorithms are presented which are able to benefit from decision awareness while providing stable training in practice.
+
+The core results of the thesis will be obtained both with theoretical as well as empirical methodologies, with a focus on mathematical analysis of tractable surrogate problems, such as linear representation functions, and carefully designed experiments to verify the theoretical findings in deep reinforcement learning.
+
+\section{Motivation}
+
+
+\begin{itemize}
+    \item When is decision-aware learning useful? Here, I formalize environments structures in which previously established algorithms fail to obtain optimal results or scale unfavorably with the complexity of the problem.
+    \item How do the learning problems of model learning and representation learning intersect? I built on the work presented in \textcite{voelcker2023lambda} and further develop the connections and shared problems between representation learning and model learning in RL to obtain a better understanding of challenges involved in scaling these solutions.
+    \item How can instabilities of the learning problems in decision aware learning be addressed? I plan to address the analyzed challenges with novel adaptive algorithms that construct auxiliary decision problems which share structure with the intended final task.
+\end{itemize}
+
+\section{Thesis structure}
+

@@ -1,0 +1,214 @@
+\chapter{Background}
+
+The 
+
+The following sections briefly introduce the main ideas behind \emph{representation learning}, \emph{model learning}, and the used mathematical tools.
+
+
+\section{Reinforcement learning and the MDP framework}
+
+\subsection{RL with tabular and linear features}
+
+\subsection{Representations for value function learning}
+
+Representations are ubiquitous in modern machine learning and one of the main drivers of the success of deep learning \parencite{bengio2012representation}.
+Deep neural networks show a capability to learn reusable representations even beyond the task that was original used to train them, which enables approaches such as transfer learning and fine-tuning.
+However, in deep reinforcement learning, representation learning is still a major challenge for many algorithms \parencite{hasselt2018reinforcement}.
+
+Formally, a representation is any function $\phi: \mathcal{X} \rightarrow \mathcal{Z}$ that projects an input datum $x \in \mathcal{X}$ into a \emph{representation} (or \emph{latent} space $\mathcal{Z}$. 
+The aim is to find a function $\phi$ so that the latent space captures some desirable characteristic with regards to the prediction task, such as (Lipshitz)-continuity or (lossless, or low loss) compression \parencite{le2021metrics,abel2020thesis}.
+In many deep learning approaches, it has been found that tasks such as classification over a wide variety of classes leads to an latent clustering of the datapoints in the intermediate layers of the model, which can be used for other tasks such as localization \parencite{bengio2012representation}.
+One of the most prominent examples of this is semantic arithmetic in the latent space obtained by the word2vec algorithm, where training to predict (embeddings of) words led to structured spaces that allow for meaningful vector arithmetic \parencite{mikolov2013distirbuted,goldberg2014word2vec}.
+
+The core challenges for representation learning in DRL is that the tasks are fundamentally non-stationary in nature \parencite{Kumar2021-zu,nikishin2022primacy}.
+As the agent explores more of the environment, value function and policy continually change, meaning that both the input distribution and the prediction targets change over time.
+This has led to the establishment of research into \emph{learning dynamics} \parencite{lyle2021earning,Lyle2022-st}, \emph{metric learning} \parencite{ferns2011bisimulation,barreto2017successor,borsa2018universal,le2021metrics}, and \emph{auxiliary tasks} \parencite{jaderberg2017reinforcement,Bellemare2019-eo,lyle2021effect,farebrother2023protovalue} to address these challenges.
+
+\subsubsection{Desirable properties of representations for RL}
+
+Before discussing how representation learning in RL can be improved, it is necessary to characterize how an advantageous representation would look like that leads to good performance of an RL agent.
+In many classic RL approaches, that state space is taken to be a finite set of unordered states without any metric or distance between these except for the one induced by the transition function.
+Over such abstract states, one of the most commonly considered representations is a state aggregation.
+State aggregations are thoroughly discussed in \textcite{abel2020thesis}, where three core desiderata are established: good state aggregations should be easy to compute, enable efficient learning, and allow the selection of high-value policies.
+
+Beyond state abstraction, the topology and metric of a representation space can also be considered. 
+\textcite{le2021metrics} and \textcite{le2022generalization} discuss the capabilities of representations to enable generalization of learned value functions over the state space by analysing the induced topology and metric space from different representation learning targets.
+Their work allows us to consider more than the size of the induced representation space and consider the impact of the representation on the learning dynamics and generalization capabilities of different algorithms
+
+\textcite{ghosh2020representations} extends the analysis of representation beyond fixed properties such as metric spaces to consider the impact of the given representation on the stability of the learning task.
+Using tools from linear dynamical system (see \autoref{sec:methodology}), they show that some proposed representations provide more stable learning dynamics for TD-learning as others.
+
+In this work, we draw on these characterizations to analyze both the usefulness of different representation learning approaches for representing good value functions, as well as analyzing whether they enable stable learning dynamics (and indeed, can themselves be learned in a stable manner).
+
+Sadly, these desirable properties do not seem to emerge quite as easily in the course of RL training as in supervised learning, and a lot of recent work has focused on analyzing and stabilizing representation learning in RL.
+
+\subsubsection{General purpose representation learning and zero-shot RL}
+
+To obtain optimal representations for reinforcement learning tasks in a given environment, several different approaches have been proposed.
+Several of the leading approaches are inspired from linear algebra and graph theory and seek to model fundamental aspects of the transition matrix.
+
+Broadly speaking, the transition matrix $\mathcal{P}$ and the resolvent matrix $(I - \gamma \mathcal{P})^{-1}$ can be approximated by different decompositions such as eigenvalue decompositions, singular value decomposition, or Schur decomposition \parencite{ghosh2020representations}.
+These matrix approximations can then be used to obtain i.e. the largest eigenvectors which capture the long-term transition behavior of the underlying Markov chains.
+For example, the equality $V = (I - \gamma \mathcal{P})^{-1} r$ highlights that if the resolvent matrix is well approximated, a representation can be obtained that can be used to approximate the value function of any reward.
+
+The goal of obtaining well-performing representations has also been addressed with empirically motivated approaches.
+Many of these seek to construct so called \emph{auxiliary tasks} \parencite{jaderberg2017reinforcement}, which are additional prediction objectives or loss functions which are added to the learning objectives of the RL agent.
+Several methods simply seek to add next state prediction , either with an auto-encoder architecture \parencite{jaderberg2017reinforcement}, contrastive \parencite{Laskin2020-af}, or self supervised objectives \parencite{Gelada2019-ti,Schwarzer2021-ew,Schwarzer2021-if,Tang2023-ah}.
+These methods tend to perform well especially in cases with high-dimensional observations, i.e. as pixel based environments such as Atari games.
+The main distinction between these methods and model-based RL is that the next state prediction is only used to improve the performance of an encoder function, the next state predictions are not directly used to improve the RL agents policy or value function estimation.
+
+Beyond state prediction tasks, several works have also shown the advantage of using value function prediction of auxiliary or randomly generated rewards as representation learning targets \parencite{lyle2021effect,farebrother2023protovalue}.
+These commonly use the same approaches as off-policy value function learning, but instead of using the estimated value functions to derive a policy, the results are again discarded and only used for stabilization.
+
+
+\subsection{Beyond tabular space -- Transition kernels and topology}
+
+\subsection{Model-based reinforcement learning}
+\label{sec:model_learning}
+
+While many reinforcement learning algorithms directly seek to compute value functions and policies based on past data from the environment, in model-based RL, a predictive \emph{model}\footnote{\emph{Model} is a notoriously ambiguous term in machine learning. In the context of this thesis, the word \emph{model} is used solely to describe an approximation of a transition function, reward function, or a similar object, while neural networks and other architectures will be referred to as \emph{function approximators} or simply \emph{functions}.} of the environment is learned.
+This model can be used to augment the learning, either by providing additional data as in the Dyna architecture \parencite{dyna}, or by providing gradient estimates \parencite{Hafner2020Dream,amos2021modelbased}, or simply to enhance the representation learning as discussed above.
+
+The most common kind of model is a parameterized function approximation such as a neural network that takes a state-action pair as an input and predicts the next state.
+Simple extensions to these include multi-step models which use sequences of actions to predict short-horizon trajectories and stochastic models which parameterize distributions over next states.
+These models are most commonly trained using an MLE based objective by minimizing the KL between the ground truth environment and transition function.
+There are several other types of models, such as inverse dynamics models which seek to predict actions given a state and its successor, but in this thesis, we will focus on the more common forward predictive models.
+
+\subsubsection{Standard algorithms and parameterization}
+
+Most commonly, models are learned by obtaining a dataset $\mathcal{D}$ of transition tuples consisting of states $s$, actions $a$, reward $r$, and next states $s'$. 
+Often these datasets are obtained online during interaction with the environment, but they can also come from i.e. demonstrations or other offline sources.
+
+Given this dataset, an approximate model $\hat{p}$ can be trained using a maximum likelihood objective $\max_{\hat{p}} \sum_\mathcal{D} \log \hat{p}(s'|s,a)$, Bayesian inference, or a variational approximation to a Bayesian posterior.
+The goal is to obtain an approximate model $\hat{p}$ of the true environment transition probabilities $p$ that can be used to generate new data for the RL agent.
+These methods are commonly referred to as \emph{reconstruction objectives} or \emph{observation prediction} objectives, as the learned model predicts $s'$ in the representation it is given in by the environment.
+
+It is also possible to obtain models which predict other functions of the next state, such as latent state-space models, in which the objective is to predict $\phi(s')$ instead of $s'$.
+These methods can allow for more flexible predictions and are of great interest for \emph{decision aware} learning.
+They also provide a natural connection point between the goals of model learning and representation learning.
+
+\subsubsection{Objective mismatch phenomenon}
+
+It is important to realize that when using a maximum likelihood estimation the model loss is not sensitive to the decision problem.
+We could colloquially say that not all errors are created equal.
+As a simple example, assume a Dyna setting where a sample is collected from a deterministic model and has an error $\epsilon$.
+A value function based method will use the model sample to compute a biased bootstrap target
+$
+V_k(s,a) = r(s,a) + \gamma V_{k-1}(f(s, a) {\color{red} + \epsilon}).
+$
+
+The impact of the modelling error on the value function therefore depends on the size of the error and the local behavior of the value function, not only on the absolute value of $\epsilon$. 
+As an illustrative example take a value function that only depends on a subset of all state observation dimensions. 
+In this case, a large error in an irrelevant dimension has no consequence on the obtained policy, yet a maximum likelihood loss for the model cannot properly capture this behavior without prior handcrafted features.
+
+Intuitively, we would like to have an objective that bounds the difference in the value function estimate.
+We can motivate the use of MLE (such as the mean squared error for a Gaussian model with fixed variance) as a loss function {by an upper bound}%, where the second inequality used is Pinsker's inequality 
+$$\sup_{V \in \mathcal{F}}|\langle p - \hat{p}, V\rangle|\leq ||p - \hat{p}||_1 \sup_{V \in \mathcal{F}}||V||_\infty \leq \sqrt{\text{KL}(p||\hat{p})}\sup_{V \in \mathcal{F}}||V||_\infty$$ 
+(taken from
+\textcite{vaml}), but this bound is loose and does not account for the geometry of the problem's value function or any other knowledge that the agent has collected. 
+In our example above a mean squared error would penalize deviations equally by their $L_2$ norm without accounting for the relevance of the dimensions.
+This phenomenon was termed the \emph{objective mismatch} in \parencite{lambert202objective}.
+
+A further problem arises from the data distribution.
+In most current MBRL approaches, the model is continually trained on the full replay buffer of past experiences.
+Hypothetically, the agent continues to visit new states, which provides new data to the model, which in turn becomes better at predicting transitions.
+However, in practice the replay buffer is going to be filled with many suboptimal trajectories and the distribution over the state space follows a complex mixture of the previous policy's marginal state-visitation distributions.
+It is unclear how well a model trained on this data distribution will be at predicting a new policy's visited states.
+This uneven data coverage was hypothesized by \textcite{lambert202objective} to be one of the main causes of the model-mismatch problem, and they proposed a simple regularization of data by the value function as a fix.
+
+While Lambert's solution can improve the performance of model-based RL, it does not fully account for the problem of the model-mismatch, since it can only reweigh datapoints.
+In the following, we will discuss other approaches which are able to deal with the objective mismatch on a feature basis too, like VAML and the solutions introduced in this thesis.
+
+To refer to our goal of learning models which mitigate the mismatch, the terms "decision-aware" and "value-aware" will be used.
+Both were introduced by \textcite{vaml}, the former refers more generally to models which account for the downstream decision task, while the latter refers more concretely to models which account for errors in the value function target estimate.
+
+\subsubsection{Value-aware model learning}
+
+To address the model mismatch, \parencite{vaml} proposed \emph{Value-aware Model Learning} (VAML), a loss function that captures the impact the model errors have on the one-step value estimation accuracy.
+The core idea behind VAML is to penalize a model prediction by the resulting difference in a value function. Given a distribution over the state-actions space $\mu$ and a value function $V$, it is possible to define a value-aware loss function $\mathcal{L}_V(\hat{p}, p, \mu)$:
+\begin{align}
+    &\mathcal{L}_V(\hat{p}, p, \mu) = \int \mu(s,a) \bigg|\overbrace{\int p(s'|s,a)V(s')\mathrm{d}s'}^{\text{environment value estimate}}  - \overbrace{\int \hat{p}(s'|s,a) V(s') \mathrm{d}s'}^{\text{model value estimate}}\bigg|^2 \mathrm{d} (s,a)
+    \end{align}
+    and its empirical approximation $\hat{\mathcal{L}}_V$ based on a dataset $D = (s_i,a_i,s'_i)_{i=1}^N$ of samples from $\mu$ and $p$
+    \begin{align}
+    &\hat{\mathcal{L}}_V(\hat{p}, \mathcal{D}) = \sum_{(s_i,a_i,s'_i)\in\mathcal{D}} \left|V(s'_i) - \int \hat{p}(s'|s_i,a_i) V(s') \mathrm{d} s'\right|^2\label{IterVAMLloss}.
+\end{align}
+
+It is worth noting that if the loss $\mathcal{L}_V$ is zero for a given model, environment and corresponding value function, then estimating the bootstrap target based on the model will result in the exact same update as if the environment was used. However, this is rarely the case in practice.
+
+The main problem of this approach is that it relies on the value function, which is not known a priori while learning the model. 
+This leads to the "chicken-or-egg" problem of decision aware learning: If a good model depends on knowing the decisions and good decisions need to be learned using the model, how can we learn a good model before knowing what the correct decision is?
+In the original formulation by \textcite{vaml}, the value function is replaced with the supremum over a function space to enable analysis.
+While this fixes the chicken-egg problem of decision-aware model learning and works well in the case of linear value function spaces, finding a supremum for a function space parameterized by complex function approximators like neural networks is difficult.
+Furthermore, the supremum formulation is conservative and does not account for the fact that knowledge about the value function is gained over the course of exploration and optimization in a MBRL approach.
+
+Instead of the supremum over a value function class, \textcite{itervaml} introduced an extension of VAML where the supremum is replaced with the current estimate of the value function, \emph{Iterative Value-Aware Model Learning} (IterVAML).
+In each iteration, the value function is updated based on the model, and the model is trained using the loss function based on the last iteration's value function.
+The author presents error bounds for both steps of the iteration, but did not test the algorithm to ascertain whether the presented error bounds are sufficient to guarantee a strong algorithm in practice. 
+Furthermore, these work assume that both the Approximate Value Iteration and model learning procedure are conducted until they reach a small error at every step, which is often prohibitively expensive, or even impossible in case of neural network value function approximations.
+
+
+\subsubsection{Abstract latent value models}
+
+\textcite{silver2017predictron} introduced the idea of a purely abstract latent space model in which the transitions align with the reward and value functions of the environment.
+Their work considers an uncontrolled setting, in which an action-independent Markov Reward Process (MRP) is modelled.
+The goal of their system is to learn the reward function of this process, which can be seen as doing policy evaluation in an MDP with a fixed policy.
+
+The core difference of their approach to other model-based reinforcement learning approaches is that they learn an abstract transition model where the states do not have a one-to-one correspondence to the environment observations.
+They are similar to bisimulation based compression, where the abstract states represent equivalence classes (or partitioning with small Bisimulation distance), although the authors do not directly make this connection in their work.
+
+Extending their work, \textcite{oh2017value} show how to build an abstract model of a fully controllable MDP and highlight how such a model can be used for planning in latent space with a tree search approach such as MCTS \parencite{schrittwieser2020mastering} or beam search.
+
+As we show in \autoref{sec:lambda}, the formulation used by \textcite{silver2017predictron} and IterVAML share several similarities, but the proposed value function learning objective provides a biased learning target in the presence of stochastic transitions.
+
+\subsection{Tradeoffs between value-aware and general purpose methods}
+
+One major problem that has become apparent during the work conducted for this thesis is that a single value function alone does not necessarily provide sufficient information about the transitions to learn precise models.
+As mentioned, reinforcement learning is fundamentally non-stationary in nature, which means that the current prediction task is not necessarily indicative of future prediction tasks.
+
+This is easily apparent in a sparse reward setting: when the task requires exploration, the value function continues to predict 0 for all visited states until the agent has actually reached the goal.
+A purely value function driven model or representation will collapse the whole state space into a single abstract state and potentially completely prevent further exploration.
+This phenomenon is partially discussed by \textcite{tomar2021learning}, who show that many techniques for value-based abstractions fail in hard-exploration scenarios.
+Similarly, \textcite{kemertas2021towards} highlights that auxiliary training objectives strongly improve the performance of bisimulation-based representation learning, especially with sparse rewards.
+A related point underlies the work presented in \textcite{vagram} and motivated a lot of earlier experiments, where the presented loss seeks to balance an easy-to-optimize objective such as mean square error minimization with a value-aware.
+
+This suggests that there is a trade-off between general purpose representation and model learning, such as successor features or sequential RSSMs, and task-specific methods such as IterVAML, bisimulation learning or MuZero.
+While the former ones are often more robust to shifts in the task and missing value information, they fail to be as efficient as the latter especially under resource constraints such as network size.
+
+
+\subsubsection{Decision-aware representations for RL}
+
+Contrary to approaches which aim to obtain general purpose representations, another line of work seeks to instead find representations which are optimal for a given environment and reward function.
+Several such works use the Bisimulation theorem \parencite{ferns2004metrics} to find such a representation.
+
+Bisimulation describes a compression of a graph that retains some relevant characteristic.
+In the context of RL, this is the reward behavior, meaning that a bisimulation-equivalent MDP gives the same value function to each state under all policies as the original MDP \parencite{ferns2011bisimulation}.
+Intuitively, the smallest such bisimulation for any MDP, meaning the one with the fewest equivalence classes, represents a minimal model of the MDP that is still sufficient for planning.
+Although this is a promising result, finding any bisimulation is a hard problem (checking whether a given bisimulation is valid can be done in polynomial time, but the amount of bisimulation-equivalent MDPs is exponential in the state space), in continuous problems it can be impossible.
+
+Bisimulation-based ideas have been used extensively for representation learning in RL \parencite{zhang2021learning,kemertas2021towards,kastner2021mico}, with most approaches differing in the details of what policies are used and how the bisimulation metric is estimated.
+
+\section{Analyzing gradient descent}
+
+
+After introducing the two main bodies of research this thesis engages with, this section introduces the main methodological tools that are used to establish the results of the work.
+As this work deals with questions of learning stability and suboptimal divergence of decision aware approaches, tools are needed which can model not only the sampling error and other classic objectives of learning theory, but which can model the learning process as a whole.
+
+\subsection{Gradient flow in linear networks}
+
+The analysis of the learning dynamics of deep learning methods is an active area of research.
+For many deep networks, it is intractable to provide a full rigorous description, as the learning process can be highly non-linear due to the network structure and the nature of finite-step size gradient descent.
+
+Two approximations are commonly introduced to address these challenges: linear models and \emph{gradient flow}.
+\emph{Gradient flow} is the limit of gradient descent where the step-size becomes infinitesimally small.
+Then, the learning of a function $f$ with parameters $\theta$ and a loss function $\mathcal{L}$ is modelled to approximately follow the dynamical system $f'(\theta) = -\nabla_\theta \mathcal{L}\left(f(\theta)\right)$.
+Using methods from dynamical system theory such as Lyapunov stability, the \emph{gradient flow} can be analyzed instead of the more challenging finite step-size gradient descent.
+
+An especially appealing class of surrogate functions are linear functions, which often lead to linear dynamical systems in the gradient flow framework.
+Since the analysis of linear dynamical systems is well studied, this allows for more qualitative and quantitative descriptions of the learning dynamics than potentially intractable non-linear dynamical systems.
+In the context of representation learning for example, a deep network might be modelled as two linear projections $f(x) = F^T \Phi^T x$, where $x$ is an input datum, $\Phi$ is a linear representation function and $F$ is a linear prediction function.
+
+These surrogate models and gradient flow analysis methods have been applied to representation learning and TD-learning, and in the thesis we use the methods to draw additional conclusions for decision aware and model based learning.
+
+% \subsection{Convergence and (in)stability of gradient descent}
+\label{sec:methodology}

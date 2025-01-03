@@ -1,0 +1,386 @@
+\chapter{Understanding auxiliary tasks for value function learning}
+
+\section{Introduction}
+
+Since the emergence of deep learning, techniques for deep supervised learning have been successfully incorporated into reinforcement learning (RL) agents \parencite{dqn,ddpg}.
+However, the RL setting contains additional complications such as non-stationary optimization target and the reliance on bootstrapping.
+These hurdles generally add instability to the RL training process, and recent work has identified the \emph{failure to learn good features} as a central problem in deep RL \parencite{lyle2022understanding,nikishin2022primacy,kumar2021implicit}.
+
+To mitigate this failure, one common approach is to add auxiliary tasks to the learning objective \parencite{jaderberg2017reinforcement}. 
+Popular examples include predicting next state observations \parencite{jaderberg2016reinforcement} and predicting functions of the next state \parencite{schwarzer2021dataefficient,ni2024bridging}.
+To understand the performance of these approaches, recent literature \parencite{tang2022understanding,lelan2023bootstrapped} considers the \emph{learning dynamics} of auxiliary task learning in simple linear surrogate models \parencite{saxe2014exact}.
+One hypothesis in the literature is that observation reconstruction should provide better features than latent self-prediction \parencite{behzadian2019fast,tang2022understanding}. 
+However, this causes a theory-practice gap as empirical work has found that latent self-prediction outperforms observation reconstruction across many benchmarks \parencite{schwarzer2021dataefficient,ni2024bridging}.
+
+To address this gap, we pose two questions: \emph{(a) How do auxiliary losses behave when combined with a TD loss?} \textcite{tang2022understanding,lelan2022generalization,tang2023towards} have studied the learning dynamics of auxiliary tasks alone, evaluating their performance without addressing the interaction between the auxiliary task and the main goal, to learn a (correct) value function. \emph{(b) How can we describe the behavior of auxiliary losses in the presence of distractions (states and transition dynamics irrelevant for the reward) and observation functions (different ways to measure the underlying state)?} MDP structures like distractions have been hypothesized to lead to differing performance between different auxiliary tasks \parencite{ni2024bridging}, but to our knowledge no theoretical study has been established.
+
+
+In \autoref{sec:formalism}, we present a formalization of distractions and observation functions. We use the framework of \emph{factored MDPs} \parencite{boutilier2000stochastic} with Kronecker products \parencite{mahadevan2009learning} to represent a common class of distractions. To model observation functions, we use \emph{linear reparametrization} as a tractable way to go beyond one-hot representations. 
+
+In \autoref{sec:stand_alone_tasks} and \autoref{sec:auxilliary_tasks} we analyze the features learned with observation prediction and latent self-prediction alone and in combination with TD learning. 
+We also show how these stationary features change with the introduction of distractions and observation functions.
+From this analysis we find that latent self-prediction is a strong \emph{auxiliary task}, while observation prediction is a strong feature learning method when used \emph{alone}.
+The differences are highlighted in \autoref{fig:losses}.
+This bridges one of the biggest gaps between previous analysis of learning dynamics and empirical results.
+
+In \autoref{sec:empirical} we test the predictions derived from our theoretical framework by evaluating feature learning losses in the MinAtar suite \parencite{young19minatar}.
+\footnote{All code for our experiments is available at \url{https://github.com/adaptive-agents-lab/understanding_auxiliary_tasks}.}
+We design ablations that mirror both our formalization and previous approaches to test distraction robustness in empirical environments. 
+The theory partially predicts the performance differences in the test suite, validating that the insights we obtain from the simple linear surrogate models used for analysis are useful for practitioners.
+However, we also find surprising deviations from our predictions on some environments, suggesting that there is need for additional research to fully bridge the theory-practice gap.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{illustrations/understanding/all_in_one_repeat.pdf}
+    \caption{Diagram of the considered loss functions and the different use cases. In latent self-prediction, the aim is to predict next state \emph{features} given by a embedding function $\phi(x')$ using the states features $\phi(x)$ and a latent prediction model $F$. In observation reconstruction, the aim is to match next state \emph{ground truth observations} $x'$ via the use of a decoder function $\psi(F(\phi(x)))$. In the \emph{auxiliary task setup}, both the gradients from the feature learning loss and value function learning are propagated to the encoder, while in the \emph{stand-alone scenario}, only the gradients from the feature learning loss are used to update $\Phi$.}
+    \label{fig:losses}
+\end{figure}
+
+\section{Background}
+We briefly introduce the standard formalism of reinforcement learning and linear value function approximations to clarify the notation used.
+Following this, we briefly introduce the training dynamics framework of \textcite{tang2022understanding,lelan2023bootstrapped}. 
+We frame all losses analyzed in this work with the same models to highlight similarities and differences.
+
+\textbf{Reinforcement Learning.} We consider a discounted Markov decision process (MDP)~\parencite{Puterman1994MarkovDP,suttonbook} $(\mathcal{X}, \mathcal{A}, \gP, r, \gamma)$, with state space $\mathcal{X}$, action space $\mathcal{A}$, transition kernel $\gP:\mathcal{X} \times \mathcal{A} \times \mathcal{X} \to \mathbb{R}$,
+reward function $r: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$, and discount factor $\gamma \in [0,1)$. Given a policy $\pi:\mathcal{X}\times \mathcal{A} \to \mathbb{R}$, the value function is defined as the expected return conditioned on a state $x$ $$V^\pi(x) = \EEX{\pi}{\sum_{t \geq 0} \gamma^t r_t|x_0 = x},$$ where $r_t = r(x_t, a_t)$ is the reward at time $t$. The goal of an agent is to maximize its value at each state, using the (approximate) value function of its policy $V^\pi$.
+
+
+
+In finite state spaces ($\lvert\mathcal{X}\rvert = n$ for some integer $n$), the policy induced transition kernel $\gP^\pi(x'|x) = \int \mathcal{P}(x'|x,a) \mathrm{d}\pi(a|x)$ can be represented as a stochastic matrix $P^\pi$, and the reward function as a vector $r^\pi$.
+This permits the compact notation $V^\pi =(I - \gamma P^\pi)^{-1} r^\pi$.
+We review several additional properties of stochastic matrices in \autoref{app:linalg}.
+
+\textbf{Value function approximation.} A finite state value function can always be expressed as a table or vector, but it is often infeasible to do so, due to limited storage capacity or resources once the state space becomes sufficiently large.
+Therefore, function approximations need to be introduced, which commonly take the form of a feature function $\phi(x)$ and a weight vector $\hat{V}$, with $V^\pi(x) \approx \phi(x)^\top \hat{V}$.
+These features can be pre-specified or learned, i.e. using neural networks.
+Since we are interested in finite state spaces and linear models, we will assume that $\phi(x): \mathbb{R}^{n} \rightarrow \mathbb{R}^{k}$ with $k < n$  represented by a matrix $\Phi \in \mathbb{R}^{n\times k}$ and $\hat{V} \in \mathbb{R}^k$.
+
+\subsection{Two-layer linear networks as analytical models for training dynamics}
+\label{sec:background}
+
+Rigorously analyzing the effect of different loss functions on neural networks is challenging due to non-linearities in the networks, shifting data distributions, and policy updates.
+Therefore, we have to resort to studying simplified models to obtain quantitative and qualitative results, and only consider the fixed policy case in our analysis\footnote{We discuss these and other assumptions and their implications in detail in \autoref{app:limitations}.}.
+Studying feature learning dynamics using linear networks was popularized by \textcite{saxe2014exact} and has proven to be a valuable tool to analyze diverse objectives such as TD learning \parencite{tang2023towards,lelan2023bootstrapped}, latent self-prediction \parencite{tian2021understanding,tang2022understanding}, and linear autoencoders \parencite{pretorius2018learning,bao2020regularized}.
+
+We rewrite the feature learning algorithms using two to three matrices in lieu of more complex functions. Furthermore, we use several assumptions throughout the paper that are listed here for clarity.
+
+\begin{assumption}
+\label{assumption1}
+Let $\Phi \in \mathbb{R}^{n \times k}$ be an \emph{encoder} mapping to a $k$ dimensional embedding space,
+$F \in \mathbb{R}^{k\times k}$ a \emph{latent model} mapping to the next state's latent embedding, $\hat{V} \in \mathbb{R}^{k}$ and $\hat{r} \in \mathbb{R}^{k}$ \emph{value and reward weights}, and $\Psi \in \mathbb{R}^{k \times n}$ a \emph{decoder}.
+Let the sampling distribution of state samples $\mathcal{D}$ be uniform and fixed throughout learning.
+\end{assumption}
+
+Using this notation, we study four important loss functions for RL: observation reconstruction, where the aim is to fit the next state observation $x^\top \Phi F \Psi \approx x'$, latent reconstruction $x^\top \Phi F \approx x' \Phi$, where the aim is to predict learned features of the next state, and TD learning $x^\top \Phi \hat{V} \approx x^\top(r^\pi + \gamma x'^\top\phi \hat{V})$. To clarify the differences, we show a diagram explaining the losses and training setups in \autoref{fig:losses}.
+Following common notation, $[\cdot]_\mathrm{sg}$ signifies a \emph{stop-gradient} operation; no gradient is taken with regard to terms in the parenthesis.
+
+Formally, these are written as
+\begin{align*}
+    \text{Reconstruction: }&& L_{\text{rec}}(\Phi,F,\Psi) =& \,\EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \Phi F \Psi - x^\top {P^\pi}}^2},\\
+    \text{Latent self-prediction: }&& L_{\text{lat}}(\Phi,F) =& \,\EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \Phi F - \left[x^\top {P^\pi} \Phi\right]_{\mathrm{sg}}}^2}, \\
+    \text{TD Learning: }&& L_{\text{td}}(\Phi,\hat{V}) =& \,\EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \Phi \hat{V} - \left[x^\top  \left(r^\pi + \gamma P^\pi \Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2}.
+\end{align*}
+
+Following the nomenclature of \textcite{vaml}, we call the first two losses as \emph{decision-agnostic}, and TD-learning as \emph{decision-aware} as it depends on information specific to decision problem.
+To analyze the discrete-time learning dynamics, we study the analogous continuous-time gradient flow, which allows us to use the toolkit of dynamical systems theory.
+Writing $\alpha_\Phi$ and $\alpha_F$ for the representation and model learning rates, i.e., the latent self-prediction dynamics are
+\begin{align*}
+    \ddt{t} \Phi_t &= -\alpha_\Phi\nabla_{\Phi_t} {L}_{\text{lat}}(\Phi_t, F_t) = -2 \alpha_\Phi (\Phi_t F_t - P^\pi \Phi_t)  F_t^\top,\\
+    \ddt{t} F_t  &= -\alpha_F\nabla_{F_t} {L}_{\text{lat}}(\Phi_t, F_t) = -2 \alpha_F \Phi_t^\top(\Phi_t F_t - P^\pi \Phi_t).
+\end{align*}
+
+We primarily consider the \emph{two-timescale} regime, under the assumption that $\alpha_F\to \infty$ \parencite{tang2022understanding}. Intuitively, this describes a learning setup in which the latent model is learned ``much faster'' than the latent mapping. 
+This results in the following dynamics for self-predictive learning:
+\begin{equation}
+    \label{eq:BYOLTwoTimescale}
+    F_t^* = \left(\Phi_t^\top\Phi_t\right)^{-1} \Phi_t^\top P^\pi \Phi_t, \quad \frac{d}{dt}\Phi_t = \left(I-\Phi_t\left(\Phi_t^\top \Phi_t\right)^{-1}\Phi_t^\top\right)P^\pi \Phi_t {F_t^*}^\top.
+\end{equation}
+
+\section{Formalizing the impact of distractions and observation functions}
+\label{sec:formalism}
+To bridge the theory-practice gap in feature learning, we formalize two structures found in MDPs found in Deep RL benchmarks that have, to the best of our knowledge, not appeared in work analyzing feature learning: observation functions and distractions.
+To allow a close comparison with previous work, our changes to the formalism are minimal on purpose, while still highlighting the important role these changes play in different loss functions.
+
+\subsection{Observation functions}
+Previous literature \parencite{tang2022understanding,tang2023towards,lelan2022generalization} has eschewed the underlying observation of states in their analysis of representation dynamics. 
+The correctness of the dynamical system in \autoref{eq:BYOLTwoTimescale} hinges on the fact that $\mathbb{E}[xx^\top ] = I$, which implies uncorrelated state representations for each state $x$ and a uniform distribution over states.
+The simplest form of such a representation would be a \emph{one-hot} vector, a representation for the $i$-th state in which all entries are 0, except the $i$-th, which is 1.
+
+This leads to an assumption that the features for the underlying states can be learnt independently.
+With a one-hot representations, the features of $x$ are simply $x^\top \Phi = \Phi[i]$, the $i$-th row of $\Phi$.
+A more realistic setting, which we focus on, is considering observation functions acting on the underlying states. 
+This allows for representing systems where some states have correlated observations, which may be helpful \emph{or} harmful for the RL problem. 
+We provide a motivating example and a more extensive discussion regarding the effect observation functions on the learning process in \autoref{app:observation_motivation}.
+
+We briefly state this for reference later.
+\begin{assumption}
+    \label{assumption2}
+    Let an \emph{observation function} for a finite state space MDP be an invertible matrix $\mathcal{O} \in \mathbb{R}^{n \times n}$.
+\end{assumption}
+
+\textbf{Formalization:} To introduce an observation function while remaining in the regime of analyzing linear networks and finite state problems, each one of $n$ states is mapped to a unique $n-$dimensional observation vector by an invertible \emph{observation matrix} $\gO \in \vecR{n}{n}$.\footnote{We could also consider projection into higher dimensional spaces $\gO \in \vecR{n}{d}$ with $d > n$, without violating the Markov assumption, but this leads to additional complications (working with pseudo-inverses instead of inverses) which do not contribute meaningfully to the insights in this work.}
+Invertibility is assumed to ensure the Markov property with linear function approximation.
+
+This change from one-hot vectors to arbitrary vectors allows us to account for similarity.
+For example, if two states have almost identical observation vectors, they will be mapped to similar points in the latent representation space unless the features directly counteract this.
+We study the impact of changing the observations with a linear reparameterization in \autoref{sec:observation} by replacing $x$ with $\bar{x} = \mathcal{O}^T x$.
+
+\subsection{Distracting state dynamics}
+In addition to observation functions, another common problem that many reinforcement learning algorithms face are distractions.
+While distractions have been a focus of empirical work studying the relative efficacy of different auxiliary tasks \parencite{ni2024bridging}, a simple formalism whose effect on learning dynamics can be analyzed has not been presented. 
+We propose to model an MDP with distractions using factored MDPs \parencite{boutilier2000stochastic}.
+
+\begin{definition}[A factored MDP model of a distraction]\label{def:distracting}
+Let $M=(\mathcal{M}, P_{M},R_M)$,  $N=(\mathcal{N},P_N,R_N)$ be a pair of Markov decision processes.
+The product process $M \otimes N$ is a MDP with state space $\mathcal{M}\times \mathcal{N}$, transition kernel $P_M\otimes P_N$ (where $\otimes$ signifies the Kronecker product), and reward function $R_M\otimes \vone +\vone \otimes R_N^\top$.
+
+If $R_N = 0$, we refer to $N$ as a distracting process, as it does not contribute to the reward.
+\end{definition}
+
+This process models a common occurrence: two non-interacting processes unfold simultaneously, with the states being a combination of the two.
+Such a process can model a well-studied form of distraction, the background distractions in  \cite{Stone2021TheDC} or the random observation dimension in \textcite{nikishin2021control,voelcker2022value}.
+In this case, the foreground process $M$ is assumed to carry the reward information, while the reward vector of the background process $N$ is 0.
+We review important properties of the Kronecker product in \autoref{app:linalg}.
+
+
+Note that our formalizations of observation functions and distracting processes is distinct from the assumptions in \emph{linear MDPs} \parencite{jin2020provably}. Concretely we do not assume that the processes are low-rank compressible, just that they are factorizable.
+
+\section{Reconstruction and self-prediction losses}
+\label{sec:stand_alone_tasks}
+
+In this section and the next, we present an analysis of the stability conditions of reconstruction and self-prediction losses with linear networks.
+Using this analysis, we obtain several \emph{insights}, qualitative predictions about how we expect the studied losses to behave in more complicated scenarios.
+These \emph{insights} present the basis for our empirical comparison in \autoref{sec:empirical}.
+
+\subsection{Case 1: Orthogonal state representations}
+
+
+\cite{tang2022understanding} show that for symmetric MDPs, latent self-prediction converges to subspaces spanned by eigenvectors of $P^\pi$. 
+We extend this result in the following sense: if $P^\pi$ has positive real eigenvalues, invariant sub-spaces which are not spanned by the top-k eigenvectors are unstable for gradient descent.\footnote{The assumption of real \emph{positive} eigenvalues is both more and less restrictive than the symmetry assumption made by \textcite{tang2022understanding}. An extension of our result to negative eigenvalues is presented in \autoref{app:proofs}, together with an extended comparison to the results obtained by \textcite{tang2022understanding} and \textcite{lelan2023bootstrapped}.}
+It is interesting to note that the resulting features are identical to those obtained using the multi-reward approach described by \cite{lelan2023bootstrapped} (albeit under slightly different technical conditions), which highlights the close connection between the self-predictive approach and bootstrapped generalized value function learning.
+This furthermore suggests that using random rewards as auxiliary objectives \parencite{farebrother2023protovalue} could result in very similar features as using self-prediction, which presentes an interesting avnue for further empirical study.
+
+\begin{assumption}
+\label{assumption3}
+    Assume a two-timescale scenario and $F_0$ being initialized with full rank, and hence the non-collapse property ($\Phi_t^\top\Phi_t = \Phi_0^\top\Phi_0$) \parencite{tang2022understanding} holds.
+\end{assumption}
+When referring to eigenvectors and singular vectors, we mean the \emph{right} vectors of the corresponding matrices unless stated otherwise.
+We now present our first theoretical result.
+
+\begin{restatable}[Stationary points of latent self-prediction]{proposition}{BYOLGradientFlow}\label{prop:1}
+Assume \autoref{assumption1} and \autoref{assumption2} hold.
+Furthermore, suppose $P^\pi$ is real diagonalizable. 
+If the columns of $\Phi_t$ span an invariant subspace of $P^\pi$, $\Phi_t$ is a stationary point of the dynamical system.
+Furthermore, if $P^\pi$ is real-diagonalizable with positive eigenvalues, all invariant subspaces not spanned by the top-k eigenvectors sorted by eigenvalue are asymptotically unstable for gradient descent.
+\end{restatable}
+
+This implies that even without the assumptions of symmetry of $P^\pi$ required by \textcite{tang2022understanding}, the dynamics of latent self-prediction will tend to converge to invariant subspaces spanned by eigenvectors with large eigenvalues as other invariant subspaces are unstable.
+This is important as we expect these to be more important for representing potential reward functions in the environment \parencite{lelan2023bootstrapped}. 
+
+We can contrast this with the features learned by a reconstruction loss.
+We write $\mathrm{span}(A)$ for both the span of the column vectors of $A$ or for the span of a set of vectors $A$, depending on context.
+\begin{restatable}[Stationary points of reconstruction]{proposition}{ReconstructionStationaryPoints}\label{prop:2}
+Assume \autoref{assumption1} and \autoref{assumption2} hold. Write $(u_1,\dots,u_n)$, $(v_1,\dots,v_n)$ for the left and right singular vectors of $P^\pi$ sorted in descending order by singular value. Any stationary point $(\Phi^*, F^*, \Psi^*)$ of $L_\text{rec}$ under the two timescale scenario satisfies $\mathrm{span}\,(\Phi^*)=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, $\mathrm{span}\,({\Psi^*}^\top)=\mathrm{span}\left(\{v_1,\dots,v_k\}\right)$.
+\end{restatable}
+
+Features of this form have been studied extensively and the convergence properties of linear auto-encoders are well understood \parencite{baldi1989neural,pretorius2018learning,bao2020regularized}.
+
+\autoref{prop:1} and \autoref{prop:2} together show that there is a subtle but important difference between latent self-prediction and observation reconstruction: the features will converge to eigenspaces in the former case, and to singular space in the latter case.
+Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the eigen-spaces coincide and latent self-prediction and reconstruction converge to the same features \parencite{tang2022understanding}.
+
+\textcite{behzadian2019fast} show that top $k$ singular vectors are optimal low-rank linear features when making no assumptions on the reward, meaning observation reconstruction should lead to the best features when considering every possible bounded (or unknown) reward.
+\textcite{behzadian2019fast} and \textcite{lelan2023bootstrapped} both highlight that if eigenvectors and singular vectors differ, singular vectors often lead to better performing features.
+
+\begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]
+\begin{insight}[Optimality of observation prediction] The features learned by observation prediction are in general superior to those of latent self-prediction, when using solely one of these as the loss function.
+\label{insight1}
+\end{insight}
+\end{tcolorbox}
+
+\subsection{Case 2: Observation function dependence}
+\label{sec:observation}
+
+Recall that the gradient dynamics presented in (\ref{eq:BYOLTwoTimescale}) and analyzed in \autoref{prop:1} and \autoref{prop:2} rely on the assumption that $\mathbb{E}[xx^\top] = I$ (see \autoref{assumption1}).
+We now introduce the observation matrix $\gO$, which leads to correlations between different features.
+To do this, we simply replace every occurence of $x^\top$ in the losses presented in \autoref{sec:background} with $x^\top \gO$.
+We assume that $x$ is a one-hot vector as discussed before and the coverage is still uniform (\autoref{assumption1} still holds), so all correlation between states arise as $\mathbb{E}[\gO^\top x x^\top\gO] = \gO^\top \gO$.
+
+It is important to note that for BYOL and TD this rewriting leads to a linear basis change of $\Phi$ compared to the original loss, as each occurrence of $\gO$ is multiplied by $\Phi$. The only loss for which this is not the case is the reconstruction approach.
+
+\begin{restatable}{proposition}{ReparameterizationInvariance} 
+Assume \autoref{assumption1}, \autoref{assumption2}, and \autoref{assumption3} hold. Let $\{\Phi^*_\mathrm{lat/td}\}$ be the set of critical points of $L_\mathrm{lat}$ or $L_\mathrm{td}$ respectively.
+Then $\gO^{-1}\Phi^*_\mathrm{lat/td}$ are stationary points for the reparameterized losses $L_\mathrm{lat}^\gO$ and $L_\mathrm{td}^\gO$.\footnote{Due to space constraints, we present the full equations in the proof.} Furthermore, if $\Phi^*_\mathrm{lat/td}$ is an asymptotically stable point of $L_\mathrm{lat/td}$ that has a Jacobian with all negative eigenvalues, $\gO^{-1}\Phi^*_\mathrm{lat/td}$ is an asymptotically stable point of $L_\mathrm{lat/td}^\gO$.
+\end{restatable}
+
+Note that while the stationary points and asymptotic stability conditions of the gradient flow might be unaffected by the introduction of observation distortions, the same might not be true for the dynamics of descent with finite step sizes.
+The numerical conditioning of the involved matrices change depending on $\gO$ and so the impact of discretization due to finite step sizes changes the resulting dynamical system.
+
+\begin{restatable}{proposition}{ReparameterizationInvarianceObs} 
+ Assume \autoref{assumption1}, \autoref{assumption2}, and \autoref{assumption3} hold. Let $(u_1,\dots,u_n)$, $(v_1,\dots,v_n)$ be the left and right singular vectors of $\gO^{-1}P^\pi\gO$. 
+Any stationary point $(\Phi^*, F^*, \Psi^*)$ of $L_\text{rec}^\gO$ satisfies $\mathrm{span}\,(\Phi^*)=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, $\mathrm{span}\,({\Psi^*}^\top)=\mathrm{span}\left(\{v_1,\dots,v_k\}\right)$.
+\end{restatable}
+
+The singular value decomposition of $\gO^{-1}P^\pi\gO$ will in general not have a clearly interpretable relationship to that of $P^\pi$ and $r$, so the optimality result obtained by \textcite{behzadian2019fast} do not hold in this case.
+However this does not mean that different observation functions will always harm the ability of the reconstruction loss to obtain good features.
+Consider for example an observation transformation that maps states directly to value and reward function.
+This would clearly be an example of a helpful observation transformation.
+However, in general we conjecture that arbitrarily changing the observation function will harm the reconstruction loss approach.
+A more detailed analysis involving the reward function of the problem being solved and its connections to the observation model are an exciting avenue for future work.
+
+\begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]
+\begin{insight}[Observation dependence of autoencoder models] 
+\label{insight2}
+Due to the invariance properties of latent self-prediction, we expect the performance of latent self-prediction to suffer less than the performance of observation reconstruction when perturbing the observation space arbitrarily.
+\end{insight}
+\end{tcolorbox}
+
+
+\section{Understanding the effects on value function learning}
+\label{sec:auxilliary_tasks}
+
+The optimality of a representation for value estimation depends non-trivially on the structure of the reward structure of the MDP. Previous works \parencite{behzadian2019fast, bellemare2019geometric, lelan2022generalization} attempted to reason about the optimality of representations without relying on the reward structure, by arguing that certain subspaces (such as the span of top-$k$ eigenvectors or top-$k$ singular vectors) are optimal given reward agnosticism.
+
+Now we take a differing approach by taking the value function structure into account. Furthermore, we argue that the top-$k$ eigenspaces (resp. singular spaces) are not always optimal. Indeed, we demonstrate in \cref{app:distraction_motivation} that with distractions, these subspaces can be particularly poor.
+
+
+We begin by formalizing the reward function structure we will analyze. 
+Let us write $w_1,\dots,w_n$ for the eigenvectors of $P^\pi$. 
+We will assume that $r^\pi$ has a low-dimensional structure in the following sense: 
+
+\begin{assumption}\label{ass:low_rank}
+    $\exists i_1,\dots,i_m \in \{1,\dots,|\mathcal{X}|\}$ such that $r^\pi \in \mathrm{span}(w_{i_1},\dots,w_{i_m})$, and $m\leq k.$ Let furthermore $\{{w_i}_1,\dots,{w_i}_m\}$ be a minimal basis in the sense that ${w_i}_n {{w_i}_n}^\top r^\pi \neq 0$ for all $n$. 
+\end{assumption}
+We now write the summed losses $$L_{\text{rec}+\text{td}}(\Phi,F,\psi,\bar{r})= L_\text{rec}(\Phi, F, \psi)+L_\text{td}(\Phi, \bar r)$$ and $$L_{\text{lat}+\text{td}}(\Phi,F,\bar{r})= L_\text{lat}(\Phi, F)+L_\text{td}(\Phi, \bar r).$$ 
+
+
+\begin{restatable}{proposition}{BYOLCombined}\label{prop:BYOLCombined}
+    Suppose that $P^\pi$ is real diagonalizable, and that \autoref{assumption1}, \autoref{assumption3}, and \autoref{ass:low_rank} hold. 
+    There exists a non-trivial critical point $\Phi^*$ of the two-timescale TD loss $L_\text{td}$ such that $\mathrm{span}(r^\pi)\subseteq \mathrm{span}(\Phi^*)$. 
+    Furthermore, $\Phi^*$ is a critical point of the two-timescale joint loss $L_{\text{td}+\text{lat}}$. Therefore combining $L_\text{TD}$ and $L_\text{Lat}$ does not exclude the existence of a stationary point with $0$ value function approximation error.
+\end{restatable}
+
+We leave the extension of the stability result for TD learning to the joint loss case open for future work.
+Note that without the addition of TD learning, the latent loss would stabilize the top-k eigenspace representation, but we hypothesize that this behavior changes when combining the losses.
+
+\begin{restatable}{proposition}{ReconsCombined}
+    Let \autoref{assumption1}, \autoref{assumption2}, and \autoref{ass:low_rank} hold. If the reward spanning eigenvectors do not lie within the span of the top-k singular vectors, $\mathrm{span}\,(w_{i_1},\dots,w_{i_m}) \not\subseteq \mathrm{span}\,(u_1,\dots,u_k)$, the critical points of the two-timescale joint loss $L_{\text{td}+\text{rec}}$ are guaranteed to not be minimizers of the value function approximation error. 
+\end{restatable}
+
+Contrasting these propositions suggests that when combined with TD learning losses, latent self-prediction can be a more helpful auxiliary task. Indeed, when combining it with TD learning we can still guarantee that there exists an optimal combined solution.
+This does not hold for the reconstruction loss, where we can construct cases in which the joint loss leads to worse TD error.
+
+\begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]
+\begin{insight}[Latent self-prediction as an auxiliary task] 
+For good performance across a wide variety of tasks, latent self-prediction needs to be combined with TD learning as an auxiliary task. It is a preferable auxiliary task to observation prediction in most scenarios, but especially in scenarios with distracting processes.
+\label{insight3}
+\end{insight}
+\end{tcolorbox}
+
+\section{Empirical study of theoretical results in deep learning based settings}
+\label{sec:empirical}
+
+We aim to empirically verify the statements marked as \emph{``Insights''} throughout the paper: superiority of observation prediction as a standalone feature learning loss (\autoref{insight1}), impact of the observation function on the different loss functions (\autoref{insight2}), and the relative strength of latent-self prediction as an auxiliary loss compared to reconstruction (\autoref{insight3}). 
+As our theory addresses the simplified setting of policy evaluation with linear models, we seek to test if the insights transfer to the more common setting of control with neural networks.
+Across all experiments, we report mean performance over 30 seeds and shaded $95$ bootstrapped confidence interval.
+
+To test these hypotheses, we use the MinAtar suite of five Atari inspired videogames \parencite{young19minatar} and the DMC 15 suite  \parencite{tunyasuvunakool2020}.\footnote{DMC experiments are presented in the appendix due to space constraints.}
+Both are small enough to perform thorough investigations, while providing non-trivial observation spaces and dynamics.
+Detailed information about the implementation and hyperparameters can be found in \autoref{app:empirical}.
+
+
+\begin{figure}[b]
+    \centering
+    \includegraphics[width=\textwidth]{figures/understanding/rlc2024_minatar.pdf}
+    \caption{Auxiliary task setup: Performance of all losses on the observation space as given without changes to the environment.}
+    \label{fig:aux}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/understanding/rlc2024-detach_minatar.pdf}
+    \caption{Stand-alone setup: Performance of all losses on the observation space as given without changes to the environment. The DQN baseline is using random features, which are not updated, to verify that learning features is indeed superior to a random feature baseline.}
+    \label{fig:sta}
+\end{figure}
+
+\textbf{Auxiliary task learning vs general purpose feature learning (\autoref{fig:aux} and \autoref{fig:sta}):}
+First, we compare both the auxiliary task and stand-alone feature learning scenarios.
+As expected from prior work \parencite{jaderberg2016reinforcement,schwarzer2021dataefficient,farebrother2023protovalue}, in all cases using an auxiliary loss performs no worse (and often better) than vanilla DQN.
+We find that as expected from \autoref{insight3}, latent self-prediction is a stronger auxiliary loss function than observation reconstruction in three out of five environments.
+However, when using the decision-agnostic losses alone, we clearly see observation reconstruction performing significantly better than latent self-prediction, which fails to learn any relevant features in several cases. This verifies \autoref{insight1}.
+
+Curiously, in the case of the Seaquest environment, we find that using observation prediction alone outperforms using it as an auxilliary task strongly, and performs on par with the auxiliary task variant of the latent self prediction loss.
+Seaquest also has the sparsest reward structure in the test suite, which can make it a challenging environment for DQN. In this case, features based purely on the observed transition might allow for better policy learning.
+
+This highlights that no algorithm is clearly superior in all settings and the reward and observation structure is very relevant for the performance of each loss.
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/understanding/rlc2024-distorted-fixed_minatar.pdf}
+    \caption{Distorted observation function with a random transformation.}
+    \label{fig:dist}
+\end{figure}
+
+\textbf{Observation space distortions (\autoref{fig:dist}):} To test the impact of changing the observation function, we sample a random binary matrix and multiply it to the flattened observation vector. We then reshape the observation to the original shape again.
+
+All algorithms show themselves to be strongly impacted by this random observation distortions, which suggests that our claim of invariance of self-prediction relies too strongly on the linear gradient-flow limit.
+This can in part be explained by the use of a convolutional layer in the standard baseline implementation of DQN which we adapted.
+However, we still find that at least on two environments (Seaquest and Freeway), the latent self-prediction auxiliary task is able to recover more of the original performance than either observation prediction or DQN.
+Interestingly, the DQN baseline seems to suffer the most from the introduction of the observation change, which suggests that correlations of the existing observation space play an important role in learning correct value function prediction.
+
+Overall, we find that \autoref{insight2} does not fully translate to the more complex test setting.
+In part, this may be explained by the fact that the original observation spaces of the test environments already violate our assumptions for the one-hot encoding.
+In addition, introducing linear correlation might not impact non-linear model learning in the same way it would impact linear models.
+This highlights the need for more in-depth research on the interplay between given observation space and feature learning.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/understanding/rlc2024-noise-random_minatar.pdf}
+    \caption{Appending random noise channels.}
+    \label{fig:ran}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/understanding/rlc2024-noise-data_minatar.pdf}
+    \caption{Appending structured noise channels using the Freeway environment.}
+    \label{fig:dat}
+\end{figure}
+
+\textbf{Distractions (\autoref{fig:ran} and \autoref{fig:dat}):}
+As our results are dependent on the spectral structure of the environment, different distraction models can be assumed to have differing impact on the efficacy of the tested losses.
+This behavior is dependent on the structure of the noise.
+If the distraction does not strongly change the top-$k$ singular or eigenspaces, it will be less problematic for the auxiliary tasks, especially for observation reconstruction.
+Testing the impact of different distraction models on the top-$k$ spaces is out of scope for this work, but we conjecture that fully random noise has less structure than distractions following clear patterns.
+
+Therefore, we consider two simple distraction models in our experiments. 
+The distractions are concatenated to the original observations along the channel dimension.
+First, we use random noise sampled independently for each state from a Bernoulli distribution.
+As there is no predictable structure in this noise, we expect all algorithms to be able to deal with this distraction better.
+Second, we choose one of the environments at random (Freeway-v1) and concatenate two copies to the observation space of each environment.
+The dynamics are obtained by sampling a random action at each timestep independent from the policy and stepping the distraction environment with it.
+
+We find a small advantage in some environments to using the latent self-prediction loss and using random noise, and no clear advantage from any algorithm in the structured noise case.
+Structured noise poses a much larger challenge to most algorithms, completely preventing learning in several cases.
+This partially validates that not only the presence or absence of noise matters, but also how it changes relevant quantities, e.g. the eigenvalues of the transition kernel.
+
+In the continuous control experiments presented in \autoref{app:mujoco_results}, we find that the self-prediction loss performs generally better than in the MinAtar suite.
+As the observation and reward structure differs between these two benchmark suite, this obvservation lends more credibility to our claims that the observation structure impacts the performance of algorithms.
+
+\section{Conclusions}
+
+When choosing an RL approach to use, practitioners are overwhelmed with a variety of loss function choices, without clear indication which one will be preferable in what scenario.
+In our work, we introduce analytically tractable notions of distractions and observation functions.
+With these we predict the performance of latent self-prediction and observation reconstruction as stand-along feature learning methods and auxiliary tasks, and study our theoretical insights empirically.
+Our evaluation lends credibility to the use of simple surrogate models to obtain practically relevant insights into algorithmic performance.
+However, in several cases we also find deviations between our predictions and more complex benchmarks.
+Therefore, while we claim that our experiments have the ability to guide the choice of algorithms for applied settings, there is still a sizeable gap between theory and practice that remains to be bridged in future work.
+
+We also note that our experiments showed substantial differences in behavior of auxiliary losses both within and across benchmarks and different noise distractions.
+Previous work that studied the effect of distraction \parencite{nikishin2021control,voelcker2022value,ni2024bridging} did not discuss their distraction model in further details. 
+In light of our results, we suggest that empirical research should be careful about the choice of benchmark and experimental setup and discuss the implications of the empirical setup explicitely.
+
+One of the most important gaps between the work presented in this paper and the behavior of online algorithms is the restrictive assumption of the fixed policy evaluation case.
+Therefore one of the most exciting avenues for future work is analysing policy improvement, where the underlying dynamics of the environment change due to the policy updates.
+On the empirical side the surprising effectiveness of the observation prediction loss on the Seaquest environment highlights the fact that even within benchmark suites, differences in the reward functions and observation models can lead to differing rankings between algorithms.
+This further highlights the necessity of studying the structure of MDPs and to design algorithms that are robust to different structures, or adapt to them automatically.

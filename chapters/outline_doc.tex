@@ -1,0 +1,86 @@
+\chapter*{Outline}
+
+This is an outline doc of my thesis with comments and ideas.
+To prepare the thesis proposal, this is written for the benefit of Amir-massoud and Igor to discuss the high level structure of the thesis and its chapters.
+
+The rough idea is to present the core points, sources, and evidence for each important part of the chapter.
+
+\section{Introduction}
+
+The core story is developed from three main arguments:
+
+Agents that need to make decisions in complex environments need to learn how to represent and use the information they get.
+
+If the task is clear, end-to-end approaches such as supervised deep learning have proven to be excellent at extracting this information automatically.
+
+However, in scenarios like RL where an agent needs to slowly discover how to complete a task, this is more difficult.
+
+This means we need to study how to get the agent to model what matters (roll credits) for completing its task.
+
+I focus on RL, because its a very general framework for decision making, and focus on learning value functions specifically.
+
+So the core thesis is: by learning auxiliary tasks and world models that are aligned with the final decision making task, we can improve value function learning (and therefore decision making) drastically.
+
+I probably want to expand the thesis to include the inherent trade-off between strict decision aware learning, and general purpose learning, and how we can bridge this gap.
+
+\section{Background}
+
+I'll work a bit on the order in which I present things
+
+\subsection{RL}
+Introduce RL with a heavy focus on value function learning of course.
+
+Introduce general background on tabular MDPs and a short overview of continuous domains (to prep lambda AC).
+
+Introduce the ideas for why value function learning is hard under shifting input distributions etc.
+
+\subsection{Model based RL}
+
+Quick overview of the main ideas of model based RL, and how it can be used to improve value function learning.
+
+\subsection{Representation learning and gradient flow}
+
+This is the background for the understanding papers
+
+\section{Instability and learning difficulty}
+
+This is a proposal (we should discuss).
+Instead of diving into the first paper, I am wondering if it makes sense to use the insights from the dissecting paper and Vagram to discuss the problems with pure end-to-end learning, and naive VAML, first.
+This would motivate the rest of the thesis more nicely and give me a good chance to use the dissecting paper to my full advantage.
+I am also thinking of doing some novel experiments to show value function representation collapse in a simple tabular or linear setting (currently testing stuff in the LQR setting).
+
+Basically the goal of this chapter would be to highlight the problem I am attempting to solve more cleanly.
+I feel this is somewhat missing from any single paper so far.
+
+\section{Value functions and representation learning}
+Core papers:
+Understanding (RLC 2024)
+
+High level points: why we need auxiliary tasks and why their choice matters.
+
+Also a good way to introduce distractins a bit more formally which we can pick up on in VaGraM
+
+\section{Observation space models}
+Core papers:
+VaGraM (ICLR 2022)
+
+Pretty much present what we had, I might repeat experiments in the same domains that we have in MAD-TD now that we have substantially better code, however, the base algo perform really badly there \dots I'll test this over christmas
+
+\section{Latent space models}
+Core papers:
+Lambda (tbd), MAD-TD (ICLR 2025 :D), Probabilistic MAD-TD (if we get enough results)
+
+Order here will probably get shuffled around if we expand Lambda AC to include iedas from MAD-TD
+
+\subsection{Existence of good latent space models and the correct loss function}
+
+Lambda AC
+
+Here I have a lot of additional results which will go into a rework of the paper as well.
+I can discuss the framework and the different biases a lot better now
+
+We can greatly expand the experiments, and I think I will actually take the policy gradient out of the paper cause it never fit in there. 
+I can actually probably write this as a follow up to MAD-TD and TD-MPC2 pretty nicely now.
+
+\subsection{How to use a latent space model well}
+MAD-TD as the capston where everythign works very nicely if you do everything right.

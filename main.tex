@@ -1,0 +1,134 @@
+% !TeX TS-program = pdflatex
+% !BIB TS-program = biber
+% !TeX root = main.tex
+\documentclass[11pt]{ut-thesis}
+% packages
+\usepackage[colorlinks]{hyperref} % for links
+\usepackage[backend=biber,style=authoryear]{biblatex} % for references
+\usepackage{graphicx} % for embedding graphics
+\usepackage{booktabs} % for pretty tables
+\usepackage{lipsum} % for gibberish text
+
+\usepackage{hyperref}
+% \usepackage{todonotes}
+\usepackage{url}
+\usepackage{amssymb}            % Defines common symbols like \mathbb R
+\usepackage{mathtools}          % Extends amsmath, providing common math tools
+\usepackage{mathrsfs}           % Enables \mathscr, which can work in cases that \mathcal does not
+\mathtoolsset{showonlyrefs}     % Only number equations that are referenced (optional)
+\usepackage{caption, subcaption}         % Allows for the use of subfigures and subcaptions
+\usepackage[space]{grffile}     % For spaces in image names
+\usepackage{url}                % For displaying urls
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{acronym}
+
+% \usepackage{todonotes}
+\usepackage{wrapfig}
+\usepackage{pbox}
+\usepackage{array}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{wrapfig}
+
+\usepackage{amsthm}
+
+\usepackage{uoftcolors}
+\hypersetup{
+  colorlinks=true,
+  allcolors=uoftblue
+}
+
+\input{aux/math_commands.tex}
+
+\usepackage{svg}
+
+\usepackage[many]{tcolorbox}
+
+\usepackage[capitalize,nameinlink,noabbrev]{cleveref} 
+\crefformat{equation}{(#2#1#3)}
+
+\usepackage{thm-restate}
+
+\usepackage{uoftcolors}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{assumption}{Assumption}
+\newtheorem{proposition}{Proposition}
+\newtheorem{inftheorem}{Theorem (informal)}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{claim}{Claim}
+\newtheorem{insight}{Insight}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+
+\definecolor{sb1}{HTML}{1f77b4}
+\definecolor{sb2}{HTML}{ff7f0e}
+\definecolor{sb3}{HTML}{2ca02c}
+\definecolor{sb4}{HTML}{d62728}
+\definecolor{sb5}{HTML}{9467bd}
+\definecolor{sb6}{HTML}{8c564b}
+\definecolor{sb7}{HTML}{e377c2}
+\definecolor{sb8}{HTML}{7f7f7f}
+\definecolor{sb9}{HTML}{bcbd22}
+\definecolor{sb0}{HTML}{17becf}
+
+\newcommand{\sbcblue}[1]{{\color{sb1}#1}}
+\newcommand{\sbcorange}[1]{{\color{sb2}#1}}
+\newcommand{\sbcgreen}[1]{{\color{sb3}#1}}
+\newcommand{\sbcred}[1]{{\color{sb4}#1}}
+\newcommand{\sbcpurple}[1]{{\color{sb5}#1}}
+\newcommand{\sbcbrown}[1]{{\color{sb6}#1}}
+\newcommand{\sbcpink}[1]{{\color{sb7}#1}}
+\newcommand{\sbcgrey}[1]{{\color{sb8}#1}}
+\newcommand{\sbcolive}[1]{{\color{sb9}#1}}
+\newcommand{\sbcteal}[1]{{\color{sb0}#1}}
+
+
+\AtBeginDocument{\def\sectionautorefname{Section}}%
+\AtBeginDocument{\def\subsectionautorefname{Subsection}}%
+
+\input{acronyms}
+
+% author data
+\author{Claas Voelcker}
+\title{Learning to model what matters -- Representations and world models for efficient reinforcement learning}
+\degree{Doctor of Philosophy}
+\department{Computer Science}
+\gradyear{2025}
+% reference database
+\addbibresource{main.bib}
+\begin{document}
+  \frontmatter
+    \maketitle
+    \begin{abstract}
+      \include{chapters/00-00-abstract}
+    \end{abstract}
+    \begin{dedication}
+    \end{dedication}
+    \begin{acknowledgements}
+      % \input{chapters/acknowledgements}
+    \end{acknowledgements}
+    \tableofcontents
+    % \listoftables
+    % \listoffigures
+  \mainmatter
+    \include{chapters/outline_doc}
+    \include{chapters/01-01-preface}
+    \include{chapters/01-02-intro}
+    \include{chapters/01-03-background}
+    \include{chapters/02-01-value_learning_instability}
+    \include{chapters/02-02-vagram}
+    \include{chapters/02-03-representation_learning}
+    \include{chapters/02-04-lambda}
+    \include{chapters/02-05-minimal}
+  \appendix
+    \include{chapters/03-01-appendix-formal}
+    \include{chapters/03-02-appendix-experiments}
+  \backmatter
+  \printbibliography[heading=bibintoc]
+  \lipsum[1-6]
+\end{document}
