@@ -1,16 +1,12 @@
-% !TeX TS-program = pdflatex
-% !BIB TS-program = biber
-% !TeX root = main.tex
 \documentclass[11pt]{ut-thesis}
 % packages
 \usepackage[colorlinks]{hyperref} % for links
-\usepackage[backend=biber,style=authoryear]{biblatex} % for references
+\usepackage[style=authoryear]{biblatex} % for references
 \usepackage{graphicx} % for embedding graphics
 \usepackage{booktabs} % for pretty tables
 \usepackage{lipsum} % for gibberish text
 
 \usepackage{hyperref}
-% \usepackage{todonotes}
 \usepackage{url}
 \usepackage{amssymb}            % Defines common symbols like \mathbb R
 \usepackage{mathtools}          % Extends amsmath, providing common math tools
@@ -23,7 +19,6 @@
 \usepackage{float}
 \usepackage{acronym}
 
-% \usepackage{todonotes}
 \usepackage{wrapfig}
 \usepackage{pbox}
 \usepackage{array}
@@ -39,8 +34,6 @@
   allcolors=uoftblue
 }
 
-\input{aux/math_commands.tex}
-
 \usepackage{svg}
 
 \usepackage[many]{tcolorbox}
@@ -51,6 +44,17 @@
 \usepackage{thm-restate}
 
 \usepackage{uoftcolors}
+
+\usepackage[parfill]{parskip}
+
+\usepackage{epigraph}
+
+\usepackage{todonotes}
+
+\input{aux/math_commands.tex}
+\input{aux/acronyms}
+
+\newcommand{\forceindent}{\leavevmode{\parindent=1em\indent}}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{assumption}{Assumption}
@@ -87,20 +91,20 @@
 \newcommand{\sbcolive}[1]{{\color{sb9}#1}}
 \newcommand{\sbcteal}[1]{{\color{sb0}#1}}
 
+\setlength{\epigraphwidth}{0.66\textwidth}
 
 \AtBeginDocument{\def\sectionautorefname{Section}}%
 \AtBeginDocument{\def\subsectionautorefname{Subsection}}%
 
-\input{acronyms}
 
 % author data
-\author{Claas Voelcker}
+\author{Claas Alexander Voelcker}
 \title{Learning to model what matters -- Representations and world models for efficient reinforcement learning}
 \degree{Doctor of Philosophy}
 \department{Computer Science}
 \gradyear{2025}
 % reference database
-\addbibresource{main.bib}
+\addbibresource{grand_bib/grand_bib.bib}
 \begin{document}
   \frontmatter
     \maketitle

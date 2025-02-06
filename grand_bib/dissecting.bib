@@ -1,0 +1,880 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+% Classical RL
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@InProceedings{thrun1993issues,
+  author =       "Thrun, Sebastian and Schwartz, Anton",
+  title =        "Issues in Using Function Approximation for Reinforcement Learning",
+  booktitle =    "Proceedings of the 1993 Connectionist Models Summer School",
+  year =         "1993",
+  editor =    "Mozer, Michael and Smolensky, Paul and Touretzky, David and Elman, Jeffrey and Weigend, Andreas",
+  publisher = "Lawrence Erlbaum",
+  pages =     "255--263",
+  bib2html_rescat = "Function Approximation",
+}
+
+@book{sutton2018introduction,
+  added-at = {2019-07-13T10:11:53.000+0200},
+  author = {Sutton, Richard S. and Barto, Andrew G.},
+  edition = {Second},
+  interhash = {ac6b144aaec1819919a2fba9f705c852},
+  intrahash = {f46601cf8b13d39d1378af0d79438b12},
+  keywords = {},
+  publisher = {The MIT Press},
+  timestamp = {2019-07-13T10:11:53.000+0200},
+  title = {Reinforcement Learning: An Introduction},
+  year = {2018 }
+}
+@book{puterman1994markov,
+author = {Puterman, Martin L.},
+title = {Markov Decision Processes: Discrete Stochastic Dynamic Programming},
+year = {1994},
+isbn = {0471619779},
+publisher = {John Wiley \& Sons, Inc.},
+address = {USA},
+edition = {1st},
+}
+
+@article{pendrith1997estimator,
+author = {Pendrith, Mark and Ryan, Malcolm},
+year = {1997},
+title = {Estimator Variance in Reinforcement Learning: Theoretical Problems and Practical Solutions}
+}
+
+@inproceedings{precup2001off,
+author = {Precup, Doina and Sutton, Richard S. and Dasgupta, Sanjoy},
+title = {Off-Policy Temporal Difference Learning with Function Approximation},
+year = {2001},
+isbn = {1558607781},
+publisher = {Morgan Kaufmann Publishers Inc.},
+address = {San Francisco, CA, USA},
+booktitle = {Proceedings of the Eighteenth International Conference on Machine Learning},
+pages = {417–424},
+numpages = {8},
+series = {ICML '01}
+}
+
+@article{mannor2007bias,
+author = {Mannor, Shie and Simester, Duncan and Sun, Peng and Tsitsiklis, John N.},
+title = {Bias and Variance Approximation in Value Function Estimates},
+year = {2007},
+issue_date = {February 2007},
+publisher = {INFORMS},
+address = {Linthicum, MD, USA},
+volume = {53},
+number = {2},
+journal = {Manage. Sci.},
+month = {feb},
+pages = {308–322},
+numpages = {15},
+keywords = {variance, value function, confidence interval, bias}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Overestimation
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inproceedings{hasselt2010double,
+ author = {Hasselt, Hado van},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {J. Lafferty and C. Williams and J. Shawe-Taylor and R. Zemel and A. Culotta},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Double Q-learning},
+ volume = {23},
+ year = {2010}
+}
+
+@inproceedings{donghun2013bias,
+title = "Bias-corrected Q-learning to control max-operator bias in Q-learning",
+author = "Donghun Lee and Boris Defourny and Powell, {Warren Buckler}",
+year = "2013",
+doi = "10.1109/ADPRL.2013.6614994",
+language = "English (US)",
+isbn = "9781467359252",
+series = "IEEE Symposium on Adaptive Dynamic Programming and Reinforcement Learning, ADPRL",
+pages = "93--99",
+booktitle = "Proceedings of the 2013 IEEE Symposium on Adaptive Dynamic Programming and Reinforcement Learning, ADPRL 2013 - 2013 IEEE Symposium Series on Computational Intelligence, SSCI 2013",
+}
+
+@inproceedings{hasselt2016deep,
+author = {Hasselt, Hado van and Guez, Arthur and Silver, David},
+title = {Deep reinforcement learning with double Q-Learning},
+year = {2016},
+publisher = {AAAI Press},
+abstract = {The popular Q-learning algorithm is known to overestimate action values under certain conditions. It was not previously known whether, in practice, such overestimations are common, whether they harm performance, and whether they can generally be prevented. In this paper, we answer all these questions affirmatively. In particular, we first show that the recent DQN algorithm, which combines Q-learning with a deep neural network, suffers from substantial overestimations in some games in the Atari 2600 domain. We then show that the idea behind the Double Q-learning algorithm, which was introduced in a tabular setting, can be generalized to work with large-scale function approximation. We propose a specific adaptation to the DQN algorithm and show that the resulting algorithm not only reduces the observed overestimations, as hypothesized, but that this also leads to much better performance on several games.},
+booktitle = {Proceedings of the Thirtieth AAAI Conference on Artificial Intelligence},
+pages = {2094–2100},
+numpages = {7},
+location = {Phoenix, Arizona},
+series = {AAAI'16}
+}
+
+@inproceedings{fox2016taming,
+author = {Fox, Roy and Pakman, Ari and Tishby, Naftali},
+title = {Taming the noise in reinforcement learning via soft updates},
+year = {2016},
+isbn = {9780996643115},
+publisher = {AUAI Press},
+address = {Arlington, Virginia, USA},
+booktitle = {Proceedings of the Thirty-Second Conference on Uncertainty in Artificial Intelligence},
+pages = {202–211},
+numpages = {10},
+location = {Jersey City, New Jersey, USA},
+}
+
+
+@InProceedings{anschel2017averaged,
+  title = 	 {Averaged-{DQN}: Variance Reduction and Stabilization for Deep Reinforcement Learning},
+  author =       {Oron Anschel and Nir Baram and Nahum Shimkin},
+  booktitle = 	 {Proceedings of the 34th International Conference on Machine Learning},
+  pages = 	 {176--185},
+  year = 	 {2017},
+  editor = 	 {Precup, Doina and Teh, Yee Whye},
+  volume = 	 {70},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {06--11 Aug},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v70/anschel17a/anschel17a.pdf},
+  abstract = 	 {Instability and variability of Deep Reinforcement Learning (DRL) algorithms tend to adversely affect their performance. Averaged-DQN is a simple extension to the DQN algorithm, based on averaging previously learned Q-values estimates, which leads to a more stable training procedure and improved performance by reducing approximation error variance in the target values. To understand the effect of the algorithm, we examine the source of value function estimation errors and provide an analytical comparison within a simplified model. We further present experiments on the Arcade Learning Environment benchmark that demonstrate significantly improved stability and performance due to the proposed extension.}
+}
+
+@inproceedings{zongzhang2017weighted,
+  author    = {Zongzhang Zhang and Zhiyuan Pan and Mykel J. Kochenderfer},
+  title     = {Weighted Double Q-learning},
+  booktitle = {Proceedings of the Twenty-Sixth International Joint Conference on
+               Artificial Intelligence, {IJCAI-17}},
+  pages     = {3455--3461},
+  year      = {2017},
+  doi       = {10.24963/ijcai.2017/483},
+}
+
+@inproceedings{
+lan2020maxmin,
+title={Maxmin Q-learning: Controlling the Estimation Bias of Q-learning},
+author={Qingfeng Lan and Yangchen Pan and Alona Fyshe and Martha White},
+booktitle={International Conference on Learning Representations},
+year={2020},
+}
+
+
+@InProceedings{peer2021ensemble,
+  title = 	 {Ensemble Bootstrapping for Q-Learning},
+  author =       {Peer, Oren and Tessler, Chen and Merlis, Nadav and Meir, Ron},
+  booktitle = 	 {Proceedings of the 38th International Conference on Machine Learning},
+  pages = 	 {8454--8463},
+  year = 	 {2021},
+  editor = 	 {Meila, Marina and Zhang, Tong},
+  volume = 	 {139},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {18--24 Jul},
+  publisher =    {PMLR},
+}
+
+@inproceedings{
+liu2021regularization,
+title={Regularization Matters in Policy Optimization - An Empirical Study on Continuous Control},
+author={Zhuang Liu and Xuanlin Li and Bingyi Kang and Trevor Darrell},
+booktitle={International Conference on Learning Representations},
+year={2021},
+}
+
+
+@InProceedings{kuznetsov2020controlling,
+  title = 	 {Controlling Overestimation Bias with Truncated Mixture of Continuous Distributional Quantile Critics},
+  author =       {Kuznetsov, Arsenii and Shvechikov, Pavel and Grishin, Alexander and Vetrov, Dmitry},
+  booktitle = 	 {Proceedings of the 37th International Conference on Machine Learning},
+  pages = 	 {5556--5566},
+  year = 	 {2020},
+  editor = 	 {III, Hal Daumé and Singh, Aarti},
+  volume = 	 {119},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {13--18 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v119/kuznetsov20a/kuznetsov20a.pdf},
+}
+
+
+@inproceedings{nauman2024overestimation,
+    title={Overestimation, Overfitting, and Plasticity in Actor-Critic: the Bitter Lesson of Reinforcement Learning},
+    author={Michal Nauman and Micha{\l} Bortkiewicz and Piotr Mi{\l}o{\'s} and Tomasz Trzcinski and Mateusz Ostaszewski and Marek Cygan},
+    booktitle={Forty-first International Conference on Machine Learning},
+    year={2024},
+}
+
+@inproceedings{ball2023efficient,
+author = {Ball, Philip J. and Smith, Laura and Kostrikov, Ilya and Levine, Sergey},
+title = {Efficient online reinforcement learning with offline data},
+year = {2023},
+publisher = {JMLR.org},
+booktitle = {Proceedings of the 40th International Conference on Machine Learning},
+articleno = {67},
+numpages = {18},
+location = {, Honolulu, Hawaii, USA, },
+series = {ICML'23}
+}
+
+
+
+@inproceedings{tarasov2023rebrac,
+ author = {Tarasov, Denis and Kurenkov, Vladislav and Nikulin, Alexander and Kolesnikov, Sergey},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {A. Oh and T. Naumann and A. Globerson and K. Saenko and M. Hardt and S. Levine},
+ pages = {11592--11620},
+ publisher = {Curran Associates, Inc.},
+ title = {Revisiting the Minimalist Approach to Offline Reinforcement Learning},
+ volume = {36},
+ year = {2023}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% High UTD ratios
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inproceedings{fedus2020revisiting,
+author = {Fedus, William and Ramachandran, Prajit and Agarwal, Rishabh and Bengio, Yoshua and Larochelle, Hugo and Rowland, Mark and Dabney, Will},
+title = {Revisiting fundamentals of experience replay},
+year = {2020},
+publisher = {JMLR.org},
+booktitle = {Proceedings of the 37th International Conference on Machine Learning},
+articleno = {287},
+numpages = {11},
+series = {ICML'20}
+}
+
+@InProceedings{nikishin2022primacy,
+  title = 	 {The Primacy Bias in Deep Reinforcement Learning},
+  author =       {Nikishin, Evgenii and Schwarzer, Max and D'Oro, Pierluca and Bacon, Pierre-Luc and Courville, Aaron},
+  booktitle = 	 {Proceedings of the 39th International Conference on Machine Learning},
+  pages = 	 {16828--16847},
+  year = 	 {2022},
+  editor = 	 {Chaudhuri, Kamalika and Jegelka, Stefanie and Song, Le and Szepesvari, Csaba and Niu, Gang and Sabato, Sivan},
+  volume = 	 {162},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {17--23 Jul},
+  publisher =    {PMLR},
+}
+
+@inproceedings{doro2023barrier,
+title={Sample-Efficient Reinforcement Learning by Breaking the Replay Ratio Barrier},
+author={Pierluca D'Oro and Max Schwarzer and Evgenii Nikishin and Pierre-Luc Bacon and Marc G Bellemare and Aaron Courville},
+booktitle={The Eleventh International Conference on Learning Representations },
+year={2023},
+}
+
+@InProceedings{schwarzer2023bigger,
+  title = 	 {Bigger, Better, Faster: Human-level {A}tari with human-level efficiency},
+  author =       {Schwarzer, Max and Obando Ceron, Johan Samir and Courville, Aaron and Bellemare, Marc G and Agarwal, Rishabh and Castro, Pablo Samuel},
+  booktitle = 	 {Proceedings of the 40th International Conference on Machine Learning},
+  pages = 	 {30365--30380},
+  year = 	 {2023},
+  editor = 	 {Krause, Andreas and Brunskill, Emma and Cho, Kyunghyun and Engelhardt, Barbara and Sabato, Sivan and Scarlett, Jonathan},
+  volume = 	 {202},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {23--29 Jul},
+  publisher =    {PMLR},
+}
+
+@inproceedings{kim2023resetensemble,
+ author = {Kim, Woojun and Shin, Yongjae and Park, Jongeui and Sung, Youngchul},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {A. Oh and T. Neumann and A. Globerson and K. Saenko and M. Hardt and S. Levine},
+ pages = {53239--53260},
+ publisher = {Curran Associates, Inc.},
+ title = {Sample-Efficient and Safe Deep Reinforcement Learning via Reset Deep Ensemble Agents},
+ volume = {36},
+ year = {2023}
+}
+
+@inproceedings{
+agarwal2021deep,
+title={Deep Reinforcement Learning at the Edge of the Statistical Precipice},
+author={Rishabh Agarwal and Max Schwarzer and Pablo Samuel Castro and Aaron Courville and Marc G Bellemare},
+booktitle={Advances in Neural Information Processing Systems},
+editor={A. Beygelzimer and Y. Dauphin and P. Liang and J. Wortman Vaughan},
+year={2021},
+}
+
+@ARTICLE{wu2020reducing,
+  author={Wu, Dongming and Dong, Xingping and Shen, Jianbing and Hoi, Steven C. H.},
+  journal={IEEE Transactions on Neural Networks and Learning Systems}, 
+  title={Reducing Estimation Bias via Triplet-Average Deep Deterministic Policy Gradient}, 
+  year={2020},
+  volume={31},
+  number={11},
+  pages={4933-4945},
+  keywords={Estimation;Task analysis;Approximation algorithms;Function approximation;Games;Neural networks;Minimization;Averaging technology;deep reinforcement learning (DRL);estimation bias;triplet networks},
+  doi={10.1109/TNNLS.2019.2959129}}
+
+@INPROCEEDINGS{saglam2021estimation,
+  author={Saglam, Baturay and Duran, Enes and Cicek, Dogan C. and Mutlu, Furkan B. and Kozat, Suleyman S.},
+  booktitle={2021 IEEE 33rd International Conference on Tools with Artificial Intelligence (ICTAI)}, 
+  title={Estimation Error Correction in Deep Reinforcement Learning for Deterministic Actor-Critic Methods}, 
+  year={2021},
+  volume={},
+  number={},
+  pages={137-144},
+  keywords={Estimation error;Q-learning;Conferences;Learning (artificial intelligence);Function approximation;Task analysis;Deep reinforcement learning;deterministic actor-critic methods;estimation bias},
+  doi={10.1109/ICTAI52525.2021.00027}}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Q - Function Regularlization
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+@InProceedings{wang2020striving,
+  title = 	 {Striving for Simplicity and Performance in Off-Policy {DRL}: Output Normalization and Non-Uniform Sampling},
+  author =       {Wang, Che and Wu, Yanqiu and Vuong, Quan and Ross, Keith},
+  booktitle = 	 {Proceedings of the 37th International Conference on Machine Learning},
+  pages = 	 {10070--10080},
+  year = 	 {2020},
+  editor = 	 {III, Hal Daumé and Singh, Aarti},
+  volume = 	 {119},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {13--18 Jul},
+  publisher =    {PMLR},
+}
+
+@inproceedings{
+bjorck2022is,
+title={Is High Variance Unavoidable in {RL}? A Case Study in Continuous Control},
+author={Johan Bjorck and Carla P Gomes and Kilian Q Weinberger},
+booktitle={International Conference on Learning Representations},
+year={2022},
+}
+
+@inproceedings{chen2021randomized,
+  title={Randomized Ensembled Double Q-Learning: Learning Fast Without a Model},
+  author={Xinyue Chen and Che Wang and Zijian Zhou and Keith W. Ross},
+  booktitle={International Conference on Learning Representations},
+  year={2021},
+}
+
+@inproceedings{
+hiraoka2022dropout,
+title={Dropout Q-Functions for Doubly Efficient Reinforcement Learning},
+author={Takuya Hiraoka and Takahisa Imagawa and Taisei Hashimoto and Takashi Onishi and Yoshimasa Tsuruoka},
+booktitle={International Conference on Learning Representations},
+year={2022},
+}
+
+@article{farebrother2018generalization,
+  author       = {Jesse Farebrother and
+                  Marlos C. Machado and
+                  Michael Bowling},
+  title        = {Generalization and Regularization in {DQN}},
+  journal      = {CoRR},
+  volume       = {abs/1810.00123},
+  year         = {2018},
+  eprinttype    = {arXiv},
+  eprint       = {1810.00123},
+  timestamp    = {Tue, 30 Oct 2018 10:49:09 +0100},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{
+li2023efficient,
+title={Efficient Deep Reinforcement Learning Requires Regulating Overfitting},
+author={Qiyang Li and Aviral Kumar and Ilya Kostrikov and Sergey Levine},
+booktitle={The Eleventh International Conference on Learning Representations },
+year={2023},
+}
+
+
+@InProceedings{bellemare2017distributional,
+  title = 	 {A Distributional Perspective on Reinforcement Learning},
+  author =       {Marc G. Bellemare and Will Dabney and R{\'e}mi Munos},
+  booktitle = 	 {Proceedings of the 34th International Conference on Machine Learning},
+  pages = 	 {449--458},
+  year = 	 {2017},
+  editor = 	 {Precup, Doina and Teh, Yee Whye},
+  volume = 	 {70},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {06--11 Aug},
+  publisher =    {PMLR},
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Plasticity Deep RL
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inproceedings{
+kumar2021implicit,
+title={Implicit Under-Parameterization Inhibits Data-Efficient Deep Reinforcement Learning},
+author={Aviral Kumar and Rishabh Agarwal and Dibya Ghosh and Sergey Levine},
+booktitle={International Conference on Learning Representations},
+year={2021},
+}
+
+@InProceedings{lyle2023understanding,
+  title = 	 {Understanding Plasticity in Neural Networks},
+  author =       {Lyle, Clare and Zheng, Zeyu and Nikishin, Evgenii and Avila Pires, Bernardo and Pascanu, Razvan and Dabney, Will},
+  booktitle = 	 {Proceedings of the 40th International Conference on Machine Learning},
+  pages = 	 {23190--23211},
+  year = 	 {2023},
+  editor = 	 {Krause, Andreas and Brunskill, Emma and Cho, Kyunghyun and Engelhardt, Barbara and Sabato, Sivan and Scarlett, Jonathan},
+  volume = 	 {202},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {23--29 Jul},
+  publisher =    {PMLR},
+}
+
+@misc{abbas2023loss,
+      title={Loss of Plasticity in Continual Deep Reinforcement Learning}, 
+      author={Zaheer Abbas and Rosie Zhao and Joseph Modayil and Adam White and Marlos C. Machado},
+      year={2023},
+      eprint={2303.07507},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+@inproceedings{
+yang2020harnessing,
+title={Harnessing Structures for Value-Based Planning and Reinforcement Learning},
+author={Yuzhe Yang and Guo Zhang and Zhi Xu and Dina Katabi},
+booktitle={International Conference on Learning Representations},
+year={2020},
+}
+
+@inproceedings{
+igl2021transient,
+title={Transient Non-stationarity and Generalisation in Deep Reinforcement Learning},
+author={Maximilian Igl and Gregory Farquhar and Jelena Luketina and Wendelin Boehmer and Shimon Whiteson},
+booktitle={International Conference on Learning Representations},
+year={2021},
+}
+
+@inproceedings{sokar2023dormant,
+author = {Sokar, Ghada and Agarwal, Rishabh and Castro, Pablo Samuel and Evci, Utku},
+title = {The dormant neuron phenomenon in deep reinforcement learning},
+year = {2023},
+publisher = {JMLR.org},
+booktitle = {Proceedings of the 40th International Conference on Machine Learning},
+articleno = {1332},
+numpages = {24},
+location = {<conf-loc>, <city>Honolulu</city>, <state>Hawaii</state>, <country>USA</country>, </conf-loc>},
+series = {ICML'23}
+}
+
+@misc{lyle2024disentangling,
+      title={Disentangling the Causes of Plasticity Loss in Neural Networks}, 
+      author={Clare Lyle and Zeyu Zheng and Khimya Khetarpal and Hado van Hasselt and Razvan Pascanu and James Martens and Will Dabney},
+      year={2024},
+      eprint={2402.18762},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Actor Critic Methods
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inproceedings{lillicrap2016ddpg,
+  added-at = {2019-07-12T20:04:55.000+0200},
+  author = {Lillicrap, Timothy P. and Hunt, Jonathan J. and Pritzel, Alexander and Heess, Nicolas and Erez, Tom and Tassa, Yuval and Silver, David and Wierstra, Daan},
+  booktitle = {International Conference on Learning Representations},
+  editor = {Bengio, Yoshua and LeCun, Yann},
+  title = {Continuous control with deep reinforcement learning.},
+  year = 2016
+}
+
+@InProceedings{haarnoja2018sac,
+  title = 	 {Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor},
+  author =       {Haarnoja, Tuomas and Zhou, Aurick and Abbeel, Pieter and Levine, Sergey},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {1861--1870},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+}
+
+@InProceedings{fujimoto2018addressing,
+  title = 	 {Addressing Function Approximation Error in Actor-Critic Methods},
+  author =       {Fujimoto, Scott and van Hoof, Herke and Meger, David},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {1587--1596},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+}
+
+@InProceedings{leibfried2020mutual,
+  title = 	 {Mutual-Information Regularization in Markov Decision Processes and Actor-Critic Learning},
+  author =       {Leibfried, Felix and Grau-Moya, Jordi},
+  booktitle = 	 {Proceedings of the Conference on Robot Learning},
+  pages = 	 {360--373},
+  year = 	 {2020},
+  editor = 	 {Kaelbling, Leslie Pack and Kragic, Danica and Sugiura, Komei},
+  volume = 	 {100},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {30 Oct--01 Nov},
+  publisher =    {PMLR},
+}
+
+@inproceedings{kamil2019optimistic,
+ author = {Ciosek, Kamil and Vuong, Quan and Loftin, Robert and Hofmann, Katja},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {H. Wallach and H. Larochelle and A. Beygelzimer and F. d\textquotesingle Alch\'{e}-Buc and E. Fox and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Better Exploration with Optimistic Actor Critic},
+ volume = {32},
+ year = {2019}
+}
+
+@inproceedings{
+    bhatt2024crossq,
+    title={Cross$Q$: Batch Normalization in Deep Reinforcement Learning for Greater Sample Efficiency and Simplicity},
+    author={Aditya Bhatt and Daniel Palenicek and Boris Belousov and Max Argus and Artemij Amiranashvili and Thomas Brox and Jan Peters},
+    booktitle={The Twelfth International Conference on Learning Representations},
+    year={2024},
+}
+
+@inproceedings{janner2019mbpo,
+  author = {Michael Janner and Justin Fu and Marvin Zhang and Sergey Levine},
+  title = {When to Trust Your Model: Model-Based Policy Optimization},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year = {2019}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Offline RL
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inproceedings{pomerleau1988alvinn,
+ author = {Pomerleau, Dean A.},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {D. Touretzky},
+ pages = {},
+ publisher = {Morgan-Kaufmann},
+ title = {ALVINN: An Autonomous Land Vehicle in a Neural Network},
+ volume = {1},
+ year = {1988}
+}
+
+@inproceedings{atkeson1997robot,
+author = {Atkeson, Christopher G. and Schaal, Stefan},
+title = {Robot Learning From Demonstration},
+year = {1997},
+isbn = {1558604863},
+publisher = {Morgan Kaufmann Publishers Inc.},
+address = {San Francisco, CA, USA},
+booktitle = {Proceedings of the Fourteenth International Conference on Machine Learning},
+pages = {12–20},
+numpages = {9},
+series = {ICML '97}
+}
+
+@inproceedings{fujimoto2019bcq,
+  title={Off-Policy Deep Reinforcement Learning without Exploration},
+  author={Fujimoto, Scott and Meger, David and Precup, Doina},
+  booktitle={International Conference on Machine Learning},
+  pages={2052--2062},
+  year={2019}
+}
+
+@inproceedings{fujimoto2021td3bc,
+  title={A Minimalist Approach to Offline Reinforcement Learning},
+  author={Scott Fujimoto and Shixiang Gu},
+  booktitle={Advances in Neural Information Processing Systems},
+  editor={A. Beygelzimer and Y. Dauphin and P. Liang and J. Wortman Vaughan},
+  year={2021},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Model-based RL
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inproceedings{
+hansen2024tdmpc,
+title={{TD}-{MPC}2: Scalable, Robust World Models for Continuous Control},
+author={Nicklas Hansen and Hao Su and Xiaolong Wang},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Optimization, Standard Regularization
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@inbook{rumelhart1986learning,
+author = {Rumelhart, D. E. and Hinton, G. E. and Williams, R. J.},
+title = {Learning internal representations by error propagation},
+year = {1986},
+isbn = {026268053X},
+publisher = {MIT Press},
+address = {Cambridge, MA, USA},
+booktitle = {Parallel Distributed Processing: Explorations in the Microstructure of Cognition, Vol. 1: Foundations},
+pages = {318–362},
+numpages = {45}
+}
+
+@inproceedings{anderson1992qlearning,
+ author = {Anderson, Charles},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {S. Hanson and J. Cowan and C. Giles},
+ pages = {},
+ publisher = {Morgan-Kaufmann},
+ title = {Q-Learning with Hidden-Unit Restarting},
+ volume = {5},
+ year = {1992}
+}
+
+@inproceedings{nair2010rectified,
+  added-at = {2022-06-07T12:08:40.000+0200},
+  author = {Nair, Vinod and Hinton, Geoffrey E},
+  booktitle = {ICML 2010},
+  keywords = {},
+  pages = {807--814},
+  title = {Rectified linear units improve restricted boltzmann machines},
+  year = 2010
+}
+
+
+@InProceedings{sutskever2013on,
+  title = 	 {On the importance of initialization and momentum in deep learning},
+  author = 	 {Sutskever, Ilya and Martens, James and Dahl, George and Hinton, Geoffrey},
+  booktitle = 	 {Proceedings of the 30th International Conference on Machine Learning},
+  pages = 	 {1139--1147},
+  year = 	 {2013},
+  editor = 	 {Dasgupta, Sanjoy and McAllester, David},
+  volume = 	 {28},
+  number =       {3},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Atlanta, Georgia, USA},
+  month = 	 {17--19 Jun},
+  publisher =    {PMLR},
+}
+
+
+@InProceedings{glorot2011deep,
+  title = 	 {Deep Sparse Rectifier Neural Networks},
+  author = 	 {Glorot, Xavier and Bordes, Antoine and Bengio, Yoshua},
+  booktitle = 	 {Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {315--323},
+  year = 	 {2011},
+  editor = 	 {Gordon, Geoffrey and Dunson, David and Dudík, Miroslav},
+  volume = 	 {15},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Fort Lauderdale, FL, USA},
+  month = 	 {11--13 Apr},
+  publisher =    {PMLR},
+}
+
+
+@book{bishop2006pattern,
+author = {Bishop, Christopher M.},
+title = {Pattern Recognition and Machine Learning (Information Science and Statistics)},
+year = {2006},
+isbn = {0387310738},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg}
+}
+
+@inproceedings{krogh1991simple,
+ author = {Krogh, Anders and Hertz, John},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {J. Moody and S. Hanson and R.P. Lippmann},
+ pages = {},
+ publisher = {Morgan-Kaufmann},
+ title = {A Simple Weight Decay Can Improve Generalization},
+ volume = {4},
+ year = {1991}
+}
+
+@misc{ba2016layer,
+      title={Layer Normalization}, 
+      author={Jimmy Lei Ba and Jamie Ryan Kiros and Geoffrey E. Hinton},
+      year={2016},
+      eprint={1607.06450},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML}
+}
+
+@inproceedings{xu2019understanding,
+ author = {Xu, Jingjing and Sun, Xu and Zhang, Zhiyuan and Zhao, Guangxiang and Lin, Junyang},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {H. Wallach and H. Larochelle and A. Beygelzimer and F. d\textquotesingle Alch\'{e}-Buc and E. Fox and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Understanding and Improving Layer Normalization},
+ volume = {32},
+ year = {2019}
+}
+
+@InProceedings{kingma2015adam,
+  author    = {Kingma, Diederik and Ba, Jimmy},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  title     = {Adam: A Method for Stochastic Optimization},
+  year      = {2015},
+  address   = {San Diega, CA, USA},
+  optmonth  = {12},
+}
+
+@article{srivastava14dropout,
+  author  = {Nitish Srivastava and Geoffrey Hinton and Alex Krizhevsky and Ilya Sutskever and Ruslan Salakhutdinov},
+  title   = {Dropout: A Simple Way to Prevent Neural Networks from Overfitting},
+  journal = {Journal of Machine Learning Research},
+  year    = {2014},
+  volume  = {15},
+  number  = {56},
+  pages   = {1929--1958},
+}
+
+@article{polyak1992acceleration,
+author = {Polyak, B. T. and Juditsky, A. B.},
+title = {Acceleration of Stochastic Approximation by Averaging},
+journal = {SIAM Journal on Control and Optimization},
+volume = {30},
+number = {4},
+pages = {838-855},
+year = {1992},
+doi = {10.1137/0330046},
+}
+
+@article{robbins1951stochastic,
+author = {Herbert Robbins and Sutton Monro},
+title = {{A Stochastic Approximation Method}},
+volume = {22},
+journal = {The Annals of Mathematical Statistics},
+number = {3},
+publisher = {Institute of Mathematical Statistics},
+pages = {400 -- 407},
+year = {1951},
+doi = {10.1214/aoms/1177729586},
+}
+
+@inproceedings{zhang2019root,
+    address = "Vancouver, Canada",
+    author = "Zhang, Biao and Sennrich, Rico",
+    booktitle = "Advances in Neural Information Processing Systems 32",
+    title = "{Root Mean Square Layer Normalization}",
+    year = "2019"
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Software
+%%%%%%%%%%%%%%%%%%%%%%%
+
+@article{tunyasuvunakool2020dmcontrol,
+         title = {dm\_control: Software and tasks for continuous control},
+         journal = {Software Impacts},
+         volume = {6},
+         pages = {100022},
+         year = {2020},
+         issn = {2665-9638},
+         doi = {https://doi.org/10.1016/j.simpa.2020.100022},
+         author = {Saran Tunyasuvunakool and Alistair Muldal and Yotam Doron and
+                   Siqi Liu and Steven Bohez and Josh Merel and Tom Erez and
+                   Timothy Lillicrap and Nicolas Heess and Yuval Tassa},
+}
+
+@inproceedings{
+asadi2023resetting,
+title={Resetting the Optimizer in Deep {RL}: An Empirical Study},
+author={Kavosh Asadi and Rasool Fakoor and Shoham Sabach},
+booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+year={2023},
+}
+
+@incollection{mnih2013playing,
+  title = {Playing Atari With Deep Reinforcement Learning},
+  author = {Volodymyr Mnih and Koray Kavukcuoglu and David Silver and Alex Graves and Ioannis Antonoglou and Daan Wierstra and Martin Riedmiller},
+  booktitle = {NeurIPS Deep Learning Workshop},
+  year = {2013}
+}
+
+@inproceedings{schaul2022phenomenon,
+ author = {Schaul, Tom and Barreto, Andre and Quan, John and Ostrovski, Georg},
+ booktitle = {Advances in Neural Information Processing Systems},
+ title = {The Phenomenon of Policy Churn},
+ year = {2022}
+}
+
+
+@inproceedings{lee2021sunrise,
+  title={Sunrise: A simple unified framework for ensemble learning in deep reinforcement learning},
+  author={Lee, Kimin and Laskin, Michael and Srinivas, Aravind and Abbeel, Pieter},
+  booktitle={International Conference on Machine Learning},
+  year={2021},
+  organization={PMLR}
+}
+
+@inproceedings{chen2020randomized,
+  title={Randomized Ensembled Double Q-Learning: Learning Fast Without a Model},
+  author={Chen, Xinyue and Wang, Che and Zhou, Zijian and Ross, Keith W},
+  booktitle={International Conference on Learning Representations},
+  year={2020}
+}
+@inproceedings{lyle2021understanding,
+  title={Understanding and Preventing Capacity Loss in Reinforcement Learning},
+  author={Lyle, Clare and Rowland, Mark and Dabney, Will},
+  booktitle={International Conference on Learning Representations},
+  year={2021}
+}
+
+@article{nikishin2024deep,
+  title={Deep reinforcement learning with plasticity injection},
+  author={Nikishin, Evgenii and Oh, Junhyuk and Ostrovski, Georg and Lyle, Clare and Pascanu, Razvan and Dabney, Will and Barreto, Andr{\'e}},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
+}
+
+@inproceedings{
+laidlaw2023bridging,
+title={Bridging {RL} Theory and Practice with the Effective Horizon},
+author={Cassidy Laidlaw and Stuart Russell and Anca Dragan},
+booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+year={2023},
+}
+
+@inproceedings{clevert2016accurate,
+  author = {Clevert, Djork-Arné and Unterthiner, Thomas and Hochreiter, Sepp},
+  booktitle = {International Conference on Learning Representations},
+  editor = {Bengio, Yoshua and LeCun, Yann},
+  title = {Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs).},
+  year = 2016
+}
+
+@article{dabney2014adaptive,
+  title={Adaptive step-sizes for reinforcement learning},
+  author={Dabney, William C},
+  year={2014}
+}
+
+@inproceedings{farahmand2021pid,
+  title={PID accelerated value iteration algorithm},
+  author={Farahmand, Amir-massoud and Ghavamzadeh, Mohammad},
+  booktitle={International Conference on Machine Learning},
+  year={2021},
+  organization={PMLR}
+}
+
+
+
+@InProceedings{vieillard2020momentum,
+  title = 	 {Momentum in Reinforcement Learning},
+  author =       {Vieillard, Nino and Scherrer, Bruno and Pietquin, Olivier and Geist, Matthieu},
+  booktitle = 	 {International Conference on Artificial Intelligence and Statistics},
+  year = 	 {2020},
+}
+
+@article{moskovitz2021tactical,
+  title={Tactical optimism and pessimism for deep reinforcement learning},
+  author={Moskovitz, Ted and Parker-Holder, Jack and Pacchiano, Aldo and Arbel, Michael and Jordan, Michael},
+  journal={Advances in Neural Information Processing Systems},
+  year={2021}
+}
+

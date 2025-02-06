@@ -1,6 +1,5 @@
 \chapter{Instability of value function learning}
-
-\section{Introduction} \label{sec:intro}
+\label{chap:overestimation}
 
 To improve sample efficiency, contemporary work in off-policy deep reinforcement learning (RL) has begun increasing the number of gradient updates per collected environment step~\parencite{janner2019mbpo,fedus2020revisiting,chen2021randomized, hiraoka2022dropout, nikishin2022primacy, doro2023barrier, schwarzer2023bigger, kim2023resetensemble}.  
 As this update-to-data (UTD) ratio increases, various novel challenges arise.
@@ -67,7 +66,6 @@ Lastly, we isolate more independent failure modes, giving pointers towards their
         \includegraphics[width=3.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/priming_base_exp_avg_sq.pdf}
         \label{subfig:priming_base_mom}
     \end{subfigure}%
-    \vspace{-5pt}
     \caption{Return, in-distribution Q-values and Adam optimizer moments during priming for different lengths. Dotted lines correspond to end of priming. More priming leads to lower return and larger Q-value and optimizer divergence.}
     % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:priming_base}
@@ -115,7 +113,6 @@ After priming, there exist two cases: 1) either the Q-values need to be unlearne
         \includegraphics[width=4.8cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/priming_causes_Q.pdf}
         \label{subfig:priming_causes_Q}
     \end{subfigure}%
-    \vspace{-5pt}
     \caption{Priming with SAC and action regularization during priming. The latter lowers divergence. }
     \label{fig:priming_causes}
 \end{minipage}
@@ -137,12 +134,10 @@ After priming, there exist two cases: 1) either the Q-values need to be unlearne
         \includegraphics[width=4.8cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/priming_ablations_Q.pdf}
         \label{subfig:priming_abl_Q}
     \end{subfigure}%
-    \vspace{-18pt}
     \caption{Return and
     Q-values of priming runs with weight decay and dropout. Results indicate that both regularizations mitigate priming to some extent but not sufficiently. }
     \label{fig:priming_abl}
 \end{minipage}
-    \vspace{-5pt}
 \end{figure}
 
 % A well-known phenomenon that was already identified in the early stages of reinforcement learning research is that trying to find a value function via function approximation can quickly lead to overestimates of said values~\textcite{thrun1993issues}. This overestimation of the value function remains a challenge even for modern algorithms like SAC, due to the hurdles that emerge with what is often referred to as the \emph{deadly triad}: function approximation, reliance on bootstrap updates and off-policy data in the form of replay buffers. While this would naively suggest that these algorithms cannot work, empirical evidence strongly suggest that these algorithms are not impacted by the deadly triad to such an extent as to prevent good performance. 
@@ -191,9 +186,6 @@ Still, the results imply that it is in fact possible to overcome the divergence 
 One question that remains is whether we can find these divergence effects outside of the priming setup. We find that, while priming is an artificially constructed worst case, similar phenomena happen in regular training on standard benchmarks when increasing update ratios (see Figure~\ref{fig:humanoid_failure}). Further, the divergence is not limited to early stages of training as it happens at arbitrary points in time.
 We therefore conjecture that divergence is not a function of 
 \begin{wrapfigure}{r}{0.54\textwidth}
-\vspace{-5pt}
-%\vspace{-57pt} % enable this one to pull the figure up into the empty space above
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
   \begin{minipage}{\linewidth}
     \centering\captionsetup[subfigure]{justification=centering}
     \includegraphics[width=4cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/humanoid_Q.pdf}\vspace{-8pt}
@@ -201,7 +193,6 @@ We therefore conjecture that divergence is not a function of
     \caption{In-distribution Q-values and critic loss of five SAC seeds on the humanoid-run task using $\mathrm{UTD}=32$. Values diverge at arbitrary time-points, not only during the beginning. Loss mirrors Q-value divergence.}
     \label{fig:humanoid_failure}
   \end{minipage}
-  \vspace{-15pt}
 \end{wrapfigure}
 amount of experience but rather one of state-action space coverage. Note that the reported Q-values have been measured on the observed training data, not on any out-of-distribution state-action pairs. 
 The respective critic losses become very large. All this points toward a failure to fit Q-values. This behavior does not align with our common understanding of overfitting~\parencite{bishop2006pattern},  challenging the hypothesis that high-UTD learning fails merely due to large validation error~\parencite{li2023efficient}.
@@ -223,15 +214,14 @@ Regularization techniques such as those in Section~\ref{sec:regularization} can 
     \begin{subfigure}[b]{0.5\textwidth}
         \centering
         %\setlength{\fboxsep}{0pt}\fbox{
-        \includegraphics[width=4.8cm,clip,trim=1cm 1cm 1cm 1cm]{figures/dissecting/priming/priming_norm_return.pdf}
+        \includegraphics[width=4.8cm]{figures/dissecting/priming/priming_norm_return.pdf}
         \label{subfig:priming_norm_ret}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \centering
-        \includegraphics[width=4.8cm,clip,trim=1cm 1cm 1cm 1cm]{figures/dissecting/priming/priming_norm_Q.pdf}
+        \includegraphics[width=4.8cm]{figures/dissecting/priming/priming_norm_Q.pdf}
         \label{subfig:priming_norm_Q}
     \end{subfigure}%
-    \vspace{-20pt}
     \caption{(Left) Return and (Right) Q-values comparing SGD result and OFN when priming for 100K steps. OFN obtains returns close to that of the well-trained SGD agent and learns an appropriate Q-value scale correctly.}
     \label{fig:priming_norm}
 \end{minipage}
@@ -240,20 +230,17 @@ Regularization techniques such as those in Section~\ref{sec:regularization} can 
 % \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{\textwidth}
-        \hspace{15pt}
         \centering
         \includegraphics[height=0.8cm]{figures/dissecting/priming/weight_magnitudes_legend.pdf}
     \end{subfigure}
     \\%
     \begin{subfigure}[b]{\textwidth}
         \centering
-        \includegraphics[width=4.6cm,clip,trim=1cm 1cm 1cm 1cm]{figures/dissecting/priming/weight_magnitudes.pdf}
+        \includegraphics[width=4.6cm]{figures/dissecting/priming/weight_magnitudes.pdf}
     \end{subfigure}%
-    \vspace{-4.5pt}
     \caption{$L_2$ norm of network weights per layer after priming for default and OFN  architectures. OFN leads to smaller weights and significant mass in the last layer.}
     \label{fig:weight_norm}
 \end{minipage}
-\vspace{-5pt}
 \end{figure}
 
 As discussed previously, the prediction of an unknown action might trigger the propagation of a large, harmful gradient. Further, the Q-values of our network ought to grow over time as they more closely approximate those of a good policy. If we predict incorrectly on one of these Q-values, a potentially very large loss is propagated. Gradients are magnified by multiplicative backpropagation via ReLU activations~\parencite{glorot2011deep} as well as momentum from Adam~\parencite{kingma2015adam}. Note that all resulting issues arise in the early network layers. 
@@ -303,9 +290,8 @@ To understand the efficacy of output normalization on real environments under hi
     \begin{subfigure}[b]{\textwidth}
         \centering
         %\setlength{\fboxsep}{0pt}\fbox{
-        \includegraphics[width=10.2cm,clip,trim=0.3cm 0 0.3cm 0cm]{figures/dissecting/main_exp/all_aggregate_scores.pdf}
+        \includegraphics[width=10.2cm]{figures/dissecting/main_exp/all_aggregate_scores.pdf}
         %}
-        %\vspace{-1em}
     \end{subfigure}%
     %\vspace{-.8em}
     \caption{Mean, interquartile mean (IQM), and median with $95\%$ bootstrapped confidence intervals of standard SAC and OFN on the DMC15-500k Suite. OFN can maintain high performance even under large UTD. OFN with $\mathrm{UTD} = 8$ achieves comparable performance to standard resetting with $\mathrm{UTD} = 32$ across metrics.}
@@ -327,7 +313,7 @@ To understand the efficacy of output normalization on real environments under hi
     \begin{subfigure}[b]{\textwidth}
         \centering
         %\setlength{\fboxsep}{0pt}\fbox{
-        \includegraphics[width=4.25cm,clip,trim=0.3cm 0 0 0]{figures/dissecting/main_exp/hopper_hop_wl.pdf}
+        \includegraphics[width=4.25cm]{figures/dissecting/main_exp/hopper_hop_wl.pdf}
          %}
         %\vspace{10pt}
         %\vspace{-1em}
@@ -336,7 +322,6 @@ To understand the efficacy of output normalization on real environments under hi
     \caption{Mean return of single-critic OFN, standard OFN and resetting; $\mathrm{UTD}=32$ on hopper-hop. Shaded regions are standard error.}
     \label{fig:hopper_hop}
 \end{minipage}
-\vspace{-5pt}
 \end{figure}
 
 % \begin{figure}[t!]
@@ -459,36 +444,30 @@ Most likely, there is a difficult trade-off between optimization stability and e
         \centering
         \includegraphics[height=0.4cm]{figures/dissecting/dog_exp/dog_legend.pdf}
     \end{subfigure}\\%
-    \hspace{-20pt}
     \begin{subfigure}[t]{0.25\textwidth}
         \centering
-        \includegraphics[width=4.cm, trim=0.4 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-stand.pdf}
+        % \includegraphics[width=4.cm, trim=0.4 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-stand.pdf}
         \label{subfig:dog_stand}
-        \vspace{-12pt}
         % \caption{Dog Stand}
     \end{subfigure}%
-    \hspace{5pt}
     \begin{subfigure}[t]{0.25\textwidth}
         \centering
-        \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-walk.pdf}
+        % \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-walk.pdf}
         \label{subfig:dog_walk}
         % \caption{Dog Walk}
     \end{subfigure}%
-    \hspace{-5pt}
     \begin{subfigure}[t]{0.25\textwidth}
     \centering
-        \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-trot.pdf}
+        % \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-trot.pdf}
         \label{subfig:dog_trot}
         % \caption{Dog Trot}
     \end{subfigure}%
-    \hspace{-5pt}
     \begin{subfigure}[t]{0.25\textwidth}
         \centering
-        \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-run.pdf}
+        % \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-run.pdf}
         \label{subfig:dog_run}
         % \caption{RGRDog Run}
     \end{subfigure}%
-    \hspace{-20pt}
     % \vspace{-5pt}
     \caption{Mean return on the dog DMC tasks, comparing OFN to SAC with resets and the model-based TD-MPC2. Shaded regions indicate standard error. OFN outperforms SAC with resets, which is unable to learn and OFN with $\mathrm{UTD}=8$ and resetting is competitive with TD-MPC2.}
     \label{fig:all_dog}

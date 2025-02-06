@@ -1,4 +1,5 @@
 \chapter{Stabilizing value function learning with model-generated data}
+\label{chap:mad-td}
 
 \newcommand{\blue}[1]{{\color{uoftoceanblue} #1}}
 \newcommand{\red}[1]{{\color{uoftred} #1}}
@@ -73,7 +74,6 @@ We provide a visualization of this issue in~\autoref{ill:coverage}.
 
 \begin{figure}[t]
 \begin{minipage}{0.6\textwidth}
-\vspace{-1em}
     \includegraphics[width=\textwidth]{illustrations/mad-td/rl_sequences.drawio.pdf}
 \end{minipage}
 ~
@@ -81,7 +81,6 @@ We provide a visualization of this issue in~\autoref{ill:coverage}.
     \caption{A visualization of the core issue we investigate. Even if a replay buffer contains good coverage for two policies ($\pi_\mathrm{old}$ and $\pi_\mathrm{new}$) starting from $\rho=x_0$, this does not guarantee that it contains a transition for executing an action under the new policy on a state visited under the old. However, this state-action pair's value estimate is used to update the value of state $x_0$ via \autoref{eq:off_policy_q_update}, without being grounded in an observed transition.}
     \label{ill:coverage}
 \end{minipage}
-\vspace{-3em}
 \end{figure}
     
 
@@ -298,7 +297,6 @@ We also observe that the initial Q overestimation disappears, which is consisten
 This provides evidence that we are indeed able to overcome the unseen action challenge.
 
 \begin{wrapfigure}{r}{0.5\textwidth}
-     \vspace{-1em}
     \centering
     \includegraphics[width=0.5\textwidth]{figures/mad-td/critic_loss_dog_walk_model_based_separate.pdf}
     \caption{Average loss values with and without the model generated data (compare \autoref{fig:q_eval}) at UTD 1.}
@@ -347,15 +345,11 @@ Our work of course does not preclude the existence of phenomena such as loss of 
     %\vspace{-1em}
     \centering
     \includegraphics[width=0.26\textwidth]{figures/mad-td/average_regret_all_envs.pdf}
-    \vspace{-2em}
-    \vspace{8pt}
     \caption{Average regret ($\downarrow$), mean over the hard suite. Lower regret corresponds to faster, more stable training. \sbcblue{MAD-TD} outperforms \sbcorange{BRO}.}
     \label{fig:regret}    
-    \vspace{-2em}
 \end{wrapfigure}
 %Our work of course does not preclude the existence of phenomena such as loss of stability in different environments, architectures, or training setups. More discussion on this can be found in \autoref{app:related_work}.
 
-\vspace{-0.75em}
 \textbf{Continued training:}~~~To highlight the pitfalls of resets, we employ a common RL theory metric the per timestep average regret
 \begin{equation*}
     \overline{\text{Reg}}(T) = \frac{1}{T} \sum\nolimits_{t=0}^{T-1} \left(\mathcal{R}^* - \mathcal{R}_t\right) \enspace,
