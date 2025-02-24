@@ -2,86 +2,102 @@
 
 Agents that act autonomously and intelligently in a complex world are in many ways the ultimate goal of AI research.
 An industrial robot in a highly controlled environment, such as a car assembly line, can be programmed to behave reliably and safely by human engineers.
-However, if we want robots to assist us in the real world outside of such controlled circumstances, we need to endow them with the ability to test out new behaviors and learn from their environment.
-This goal has been pursued perhaps most comprehensively under the banner of \emph{reinforcement learning}.
-Reinforcement learning can be seen as three joint projects, paraphrasing \textcite{suttonbook},
-\begin{enumerate}
-	\item a philosophy, inspired by psychology and neuroscience, about how intelligence emerges from rational actors maximizing reward,
-	\item a mathematical formalism and canonical problem that models this notion of intelligence, reward maximization in a Markov Decision Process,
-	\item a set of algorithms that find ways to maximize reward in a Markov Decision Process and related formalisms.
-\end{enumerate}
-This thesis is written in pursuit of the third goal, algorithms
+However, if we want robots to assist us in the real world outside of such controlled circumstances, we need to endow them with the ability to test out new behaviors and learn from their surroundings.
+This goal has been pursued most comprehensively under the banner of \emph{reinforcement learning} \parencite{suttonbook}, in which an agent learns by sequentially interacting with an environment and receiving a scalar reward.
 
-When building algorithms to act in unknown environments, we need to account for the vast amounts of information to process.
-In order to make decisions, agents need to learn about the structure of the environment, the consequences of their actions, and the rewards associated with different actions.
+When building algorithms to act in unknown environments, one core challenge is to model the surroundings of the agent efficiently \parencite{}.
+The industrial robot can be tightly controlled and we can pre-specify what it will encounter in its limited environment and how to react to it.
+But an autonomous agent needs to be able to perceive all of its surroundings and decide what information is necessary for its task.
+In order to make decisions, such agents therefore need to filter and process their sensory input and learn about the structure of the environment, the consequences of their actions, and the rewards associated with different actions.
 
-In supervised learning, neural networks have shown a remarkable ability to extract relevant information automatically from raw data, such as images or text, to solve complex tasks \parencite{lecun2015deep}.
-However, in reinforcement learning, where an agent needs to learn how to act in an environment through trial and error, this task has proven to be more difficult.
-As the agent explores the environment gradually, it is not easy to distinguish from the start what information is relevant for the decision making task and what is not.
-Failing to do so often leads to agents getting stuck in suboptimal policies, overfitting to irrelevant aspects of the environemnt, or failing to learn anything as they lack the computational capacity to model the world.
-Hence, in practice, reinforcement learning algorithms do not yet fulfill their promise of efficient and reliable learning in wide, complex environments such as the real world.
+In supervised learning, neural networks have shown a remarkable ability to extract relevant information automatically from raw data, such as images or text, to solve complex tasks \parencite{goodfellow2016deep}.
+However, in reinforcement learning, where an agent needs to learn how to act in an environment through trial and error, this task has proven to be more difficult \parencite{jaderberg2017reinforcement,igl2021transient,lyle2021effect,kumar2021implicit,nikishin2022primacy,hussing2024dissecting}.
+As the agent explores the environment gradually, it is not easy to distinguish from the start what information is relevant for the decision making task and what is not \parencite{igl2021transient,voelcker2022value}.
+Failing to do so often leads to agents getting stuck in suboptimal policies \parencite{kumar2021implicit}, overfitting to irrelevant aspects of the environment \parencite{song2020observational}, or failing to learn anything as they lack the computational capacity to model the world \parencite{kumar2021implicit,nikishin2022primacy}.
+Hence, reinforcement learning algorithms do not yet fulfill their promise of efficient and reliable learning in wide, complex environments, let alone the real world.
 
 
 \section{Problem statement}
-
-This thesis tackles several interlinked question with the goal of achieving \emph{stable} and \emph{efficient} reinforcement learning.
-Instead of relying on useful information representations to emerge solely from end-to-end learning, this thesis investigates how to explicitly encode \emph{decision awareness} in the learning pipeline of autonomous agents to stabilize their learning and increase efficiency.
-It focusses on model-based value function learning, as this paradigm simultaneously promises to be highly efficient, yet suffers greatly from instability in practice.
-Therefore, we analyze the theoretical and empirical problems with model-based value function learning and develop algorithms that counteract these problems.
+In this thesis we will investigate how to build algorithms which can learn to model complex environments.
+Our main focus will be on how we can represent the information of the environment in a way that is useful for value estimation.
+To achieve this, we will take a close look at two concepts which turn out to be intimately related: implicit representations in the form of features learned by neural networks during training, and explicit representations in the form of world models which predict the behavior of the environment.
+Neural network representation are learned functions which map the sensory input of an agent, such as a camera feed or low-level joint information of a robot, to a vector that is useful for reinforcement learning \parencite{ferns2004metrics,jaderberg2017reinforcement,abel2020thesis,le2021metrics}.
+A world model allows an agent to predict how its actions impact the environment, and therefore it can be used to improve value estimation or for planning \parencite{dyna,mbpo,hafner2020dream,schrittwieser2020mastering}. 
+As we will see, learning world models provides an excellent way to obtain good feature representations as well.
 
 \subsection{The problem of unstable value function learning}
 
-Learning a value function is a central idea in reinforcement learning.
-The value function effectively summarizes the expected future return of executing a policy in a state.
-It can be used to judge the value of taking an action, to compare and improve policies, and to guide exploration.
-Given its broad usefulness, a lot of effort in recent years has been devoted to obtain good value function learning algorithms, especially using deep neural networks \parencite{dqn,hasselt2010double,hasselt2016deep,td3,sac,}.
-However, \emph{stable} and \emph{efficient} value learning in online scenarios remains an important problem, as many recent works show persistent problems with existing learning algorithms \parencite{kumar2021implicit,nikishin2022primacy,hussing2024dissecting}.
+To understand why representation learning and world models can help us, we first need to uncover the problems (deep) reinforcement learning faces in more detail.
+In this thesis, we will focus primarily on the stability of value function learning.
+The value function is a central concept in reinforcement learning.
+Intuitively, it summarizes the expected future return of executing a policy in a state.
+Of course, we will establish a proper formal definition in the next chapter.
+Value functions can be used to judge the impact of taking an action, to compare and improve policies, and to guide exploration.
+Given their broad usefulness, a lot of effort has been devoted to obtain good value function learning algorithms, especially using deep neural networks \parencite{mnih2013playing,hasselt2010double,hasselt2016deep,fujimoto2018addressing,haarnoja2018sac}.
+However, stable and efficient value learning in online scenarios with function approximation remains an important unsolved problem, and many recent works show persistent problems with existing learning algorithms \parencite{kumar2021implicit,nikishin2022primacy,hussing2024dissecting}.
 
-One central issue with learning value functions stems from the problem of reliably extracting useful information from the interaction data.
-\emph{Decision awareness} describes the idea that the learning algorithms for complex decision making pipelines should account for the final decision task that the pipeline is being used for \parencite{vaml,grimm2020value,abachi2020policy,nikishin2021control}.
-% In the context of this thesis, the decision making task is reinforcement learning (RL), in which an agent aims to obtain a reward through repeated interaction with an environment.
-Existing Reinforcement Learning pipelines contain many components, such as predictive models of the environment \parencite{dyna,mbpo,hafner2019learning,hafner2020dream,schrittwieser2020mastering} or representation functions that map observations into space in which computation is more tractable \parencite{ferns2004metrics,le2021metrics}.
-In many cases, these components are trained in a general purpose way using objectives such as maximum likelihood estimation, but this can be inefficient or suboptimal, as computational resources are for example wasted on learning irrelevant aspects of the decision making task.
+It is important to note that there is no one single reason for the difficulty of value function learning.
+As \textcite{suttonbook} famously states ``the danger of instability and divergence arises whenever we combine all of the following three elements, making up what we call the deadly triad: function approximation [...], bootstrapping [...], off-policy training''.
+Most Deep Reinforcement Learning combines all of these elements, and dealing with the deadly triad is therefore a common challenge for many works.
 
-Experimental evidence highlights that while \emph{decision aware} algorithms promise to be more resource efficient, training with \emph{general purpose} methods, for example fitting a world model with a maximum likelihood objective, turns out to be more stable in practice \parencite{vagram}.
-One of the core challenges is that decision aware algorithms need to continually adapt to the decision task as more information becomes available, while \emph{general purpose} methods only have one training objective throughout the learning process.
-Especially in the beginning of training, the available information about the decision task is limited, which can lead to instability or suboptimal convergence of the learning algorithm.
+\subsection{Tackling instability with decision-awareness and general-purpose learning}
 
-To address these challenges, I put forward the following thesis.
+However, this does not mean that we cannot tackle the specific issues that contribute to the overall issue of instability, understand them and mitigate them to achieve strong improvements in our algorithms. 
+As outlines, one central issue with learning value functions stems from the problem of reliably extracting and representing useful information from interaction data \parencite{song2020observational,voelcker2022value}.
+To improve this, we will investigate how to compare, and subsequently combine, \emph{decision-aware} algorithms, approaches that learn tailored representations and world models for the decision-making task and agent is attempting, with \emph{general-purpose} algorithms, approaches that simply attempt to generate representations and models which can be used for any downstream task.
+
+\emph{Decision-awareness} describes the idea that the components of a learning approach for decision making, such as representations and models, should account for the final decision task \parencite{vaml,grimm2020value,abachi2020policy,nikishin2021control}.
+With this understanding, we can also group most model-free value learning approaches such as DQN \parencite{mnih2013playing} or TD3 \parencite{fujimoto2018addressing} under the umbrella of decision-aware methods.
+
+In many cases, representations and world models can also be trained in a \emph{general-purpose} way using objectives such as maximum likelihood estimation
+However this can be inefficient or suboptimal, as computational resources are wasted on learning irrelevant aspects of the decision-making task \parencite{vaml}.
+Instead, a decision-aware algorithms will account for the decision making task and e.g. put more emphasis on certain parts of the observation space, such as a traffic light, instead of others, such as clouds moving in the background of a video feed.
+
+While this brief introduction seems to suggests that we should always use decision-aware approaches, experimental evidence complicates this.
+Even though decision-aware algorithms promise to be more resource efficient, training with general-purpose methods, for example fitting a world model with a maximum likelihood objective, turns out to be more stable in practice \parencite{lovatto2020decision,voelcker2022value}.
+Decision-aware algorithms need to continually adapt to the decision task as more information becomes available, while general purpose methods only have a single, stable training objective throughout the learning process.
+Especially in the beginning of training when available information about the decision task is limited, this can lead to instability or suboptimal convergence of the learning algorithm.
+
+Addressing this challenge is the goal of this thesis.
+To this end, I propose the following hypothesis which will guide us to the rest of the work.
 
 \begin{quote}
-	To solve the persistent issues of \emph{instability} and \emph{inefficiency} of value function learning and to achieve \emph{decision-aware} learning, an agent needs to combine its currently available information on the decision task with general purpose learning mechanisms.
+	To solve the persistent issues of \emph{instability} and \emph{inefficiency} of value function learning and to successfully leverage \emph{decision-aware} learning, an agent needs to effectively combine available information on the decision task with general purpose learning mechanisms.
 \end{quote}
 
 Achieving this goal requires us to understand how we can build strong algorithms that use the best of both decision-aware and general purpose approaches.
-This thesis presents the insights into how such algorithms can be build that were obtained during my PhD studies, based on theoretical analysis and experimental evidence.
+We will discuss how such algorithms can be built, based on theoretical analysis and experimental evidence.
 
 \subsection{Thesis structure}
 
 Before diving into the solutions to the problem outlined above, \autoref{chap:background} presents a thorough overview of important definitions and algorithms in the field of reinforcement learning.
 This serves as the background for all further discussions in the thesis.
 
-\autoref{chap:dissecting} presents insights into how instability emerges in value function learning.
+\autoref{chap:overestimation} presents insights into how instability emerges in value function learning.
 Experiments show that one of the major causes of unstable learning is diverging intermediate representations in the neural network architectures.
-Based on work conducted in \textcite{hussing2024dissecting}, we can conclude normalizing these representations can have a vital stabilizing effect.
+Based on work conducted in \textcite{hussing2024dissecting}, we can conclude that normalizing these representations has a vital stabilizing effect.
 
 \autoref{chap:understanding} dives deeper into the question of stabilizing representations for value function learning.
 While several different methods have been proposed in the literature, it remains an open question which model-based auxiliary tasks can be used as general-purpose methods to stabilize learning without deteriorating the quality of the representations for the decision making tasks.
-This chapter presents present both theoretical and empirical evidence that latent self-prediction models provide benefitial features for this goal.
+This chapter presents both theoretical and empirical evidence that latent self-prediction models provide beneficial features for this goal.
 
-\autoref{chap:vagram} investigates how the instability of value function learning can harm the training of decision-aware envrionment models.
-Empirical evidence is presented that suboptimal value function learning leads to a \emph{chicken-and-egg} problem: without a good value function, we cannot train a good decision-aware model, but without a good decision-aware model, we cannot improve our value functionm
+\autoref{chap:vagram} establishes a second angle on learning stability and the tension between decision-awareness and general-purpose algorithms and focuses on model-based approaches.
+Here we investigate how the instability of value function learning can harm the training of decision-aware environment models.
+Empirical evidence is presented that suboptimal value function learning leads to a chicken-and-egg problem: without a good value function, we cannot train a good decision-aware model, but without a good decision-aware model, we cannot improve our value function.
 To escape this cycle, we can modify a general purpose MSE loss with a sensitivity score derived from the current value function estimate.
+This again highlights how combining both decision-aware and general purpose methods allows us to overcome the challenges of either.
 
-\autoref{chap:cvaml} addresses additional issues with the value-aware model learning framework and show how it can lead to incorrect value and model estimates.
-One important source of problems is a subtle error term that appears when using common value-aware losses with stochastic models.
-This problem can be resolved by modifying the loss function to account for erroneous terms.
-Furthermore this chapter discusses how latent model architectures, such as those in presented in \autoref{chap:understanding} can be used to learn strong value-aware models.
+\autoref{chap:cvaml} shows how previous attempts at value-aware model learning, including the IterVAML \parencite{itervaml} and MuZero \parencite{schrittwieser2020mastering} losses can be unified into one family. 
+We then discuss issues that arise in this framework when using previously established losses naively for learning value functions with stochastic environment models, and show how to mitigate this problem.
+The source of the problem is a subtle error term that appears when using common value-aware losses with stochastic models.
+Furthermore this chapter discusses how latent model architectures, such as those in presented in \autoref{chap:understanding}, can be used to learn strong value-aware models.
+With this, we fully unify the ideas of world model and representation learning.
 
-\autoref{chap:mad} presents the culmination of this work.
-Using latent value-aware models with well regularized latent architectures can address another important problem in value functino learning: off-policy generalization.
-With a learned model, counterfactual questions of the form ``what would have happened if the agent had taken action $x$ in a past state'' can be answered, which empirically has a strong stabilizing effect on value function learning.
+\autoref{chap:mad} presents an empirically strong algorithm that combines the ideas presented in this thesis.
+While previous chapters discuss the individual components of MAD-TD, here we put the focus back on solving the issue of instability established in \autoref{chap:overestimation}, tying all of our discussions togetehr.
+Using a latent value-aware model with well regularized features addresses a final important problem in value function learning: off-policy generalization.
+With a learned model, counterfactual questions of the form ``what would have happened if the agent had taken action $a'$ in a past state $\state$'' can be answered, which empirically has a strong stabilizing effect on value function learning.
 
-Finally, this thesis concludes with \autoref{chap:} where related work and promising directions for future work are surveyed.
+Finally, this thesis concludes with \autoref{chap:conclusion} where we review the findings and discuss remaining questions and promising directions for future work.
 
 

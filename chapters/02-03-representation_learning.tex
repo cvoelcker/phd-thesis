@@ -1,11 +1,19 @@
-\chapter{Understanding auxiliary tasks for value function learning}
+\chapter{Understanding Auxiliary Tasks for Value Function Learning}
 \label{chap:understanding}
+
+\begin{quote}
+    This chapter is based on \longfullcite{voelcker2024when}.
+\end{quote}
 
 \section{Introduction}
 
+As the previous chapter shows, end-to-end critic training can cause problems with learning good intermediate neural network representations.
+While regularization can alleviate some of the optimization failures, it only addresses issues of divergence, and does not ensure that relevant information is properly represented.
+To achieve this, we now take a look at \emph{auxiliary tasks} which directly ensure that transition information is well represented in learned features.
+
 Since the emergence of deep learning, techniques for deep supervised learning have been successfully incorporated into reinforcement learning (RL) agents \parencite{dqn,ddpg}.
-However, the RL setting contains additional complications such as non-stationary optimization target and the reliance on bootstrapping.
-These hurdles generally add instability to the RL training process, and recent work has identified the \emph{failure to learn good features} as a central problem in deep RL \parencite{lyle2022understanding,nikishin2022primacy,kumar2021implicit}.
+However, as we have seen, the RL setting contains additional complications such as non-stationary optimization target and the reliance on bootstrapping.
+These hurdles generally add instability to the RL training process, and as discussed, \emph{the failure to learn good features} is a central problem in deep RL \parencite{kumar2021implicit,lyle2022understanding,nikishin2022primacy,hussing2024dissecting}.
 
 To mitigate this failure, one common approach is to add auxiliary tasks to the learning objective \parencite{jaderberg2017reinforcement}. 
 Popular examples include predicting next state observations \parencite{jaderberg2016reinforcement} and predicting functions of the next state \parencite{schwarzer2021dataefficient,ni2024bridging}.
@@ -28,33 +36,19 @@ In \autoref{sec:empirical} we test the predictions derived from our theoretical 
 \footnote{All code for our experiments is available at \url{https://github.com/adaptive-agents-lab/understanding_auxiliary_tasks}.}
 We design ablations that mirror both our formalization and previous approaches to test distraction robustness in empirical environments. 
 The theory partially predicts the performance differences in the test suite, validating that the insights we obtain from the simple linear surrogate models used for analysis are useful for practitioners.
-However, we also find surprising deviations from our predictions on some environments, suggesting that there is need for additional research to fully bridge the theory-practice gap.
+However, as we have an incomplete understanding of the underlying benchmark problems themselves \parencite{voelcker2024can}, more research is needed to fully characterize the interaction of the environment dynamics with the stabilizing auxiliary tasks.
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{illustrations/understanding/all_in_one_repeat.pdf}
-    \caption{Diagram of the considered loss functions and the different use cases. In latent self-prediction, the aim is to predict next state \emph{features} given by a embedding function $\phi(x')$ using the states features $\phi(x)$ and a latent prediction model $F$. In observation reconstruction, the aim is to match next state \emph{ground truth observations} $x'$ via the use of a decoder function $\psi(F(\phi(x)))$. In the \emph{auxiliary task setup}, both the gradients from the feature learning loss and value function learning are propagated to the encoder, while in the \emph{stand-alone scenario}, only the gradients from the feature learning loss are used to update $\Phi$.}
+    \caption{Diagram of the discussed loss functions and use cases. In latent self-prediction, we aim to predict the next state's \emph{features}, computed with an embedding function $\phi(x')$ using the state's features $\phi(x)$ and a latent prediction model $F$. In observation reconstruction, the next state's \emph{ground truth observations} $x'$ are matched via the use of a decoder function $\psi(F(\phi(x)))$. In the \emph{auxiliary task setup}, both the gradients from the feature learning loss and value function learning are propagated to the encoder, while in the \emph{stand-alone scenario}, only the gradients from the feature learning loss are used to update $\Phi$.}
     \label{fig:losses}
 \end{figure}
 
 \section{Background}
-We briefly introduce the standard formalism of reinforcement learning and linear value function approximations to clarify the notation used.
-Following this, we briefly introduce the training dynamics framework of \textcite{tang2022understanding,lelan2023bootstrapped}. 
-We frame all losses analyzed in this work with the same models to highlight similarities and differences.
-
-\textbf{Reinforcement Learning.} We consider a discounted Markov decision process (MDP)~\parencite{Puterman1994MarkovDP,suttonbook} $(\mathcal{X}, \mathcal{A}, \gP, r, \gamma)$, with state space $\mathcal{X}$, action space $\mathcal{A}$, transition kernel $\gP:\mathcal{X} \times \mathcal{A} \times \mathcal{X} \to \mathbb{R}$,
-reward function $r: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$, and discount factor $\gamma \in [0,1)$. Given a policy $\pi:\mathcal{X}\times \mathcal{A} \to \mathbb{R}$, the value function is defined as the expected return conditioned on a state $x$ $$V^\pi(x) = \EEX{\pi}{\sum_{t \geq 0} \gamma^t r_t|x_0 = x},$$ where $r_t = r(x_t, a_t)$ is the reward at time $t$. The goal of an agent is to maximize its value at each state, using the (approximate) value function of its policy $V^\pi$.
-
-
-
-In finite state spaces ($\lvert\mathcal{X}\rvert = n$ for some integer $n$), the policy induced transition kernel $\gP^\pi(x'|x) = \int \mathcal{P}(x'|x,a) \mathrm{d}\pi(a|x)$ can be represented as a stochastic matrix $P^\pi$, and the reward function as a vector $r^\pi$.
-This permits the compact notation $V^\pi =(I - \gamma P^\pi)^{-1} r^\pi$.
-We review several additional properties of stochastic matrices in \autoref{app:linalg}.
-
-\textbf{Value function approximation.} A finite state value function can always be expressed as a table or vector, but it is often infeasible to do so, due to limited storage capacity or resources once the state space becomes sufficiently large.
-Therefore, function approximations need to be introduced, which commonly take the form of a feature function $\phi(x)$ and a weight vector $\hat{V}$, with $V^\pi(x) \approx \phi(x)^\top \hat{V}$.
-These features can be pre-specified or learned, i.e. using neural networks.
-Since we are interested in finite state spaces and linear models, we will assume that $\phi(x): \mathbb{R}^{n} \rightarrow \mathbb{R}^{k}$ with $k < n$  represented by a matrix $\Phi \in \mathbb{R}^{n\times k}$ and $\hat{V} \in \mathbb{R}^k$.
+In this chapter, we will focus on learning in finite-state action problems.
+However, our approximations will not be tabular, as discussed in \autoref{chap:background}, but two layer linear networks.
+This allows us to discuss the mechanisms underlying representation learning in a tractable setting.
 
 \subsection{Two-layer linear networks as analytical models for training dynamics}
 \label{sec:background}
@@ -63,7 +57,7 @@ Rigorously analyzing the effect of different loss functions on neural networks i
 Therefore, we have to resort to studying simplified models to obtain quantitative and qualitative results, and only consider the fixed policy case in our analysis\footnote{We discuss these and other assumptions and their implications in detail in \autoref{app:limitations}.}.
 Studying feature learning dynamics using linear networks was popularized by \textcite{saxe2014exact} and has proven to be a valuable tool to analyze diverse objectives such as TD learning \parencite{tang2023towards,lelan2023bootstrapped}, latent self-prediction \parencite{tian2021understanding,tang2022understanding}, and linear autoencoders \parencite{pretorius2018learning,bao2020regularized}.
 
-We rewrite the feature learning algorithms using two to three matrices in lieu of more complex functions. Furthermore, we use several assumptions throughout the paper that are listed here for clarity.
+We rewrite the feature learning algorithms using two to three matrices in lieu of more complex functions. Furthermore, we use several assumptions throughout this chapter that are listed here for clarity.
 
 \begin{assumption}
 \label{assumption1}
@@ -280,7 +274,7 @@ For good performance across a wide variety of tasks, latent self-prediction need
 \section{Empirical study of theoretical results in deep learning based settings}
 \label{sec:empirical}
 
-We aim to empirically verify the statements marked as \emph{``Insights''} throughout the paper: superiority of observation prediction as a standalone feature learning loss (\autoref{insight1}), impact of the observation function on the different loss functions (\autoref{insight2}), and the relative strength of latent-self prediction as an auxiliary loss compared to reconstruction (\autoref{insight3}). 
+We aim to empirically verify the statements marked as \emph{``Insights''} throughout this chapter: superiority of observation prediction as a standalone feature learning loss (\autoref{insight1}), impact of the observation function on the different loss functions (\autoref{insight2}), and the relative strength of latent-self prediction as an auxiliary loss compared to reconstruction (\autoref{insight3}). 
 As our theory addresses the simplified setting of policy evaluation with linear models, we seek to test if the insights transfer to the more common setting of control with neural networks.
 Across all experiments, we report mean performance over 30 seeds and shaded $95$ bootstrapped confidence interval.
 
@@ -379,9 +373,15 @@ Therefore, while we claim that our experiments have the ability to guide the cho
 
 We also note that our experiments showed substantial differences in behavior of auxiliary losses both within and across benchmarks and different noise distractions.
 Previous work that studied the effect of distraction \parencite{nikishin2021control,voelcker2022value,ni2024bridging} did not discuss their distraction model in further details. 
-In light of our results, we suggest that empirical research should be careful about the choice of benchmark and experimental setup and discuss the implications of the empirical setup explicitely.
+In light of our results, we suggest that empirical research should be careful about the choice of benchmark and experimental setup and discuss the implications of the empirical setup explicitly.
 
-One of the most important gaps between the work presented in this paper and the behavior of online algorithms is the restrictive assumption of the fixed policy evaluation case.
-Therefore one of the most exciting avenues for future work is analysing policy improvement, where the underlying dynamics of the environment change due to the policy updates.
 On the empirical side the surprising effectiveness of the observation prediction loss on the Seaquest environment highlights the fact that even within benchmark suites, differences in the reward functions and observation models can lead to differing rankings between algorithms.
 This further highlights the necessity of studying the structure of MDPs and to design algorithms that are robust to different structures, or adapt to them automatically.
+
+Overall, we can conclude that model-based methods can be very helpful to structure latent representations in a way that complements the task of value function learning.
+However, we have so far only used the model learning to stabilize the feature space.
+Instead, we can also use the learned model itself to improve value function learning by generating additional data from the model in a DYNA style algorithm.
+
+In the next chapter we will take a look at such model-based methods.
+We will begin by reviewing decision-aware and general-purpose model learning without shared features.
+Then in the final chapters of the thesis we will unify the insights from our feature learning and model-based work, and look at latent value-aware model learning.

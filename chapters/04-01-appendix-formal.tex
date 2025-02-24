@@ -1,5 +1,7 @@
 \chapter{Formal proofs and results}
 
+\todo[inline]{Move to main body where appropriate}
+
 \section{Bound between Value-Aware Model Learning and VaGraM}
 \label{app:taylor_bound}
 
@@ -50,7 +52,7 @@ We provide the proofs for \autoref{sec:theory} in this section.
 The first proposition relies on the existence of a deterministic mapping, which we prove here as a lemma.
 The second proposition requires a statement over the minimizers of an equation with a variance-like term, we prove a general result as a lemma.
 
-The proof of the first lemma relies heavily on several propositions from~\cite{BertsekasShreve1978}, which are restated in \autoref{sec:bertsekas} for reader's convenience.
+The proof of the first lemma relies heavily on several propositions from~\cite{bertsekasshreve1978}, which are restated in \autoref{sec:bertsekas} for reader's convenience.
 Other topological statements are standard and can be find in textbooks such as~\cite{Munkres2018}.
 
 \begin{lemma}[Deterministic Representation Lemma]
@@ -310,12 +312,12 @@ The similarity between the losses suggests a potential family of decision-aware 
 It is also interesting to note that even without updating the value function, the MuZero loss performs an implicit minimization of the difference between the current value estimate and the Bellman operator via the model prediction.
 This is an avenue for further research, as it might explain some of the empirical success of the method disentangled from the value function update.
 
-\subsection{Propositions from \cite{BertsekasShreve1978}}
+\subsection{Propositions from \cite{bertsekasshreve1978}}
 \label{sec:bertsekas}
 
-For convenience, we quote some results from~\cite{BertsekasShreve1978}. These are used in the proof of Lemma~\ref{lem:deterministic_representation_lemma}.
+For convenience, we quote some results from~\cite{bertsekasshreve1978}. These are used in the proof of Lemma~\ref{lem:deterministic_representation_lemma}.
 
-\begin{proposition}[Proposition~7.30 of~\cite{BertsekasShreve1978}]
+\begin{proposition}[Proposition~7.30 of~\cite{bertsekasshreve1978}]
 \label{prop:730}
     Let $\mathcal{X}$ and $\mathcal{Y}$ be separable metrizable spaces and let $q(\mathrm{d}y|x)$ be a continuous stochastic kernel on $\mathcal{Y}$ given $\mathcal{X}$. If $f\in\mathcal{C}(\mathcal{X}\times \mathcal{Y})$, the function $\lambda: \mathcal{X} \rightarrow \mathbb{R}$ defined by
     \[
@@ -325,7 +327,7 @@ For convenience, we quote some results from~\cite{BertsekasShreve1978}. These ar
 \end{proposition}
 
 \newcommand{\proj}{\text{proj}}
-\begin{proposition}[Proposition~7.33 of~\cite{BertsekasShreve1978}]
+\begin{proposition}[Proposition~7.33 of~\cite{bertsekasshreve1978}]
 \label{prop:733}
     Let $\mathcal{X}$ be a metrizable space, $\mathcal{Y}$ a compact metrizable space, $\mathcal{D}$ a closed subset of $\mathcal{X}\times\mathcal{Y}$, $\mathcal{D}_x = \{y | (x,y) \in \mathcal{D} \}$, and let $f:\mathcal{D}\rightarrow \mathbb{R}^*$ be lower semicontinuous.
     Let $f^*:\proj_\mathcal{X}(\mathcal{D}) \rightarrow \mathbb{R}^*$ be given by \[

@@ -1,10 +1,15 @@
-\chapter{Stabilizing value function learning with model-generated data}
-\label{chap:mad-td}
+\chapter{Stabilizing Value Function Learning with Model-Generated Data}
+\label{chap:mad}
+
+\begin{quote}
+    This chapter is based on \longfullcite{voelcker2025mad}.
+\end{quote}
+
 
 \newcommand{\blue}[1]{{\color{uoftoceanblue} #1}}
 \newcommand{\red}[1]{{\color{uoftred} #1}}
 
-section{Introduction}
+\section{Introduction}
 
 % Introducing the setting -- off policy rl - and the problem
 Instead of solely relying on data gathered by a target policy, \emph{off-policy} reinforcement learning (RL) aims to leverage experience gathered by past policies \parencite{sutton2018introduction} to fit a value function for the target policy. 
@@ -39,16 +44,9 @@ The main contributions of this work are twofold:
 First, we empirically show the existence of misgeneralization from off-policy value estimation to on-policy predictions. We connect this issue to the challenge of stable learning with high update ratios and highlight how increasing the update ratio increases Q function overestimation.
 Second, we provide a new method called MAD-TD that improves the value function accuracy on unobserved on-policy actions with model-generated data and stabilizes training at high update ratios. This method proves to have equivalent performance to or outperform previous strong baselines.
 
+\section{Off-policy value function learning}
 
-\section{Mathematical background}
-
-We consider a standard RL setting, the discounted infinite-horizon MDP $(\mathcal{X}, \mathcal{A}, \mathcal{P}, r, \rho, \gamma)$ with state space $\mathcal{X}$, action space $\mathcal{A}$, a transition kernel $\mathcal{P}: \mathcal{X} \times \mathcal{A} \rightarrow \mathcal{M}(\mathcal{X})$, a reward function $r: \mathcal{X} \times \mathcal{A} \rightarrow \mathbb{R}$, starting state distribution $\rho \in \mathcal{M}(\mathcal{X})$ and a discount factor $\gamma \in [0,1)$ \parencite{puterman1994markov,sutton2018introduction}.
-For a space $Y$ we use $\mathcal{M}(Y)$ to denote the set of probability measures over the space.
-Our goal is to learn a policy $\pi: \mathcal{X} \rightarrow \mathcal{M}(\mathcal{A})$~ that maximizes the discounted sum of future rewards $$\pi^* \in \argmax_{\pi \in \Pi}\sum_{t=0}^\infty \mathbb{E}_{\mathcal{P}^\pi}[\gamma^t r(x_t, a_t)|x_0\sim\rho] \enspace ,$$ where actions are sampled according to the policy and new states according to the transition kernel.
-
-\subsection{Off-policy value function learning}
-
-As an intermediate objective, many algorithms attempt to simplify the direct policy optimization problem by first learning a policy value function $Q^\pi$, which is defined via a recursive equation% \footnote{Note that due to the assumption of a deterministic environment, the expectation simplifies to a simple function evaluation.} 
+Many algorithms attempt to simplify the direct policy optimization problem by first learning a policy value function $Q^\pi$, which is defined via a recursive equation% \footnote{Note that due to the assumption of a deterministic environment, the expectation simplifies to a simple function evaluation.} 
 \begin{equation*}
 Q^\pi(x,a) = r(x,a) + \gamma \mathbb{E}_{x' \sim \mathcal{P}(\cdot|x,a), a' \sim \pi(\cdot|x')}\left[Q^\pi(x',a')\right]\enspace.    
 \end{equation*}

@@ -1,41 +1,54 @@
-\chapter{Instability of value function learning}
+\chapter{Instability of Value Function Learning}
 \label{chap:overestimation}
 
+\begin{quote}
+    This chapter is based on \longfullcite{hussing2024dissecting}.
+\end{quote}
+
 To improve sample efficiency, contemporary work in off-policy deep reinforcement learning (RL) has begun increasing the number of gradient updates per collected environment step~\parencite{janner2019mbpo,fedus2020revisiting,chen2021randomized, hiraoka2022dropout, nikishin2022primacy, doro2023barrier, schwarzer2023bigger, kim2023resetensemble}.  
-As this update-to-data (UTD) ratio increases, various novel challenges arise.
-Notably, a recent study proposed the emergence of a \emph{primacy bias} in deep actor critic algorithms, defined as ``a tendency to overfit initial experiences that damages the rest of the learning process''~\parencite{nikishin2022primacy}. 
-This is a fairly broad explanation of the phenomenon, leaving room for investigation into how fitting early experiences causes suboptimal learning behavior.
+However, as this update-to-data (UTD) ratio increases, value function learning seems to become unstable.
+This is surprising, as neural networks have shown themselves to be generally robust to the number of update steps in other areas such as supervised classification.
+In some cases, training for a very large number of steps actually increases the performance of neural networks, due to phenomena such as grokking \parencite{power2022grokking} or double descent \parencite{belkin2019reconciling}.
+As such, this phenomenon should raise our suspicion that training \ac{drl} agents causes issues with neural networks that are not observed in other domains.
+
+Notably, a recent study conjectured the emergence of a \emph{primacy bias} in deep actor critic algorithms, defined as ``a tendency to overfit initial experiences that damages the rest of the learning process''~\parencite{nikishin2022primacy}. 
+This is a fairly broad explanation of the phenomenon, leaving room for investigation into \emph{how} fitting early experiences causes suboptimal learning behavior.
 
 First approaches to tackle the learning failure challenges have been suggested, such as completely resetting networks periodically during the training process and then retraining them using the contents of the replay buffer~\parencite{nikishin2022primacy, doro2023barrier}. 
-Resetting network parameters is a useful technique in that, in some sense, it can circumvent any previous optimization failures without prior specification. 
-Yet it seems likely that a more nuanced treatment of the various optimization challenges in deep RL might lead to more efficient training down the line. 
-Especially if the objective is efficiency, throwing away all learned parameters and starting from scratch periodically is counter-productive, for instance in scenarios where, keeping all previous experience is infeasible. %for instance when data buffer sizes become limited. 
-As such, we set out to study the components of early training that impair learning more closely and examine whether high-UTD learning without resetting is possible. 
+Resetting network parameters is a useful technique in that, in some sense, it can circumvent any ongoing optimization failures. 
+Yet it seems likely that a more nuanced treatment of the various optimization challenges in deep RL might lead to more efficient training down the line, and provide more useful insights into how learning in 'ac{drl} evolves more generally. 
+Especially for achieving efficient learning, throwing away all learned parameters and starting from scratch periodically is counter-productive, for instance in scenarios where, keeping all previous experience is infeasible. %for instance when data buffer sizes become limited. 
+As such, we set out to study the components of early training that impair learning more closely and examine whether high-UTD learning without resetting is possible.
 
 
 To motivate our study, we repeat the priming experiment of \textcite{nikishin2022primacy}, in which a network is updated for a large number of gradient steps on limited data. We show that during priming stages of training, value estimates diverge so far---and become so extreme---that it takes very long to unlearn them using new, counter-factual 
 data. However, contrary to prior work, we find that it is not \emph{impossible} to learn even after priming, it merely takes a long time and many samples. 
 This sparks hope for our endeavor of smooth learning in high-UTD regimes.
-We show that compensating for the value function divergence allows learning to proceed. This suggests that the failure to learn does not stem from overfitting early data, which would result in correct value function on seen data, but rather from improperly fitting Q-values. 
+We show that compensating for the value function divergence allows learning to proceed. 
+This suggests that the failure to learn does not stem from overfitting early data, which would result in correct value function on seen data, but rather from improperly fitting Q-values. 
 % This can be traced to bootstrapping of poorly specified Q-function networks on unseen data. 
-We demonstrate that this divergence is most likely caused by prediction of out-of-distribution (OOD) actions that trigger large gradient updates, compounded by the momentum terms in the Adam optimizer~\parencite{kingma2015adam}.
+We demonstrate that this divergence is most likely caused by prediction of out-of-distribution (OOD) actions that trigger large gradient updates, which destabilize feature learning.
+Empirically, we find that instead of settling into fixed representations, the norm of the learned representations in the intermediate layers of the critic neural network grows.
 % While there are standard approaches that have been proposed to solve the issue of overestimation, our experiments highlight that these come with unwanted side effects in the high update-to-data ratio setting with limited data. 
 
 The identified behavior, although triggered by OOD action prediction, seems to be more than the well-known overestimation due to statistical bias \parencite{thrun1993issues}. 
-Instead, we hypothesize that the problem is an optimization failure and focus on limiting the exploding gradients from the optimizer via architectural changes.
-The main evidence for this hypothesis is that standard RL approaches to mitigating bias, such as minimization over two independent critic estimates~\parencite{fujimoto2018addressing}, are insufficient. In addition, using pessimistic updates~\parencite{fujimoto2019bcq, fujimoto2021td3bc} or regularization~\parencite{krogh1991simple, srivastava14dropout} to treat the value divergence can potentially lead to suboptimal learning behavior, which is why architectural improvements are preferable in many cases.
+Instead, we hypothesize that the problem is an optimization failure and focus on mitigating the unbounded growth of the feature norm with architectural changes.
+The main evidence for this hypothesis is that standard RL approaches to mitigating bias, such as minimization over two independent critic estimates~\parencite{fujimoto2018addressing}, are insufficient. 
+In addition, using pessimistic updates~\parencite{fujimoto2019bcq, fujimoto2021td3bc} or regularization~\parencite{krogh1991simple, srivastava14dropout} to treat the value divergence can lead to suboptimal learning behavior, which is why architectural improvements are preferable in many cases.
 
 % Combating overestimation is a problem with a long history in both value-based and actor-critic approaches, but our findings suggest that the most common approach (minimization over two independent critic estimates)  is insufficient, especially in the high UTD regime.
 
 We use a simple feature normalization method \parencite{zhang2019root, wang2020striving, bjorck2022is} that projects features onto the unit sphere.
 This decouples learning the scale of the values from the first layers of the network and moves it to the last linear layer.
-Empirically, this approach fully mitigates diverging Q-values in the priming experiment. Even after a large amount of priming steps, the agent immediately starts to learn. %, rendering resetting unnecessary. 
+Empirically, this approach mitigates diverging Q-values in the priming experiment. 
+Even after a large amount of priming steps, the agent immediately starts to learn. %, rendering resetting unnecessary. 
 In a set of experiments on the \textsf{dm\_control} MuJoCo benchmarks~\parencite{tunyasuvunakool2020dmcontrol}, we show that accounting for value divergence can achieve significant across-task performance improvements when using high update ratios. 
 Moreover, we achieve non-trivial performance on the challenging dog tasks that are often only tackled using model-based approaches. We demonstrate comparable performance with the recently developed TD-MPC2~\parencite{hansen2024tdmpc}, without using models or advanced policy search methods.
-Lastly, we isolate more independent failure modes, giving pointers towards their origins. In Appendix~\ref{app:open} we list open problems whose solutions might illuminate other RL optimization issues.
 
 
 \section{Preliminaries} \label{sec:preliminaries}
+
+To fully elucidate the role that increasing the update ratio plays in destabilizing value function training, ostensibly necessitating resets, we present a series of small-scale experiments.
 
 \section{Investigating the effects of large update-to-data ratios during priming} \label{sec:investigating}
 
@@ -83,7 +96,7 @@ We make two key observations. First, lower amounts of priming are correlated wit
 
 % However, without regularization it seems that once the effective dimension falls below a certain threshold, agents take substantially longer to recover and learning becomes essentially impossible (see Appendix~\ref{todo}). 
 
-After priming, there exist two cases: 1) either the Q-values need to be unlearned before the agent can make progress or 2) there is a large drop from very high to very low Q-values that is strongly correlated with loss in effective dimension of the embedding, as defined by~\cite{yang2020harnessing} (see Appendix~\ref{app:priming_dim}). In the second case, rank can sometimes be recovered upon seeing new, counter-factual data and the network continues to learn. Yet, sometimes the agent gets stuck at low effective dimension; a possible explanation for the failure to learn observed in the priming experiments of~\textcite{nikishin2022primacy}. This is orthogonal to a previously studied phenomenon where target network-based updates lead to perpetually reduced effective rank~\parencite{kumar2021implicit}.
+After priming, there exist two cases: 1) either the Q-values need to be unlearned before the agent can make progress or 2) there is a large drop from very high to very low Q-values that is strongly correlated with loss in effective dimension of the embedding, as defined by~\cite{yang2020harnessing} (see Appendix~\ref{app:priming_dim}). In the second case, we find that contrary to previous claims in the literature, rank can sometimes be recovered upon seeing new, counter-factual data and the network continues to learn. Yet, in other cases the agent gets stuck at low effective dimension; a possible explanation for the failure to learn observed in the priming experiments of~\textcite{nikishin2022primacy}. This is orthogonal to a previously studied phenomenon where target network-based updates lead to perpetually reduced effective rank~\parencite{kumar2021implicit}.
 
 %However, the priming experiment alone does not allow us to conclude whether overestimation is a symptom or a cause of the primacy effect.
 % To differentiate, we need a way to either prevent capacity loss in the network, or to regularize the Q values as to control for the impact of one or the other. 
@@ -147,7 +160,7 @@ We conjecture that Q-value divergence starts with overestimated values of OOD ac
 % To dig deeper, we conjecture twofold: 1) Q-value divergence starts with overestimated values of OOD actions. 2) This overestimation triggers the optimizer to continually increase Q-values via the second-order optimizer momentum leading to divergence. To test our hypotheses, we repeat the priming with 100,000 steps but perform two interventions on the priming updates (see Figure~\ref{fig:priming_causes}). 
 % \comE{It isn't 100\% clear how Fig 2 matches up with these interventions. The wording/names should match between Fig 2 and its caption and the interventions.}
 To test this hypothesis, we add a conservative behavioral cloning~\parencite{pomerleau1988alvinn, atkeson1997robot} loss term to our actor that forces the policy to be close to replay buffer actions. Prior work employed this technique in offline RL to mitigate value overestimation~\parencite{fujimoto2021td3bc}. More formally, our actor update is extended by the loss $
-        \mathcal{L}_{c, \psi} = \min_{\psi} \mathbb{E}_{a \sim \mathcal{D}, \hat{a} \sim \pi_{\psi}(s)}[||a - \hat{a}||_2]$. 
+        \mathcal{L}_{c, \psi} = \min_{\psi} \mathbb{E}_{a \sim \mathcal{D}, \hat{a} \sim \pi_{\psi}(\state)}[||a - \hat{a}||_2]$. 
 The results in Figure~\ref{fig:priming_causes} indicate that the basis of the conjecture is corroborated as divergence is much smaller---but not mitigated completely---when values are learned on actions similar to seen ones. However, in practice we do not know when divergence sets in, which limits the applicability of this technique in realistic scenarios. Using it throughout all of training, rather than just during priming, impairs the learner's ability to explore. We investigate the effects of the optimizer in more detail and provide preliminary evidence that the second-order term may be at fault in Appendix~\ref{app:priming_opt}. 
 %For now, we focus on common techniques to mitigate concerns like weight or gradient divergence.
 
@@ -250,7 +263,7 @@ We hypothesize that we can address many of these problems by separating the scal
 
 One contender to achieve the value decoupling described in the previous paragraph is layer normalization~\parencite{ba2016layer}, but one would have to disable scaling factors used in common implementations. Still, standard layer normalization would not guarantee small features everywhere. Instead, we use a stronger constraint and project the output features of the critic encoder onto the unit ball using the function
 $f(\mathbf{x}) = \frac{\mathbf{x} }{\|\mathbf{x}\|_2}$~\parencite{zhang2019root}, 
-where $\|\cdot\|_2$ denotes the L$^2$ vector norm and $\mathbf{x}$ is the output of our encoder $\phi(s, a)$. This ensures that all values are strictly between $0$ and $1$ and the gradients will be tangent to the unit sphere. Note that this function's gradient is not necessarily bounded to ensure low gradient propagation (see Appendix~\ref{app:unitnorm}), but we argue that if large values are never created in the early layers, gradient explosion will not occur. The unit ball has previously been used to mitigate large action prediction in the actor~\parencite{wang2020striving} or to stabilize RL training in general~\parencite{bjorck2022is}. 
+where $\|\cdot\|_2$ denotes the L$^2$ vector norm and $\mathbf{x}$ is the output of our encoder $\phi(\state, a)$. This ensures that all values are strictly between $0$ and $1$ and the gradients will be tangent to the unit sphere. Note that this function's gradient is not necessarily bounded to ensure low gradient propagation (see Appendix~\ref{app:unitnorm}), but we argue that if large values are never created in the early layers, gradient explosion will not occur. The unit ball has previously been used to mitigate large action prediction in the actor~\parencite{wang2020striving} or to stabilize RL training in general~\parencite{bjorck2022is}. 
 For brevity, we will refer to this method as {\em output feature normalization} (OFN). We solely apply OFN to the critic, unlike~\textcite{wang2020striving}, since our goal is to mitigate value divergence. OFN is very simple and requires only a one-line change in implementation.
 
 % We note the simplicity of the approach as it essentially requires a one-line change in implementation.
@@ -427,7 +440,7 @@ Resetting both networks of OFN with $\mathrm{UTD}=32$  outperforms all other bas
 
 To explain the remaining efficacy of critic resets, we examine the hopper-hop environment where standard SAC with resets outperforms OFN. 
 %We conjecture that there is an additional exploration benefit inherit to resetting. 
-In RL with function approximation, one might not only encounter over-  but also under-estimation~\parencite{wu2020reducing, lan2020maxmin, saglam2021estimation}.
+In RL with function approximation, one might not only encounter over- but also under-estimation~\parencite{wu2020reducing, lan2020maxmin, saglam2021estimation}.
 We believe that hopper  is sensitive to pessimism, and periodically resetting the networks might partially and temporarily counteract the inherent pessimism of the dual critic setup.
 %Suppose the critic's  overestimation has been handled properly but due to, there are unseen regions of the state-action space whose values are being underestimated. When the network is reset, some regions might now temporarily become overestimated regions, even if we train on the exact same data, which restarts the exploration process.
 
@@ -509,7 +522,7 @@ To regulate the overestimation-pessimism balance more carefully, several authors
 % Closely related is the idea of the effective rank of the feature matrix, which captures how strongly correlated certain features are across different samples.
 % \textcite{kumar2021implicit} show that this can be regularized explicitly by using an orthogonal loss on the intermediate layers of the network, as this loss requires large correlation matrices, it is much more computationally expensive than simple normalization of the features.
 
-\section{Conclusion and future work}
+\section{Conclusion}
 
 By dissecting the effects underlying the primacy bias, we have identified a crucial challenge: \emph{value divergence}. 
 While the main focus in studying increased Q-value has been on the statistical bias inherent in off-policy sampling, we show that Q-value divergence can arise due to problems inherent to neural network optimization.
@@ -517,6 +530,7 @@ This optimization-caused divergence can be mitigated using the unit-ball normali
 With this result, we challenge the assumption that failure to learn in high-UTD settings primarily stems from \emph{overfitting} early data by showing that combating value divergence is competitive with resetting networks. 
 This offers a starting point towards explaining the challenges of high-UTD training in more detail and opens the path towards even more performant and sample efficient RL in the future.
 
-However, as our other experiments show, mitigating value overestimation through optimization is not the only problem that plagues high-UTD learning. 
-To clearly highlight these possible directions for future work, we provide an extensive discussion of open problems in Appendix~\ref{app:open}. 
-Additional problems, such as \emph{exploration failures} or \emph{suboptimal feature learning}, can still exist and need to be resolved to unlock the full potential of high-UTD RL.
+This chapter shines a light on the important role that the implicit representations learned from end-to-end critic optimization play in value function learning.
+In essence, model-free value learning is a purely \emph{decision-aware} method, as it solely focuses on extracting good features for the current value prediction target.
+But due to the deep entanglement between optimization, exploration, and non-stationarity, we can see that relying solely on end-to-end learning for value estimation is a potentially perilous endeavour.
+While simple regularization can already alleviate some of the issues with value learning,  the next chapter takes an in-depth look at more explicit ways of constructing good representative features.

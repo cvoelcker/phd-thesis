@@ -54,6 +54,10 @@
 \input{aux/math_commands.tex}
 \input{aux/acronyms}
 
+\renewcommand{\chapterautorefname}{Chapter}
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Subsection}
+
 \newcommand{\forceindent}{\leavevmode{\parindent=1em\indent}}
 
 \newtheorem{theorem}{Theorem}
@@ -93,9 +97,11 @@
 
 \setlength{\epigraphwidth}{0.66\textwidth}
 
-\AtBeginDocument{\def\sectionautorefname{Section}}%
-\AtBeginDocument{\def\subsectionautorefname{Subsection}}%
+\newcommand{\longfullcite}{%
+  \AtNextCite{\defcounter{maxnames}{99}}%
+  \fullcite}
 
+\newenvironment{boxinsight}[1][]{\begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]\begin{insight}[#1]}{\end{insight}\end{tcolorbox}}
 
 % author data
 \author{Claas Alexander Voelcker}
@@ -112,27 +118,29 @@
       \include{chapters/00-00-abstract}
     \end{abstract}
     \begin{dedication}
+      % To those whose love makes everything possible, Mom, Dad, and Heiko 
     \end{dedication}
     \begin{acknowledgements}
-      % \input{chapters/acknowledgements}
+       % \input{chapters/00-00-acknowledgements}
     \end{acknowledgements}
     \tableofcontents
     % \listoftables
     % \listoffigures
   \mainmatter
-    \include{chapters/outline_doc}
+    % \include{chapters/outline_doc}
     \include{chapters/01-01-preface}
     \include{chapters/01-02-intro}
     \include{chapters/01-03-background}
     \include{chapters/02-01-value_learning_instability}
-    \include{chapters/02-02-vagram}
     \include{chapters/02-03-representation_learning}
+    \include{chapters/02-02-vagram}
     \include{chapters/02-04-lambda}
     \include{chapters/02-05-minimal}
-  \appendix
-    \include{chapters/03-01-appendix-formal}
-    \include{chapters/03-02-appendix-experiments}
-  \backmatter
+    % \include{chapters/03-01-related-work}
+    \include{chapters/03-02-conclusion}
   \printbibliography[heading=bibintoc]
-  \lipsum[1-6]
+  \appendix
+    \include{chapters/04-01-appendix-formal}
+    % \include{chapters/04-02-appendix-experiments}
+  \backmatter
 \end{document}

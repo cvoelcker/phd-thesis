@@ -1,0 +1,61 @@
+\chapter{Conclusion}
+\label{chap:conclusion}
+
+In this thesis, we set out to understand how we can improve \ac{rl}, especially the notorious instability of value-function learning, by incorporating decision-aware and general purpose techniques that improve learned representations and world models.
+Our goal was to show that by carefully combining decision-aware approaches, such as Q learning or IterVAML, with general-purpose learning methods, such as maximum-likelihood estimation or self-supervised learning, we are able to improve and stabilize \ac{drl}.
+
+We started by understanding the central role that neural network representations play for stabilizing value learning in \ac{drl}.
+As our initial experiments show, relying purely on a model-free Q learning losses to shape the representation learning in a neural network leads to instability and divergence.
+This issue worsens as we attempt to increase the sample efficiency of \ac{rl} algorithms by increasing the number of gradient steps.
+To alleviate this issue, we discussed a simple yet highly impactful $L_2$-norm regularization of the latent feature space via an architectural constraint in the neural network.
+
+To go beyond merely regularizing features, we took a look at auxiliary tasks which use additional losses to shape the representation layers of a neural network.
+Using the tractable surrogate model of a linear two-layer network, we were able to show that there is strong theoretical evidence that latent self-prediction is an advantageous representation learning loss.
+The learned features are compatible with those learned by temporal-difference based learning, which means the auxiliary loss is able to stabilize and improve the feature space without interfering with the core task of value representation.
+In addition to mathematically proving this relationship in the surrogate model, we also looked at empirical evidence that these insights transfer beyond tabular environments, and to more complex neural network architectures.
+
+We then took a look at \ac{mbrl} and found a similar issue with decision-aware learning in the iterVAMl framework as we previously discussed in the representation learning case.
+The lack of a good value function approximation early in training prevents a model based on the iterVAML loss from learning useful predictions.
+This in turn prevents the agent from improving its policy, and so learning is stuck as no new information is gathered that can improve either model or value function.
+To break this cycle, we looked at using value function information to shape a simple mean squared loss.
+The value-gradient aware model learning loss uses the gradient of the estimated value function as a measure of sensitivity to penalize model errors based on their estimated impact on value prediction in each dimension.
+
+In the next chapter, we started combining the insights into model learning and representation learning.
+We first discussed the family of IterVAML-style losses that encompasses both MuZero and IterVAML.
+We showed that these losses lead to wrong model and value estimates when used with stochastic environment models.
+Finally, we highlighted how combining the latent self-prediction losses discussed in \autoref{chap:understanding} and value-aware model learning leads to reliable and useful model learning architecture.
+
+In our final chapter, we revisited the difficult high UTD training regime first discussed in \autoref{chap:overestimation} and use our gained knowledge to build a stable and efficient latent value-aware model learning algorithm that is able to smoothly make progress on hard tasks in the standard mujoco locomotion benchmarking suite.
+This algorithm is a strong example of the benefits of combining decision-aware and general-purpose learning, and serves as the final empirical example that supports the thesis main claim.
+
+
+\section{Future work}
+
+\epigraph{For these are other stories and they will be told another time}{adapted from \cite{ende1993neverending}}
+
+As discussed in the very beginning of the thesis, value function learning, as a central problem in \ac{rl}, cannot simply be solved in one thesis.
+Therefore we will conclude with a review of the many enticing open questions that this thesis leaves behind for future work.
+
+\subsection{Further combination of decision-aware and general purpose learning}
+
+While this thesis looks mostly at value functions, self-supervised representation learning, and value-aware model learning, there are many other paradigms in \ac{rl} and planning that can be treated in a similar manner.
+For example, \textcite{abachi2020policy} present PAML, a policy-gradient aware model learning algorithm.
+It is an exciting question whether similar techniques to those presented in this thesis could be considered for stabilizing PAML.
+Other ideas in the spac
+
+\subsection{Environment understanding}
+
+When discussing representing the information an agent gathers, a central question is what kind of task an agent is attempting to learn in the first place.
+Even though reinforcement learning should ostensibly be able to learn any task in any environment, practical necessity forces us to make many explicit choices in terms of architecture, loss, observation representation, and even rewards.
+As the theory and experiments in \autoref{chap:understanding} show, the structure of the environment is not irrelevant for choosing proper representation learning methods, and the same is true for any other choice as well.
+While this thesis and other works partially formalize and use concepts such as distracting dimensions, sparse rewards, and observation representations, much more work on studying the intersection between \ac{rl} algorithm design and environment structure is necessary.
+A preliminary proposal for environment-centered research was outlined in \textcite{voelcker2024can}, where we discuss the necessity of studying environemnts, and centering formalizeable and 
+
+\subsection{Exploration}
+
+While this thesis has focused on representing information, another vital task in reinforcement learning is gathering information.
+
+
+\subsection{Multi-task learning}
+
+All techniques discussed in this 
