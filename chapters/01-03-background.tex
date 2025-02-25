@@ -406,7 +406,7 @@ Given a dataset, an approximate model $\hat{p}$ can be trained using a \ac{mle} 
 \begin{align}
 \max_{\hat{p}} \frac{1}{N}\sum_{i=1}^N \log \hat{p}(x_i'|x_i,a_i).
 \end{align}
-For example, a Gaussian environment model, such as the one used by \textcite{pets,mbpo,voelcker2022value}, uses the Gaussian negative log likelihood over a dataset as the loss function
+For example, a Gaussian environment model, such as the ones used by \textcite{pets,mbpo,voelcker2022value}, uses the Gaussian negative log likelihood over a dataset as the loss function
 \begin{align}
     &\mathcal{L}_\mathrm{model}(\mu_\theta, \Sigma_\theta; D) = - \frac{1}{N} \sum_{i=1}^N \left[\log |\Sigma_\theta(x_i, a_i)| + (x'_i - \mu_\theta(x_i, a_i))^\top \left(\Sigma^{-1}_\theta(x_i, a_i) \right) (x'_i - \mu_\theta(x_i, a_i)) \right].
 \end{align}
@@ -470,7 +470,7 @@ The core idea behind VAML is to penalize a model prediction by the resulting dif
 \end{align}
 and its empirical approximation $\hat{\mathcal{L}}_V$ based on a dataset $D = (\state_i,a_i,\state'_i)_{i=1}^N$ of samples from $\mu$ and $p$
 \begin{align}
-    &\hat{\mathcal{L}}_V(\hat{p}, \mathcal{D}) = \sum_{(\state_i,a_i,\state'_i)\in\mathcal{D}} \left|V(\state'_i) - \int \hat{p}(\state'|\state_i,a_i) V(\state') \mathrm{d} \state'\right|^2\label{IterVAMLloss}.
+    &\hat{\mathcal{L}}_V(\hat{p}, \mathcal{D}) = \sum_{(\state_i,a_i,\state'_i)\in\mathcal{D}} \left|V(\state'_i) - \int \hat{p}(\state'|\state_i,a_i) V(\state') \mathrm{d} \state'\right|^2\label{eq:background:IterVAMLloss}.
 \end{align}
 
 The main problem of this approach is that it relies on the value function, which is not known a priori while learning the model. 
@@ -514,7 +514,7 @@ One of the most prominent examples are the structured latent spaces obtained by 
 
 The core challenges for representation learning in \ab{RL} is that the tasks are fundamentally non-stationary in nature \parencite{kumar2021implicit,nikishin2022primacy}.
 As the agent explores the environment, value function and policy continually change, meaning that both the input distribution and the prediction targets change over time.
-This has led to the establishment of research into \emph{learning dynamics} \parencite{lyle2022learning,lyle2022understanding}, \emph{metric learning} \parencite{ferns2011bisimulation,barreto2017successor,borsa2018universal,le2021metrics}, and \emph{auxiliary tasks} \parencite{jaderberg2017reinforcement,bellemare2019geometric,lyle2021effect,farebrother2023protovalue} to address these challenges.
+This has led to the establishment of research into \emph{learning dynamics} \parencite{lyle2022earning,lyle2022understanding}, \emph{metric learning} \parencite{ferns2011bisimulation,barreto2017successor,borsa2018universal,le2021metrics}, and \emph{auxiliary tasks} \parencite{jaderberg2017reinforcement,bellemare2019geometric,lyle2021effect,farebrother2023protovalue} to address these challenges.
 In this thesis, we will see how the learning dynamics of latent representations can be shaped by and used for model-based reinforcement learning.
 
 \subsubsection{Desirable properties of representations}
