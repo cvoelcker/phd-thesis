@@ -5,6 +5,7 @@
 \usepackage{graphicx} % for embedding graphics
 \usepackage{booktabs} % for pretty tables
 \usepackage{lipsum} % for gibberish text
+\usepackage[ruled]{algorithm2e}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -101,6 +102,8 @@
   \AtNextCite{\defcounter{maxnames}{99}}%
   \fullcite}
 
+\newcommand{\rebuttal}[1]{#1}
+
 \newenvironment{boxinsight}[1][]{\begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]\begin{insight}[#1]}{\end{insight}\end{tcolorbox}}
 
 % author data
@@ -141,6 +144,10 @@
   \printbibliography[heading=bibintoc]
   \appendix
     \include{chapters/04-01-appendix-formal}
-    % \include{chapters/04-02-appendix-experiments}
+    \include{chapters/04-02-appendix-overestimation}
+    \include{chapters/04-03-appendix-understanding}
+    \include{chapters/04-04-appendix-vagram}
+    \include{chapters/04-05-appendix-lambda}
+    \include{chapters/04-06-appendix-minimal}
   \backmatter
 \end{document}

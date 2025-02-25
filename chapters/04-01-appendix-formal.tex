@@ -1,6 +1,158 @@
 \chapter{Formal proofs and results}
 \label{app:proofs}
 
+\section{\autoref{chap:understanding}: Helpful definitions and lemmata}
+
+\label{app:formal:understanding}
+
+This section contains helpful lemmata that are used for our proofs.
+Where we took these from existing work, we provide references, otherwise the proofs are our own, although probably also known in the literature.
+
+\subsection{Linear Algebra}
+\label{app:formal:understanding:linalg}
+
+As before, for matrices $V$ we write $\mathrm{span}(V)$ to denote the span of their column vectors. 
+
+\begin{definition}[Top-$k$ singular vectors]\label{def:understanding:topk-single}
+Let $P^\pi = U^\top \Sigma V$ be the singular value decomposition, and assume that the diagonal of $\Sigma$ is arranged in decreasing order.
+The first $k$ rows of $U^\top$ and the first $k$ columns of $V$ are called the top-k left and right singular vectors, respectively.
+\end{definition}
+
+\begin{lemma}[Spectrum of Kronecker product matrix]\label{lem:understanding:spectrum_kronecker}
+    Consider two non-singular matrices $M$ and $N$. Let $\lambda_i$ be the eigenvalues of $M$ and $\mu_j$ be the eigenvalues of $N$, with eigenvectors $u_i$ and $v_j$ respectively. Then the eigenvalues of $M\otimes N$ are $\lambda_i\mu_j$ with eigenvectors $u_i \otimes v_j$ respectively.
+\end{lemma}
+
+\begin{proof}
+For any eigenvector $u_i$ of $M$ and $v_j$ of $N$, we have
+    $$\left(M\otimes N\right) \left(u_i \otimes v_j\right) = \left(M u_i\right) \otimes \left(N v_j\right) = \left(\lambda_i u_i\right)\otimes\left(\mu_j v_j\right) = \lambda_i\mu_j \left(u_i \otimes v_j\right).$$
+
+    So $u_i\otimes v_j$ is an eigenvector of $M\otimes N$ with eigenvalue $\lambda_i \mu_j$
+\end{proof}
+
+\begin{lemma}[Orthogonalized bases and the Kronecker product]\label{lem:understanding:orth_kronecker}
+    Let $V \in \vecR{n}{m}$ be a matrix. Let $\mathrm{orth}(V)$ be a matrix of any orthonormal basis vectors for the column vectors of $V$. Then $\mathrm{span}(V\otimes \vone) = \mathrm{span}(\mathrm{orth}(V) \otimes \vone)$. Furthermore $(1/k) \mathrm{orth}(V) \otimes \vone$ is an orthonormal basis of $\mathrm{span}(V \otimes \vone)$.
+\end{lemma}
+
+\begin{proof}
+    Let $V_i \otimes \vone^k$ be any column vector of $V\otimes \vone^k$. Let $\alpha_1,\dots,\alpha_m$ be coefficients so that $V_i = \sum_{j=1}^m \alpha_j \mathrm{orth}(V)_j$. Then $$\sum_{j=1}^m \alpha_j \left(\mathrm{orth}(V)_j \otimes \vone^k\right) = \left(\sum_{j=1}^m \alpha_j \mathrm{orth}(V)_j\right) \otimes \vone^k = V_i \otimes \vone^k,$$ following the standard associative and distributive properties of the Kronecker product.
+
+    As every vector in the original span can be represented in the orthogonalized span, the two are equivalent.
+
+    Finally note that $$\frac{1}{k}\left(\mathrm{orth}(V) \otimes \vone\right)_i^\top \left(\mathrm{orth}(V) \otimes \vone\right)_i = \frac{1}{k}\sum_{j=1}^k \left(\mathrm{orth}(V)_i^\top \mathrm{orth}(V)_i^\top\right) = 1,\,\text{and}$$ $$\frac{1}{k}\left(\mathrm{orth}(V) \otimes \vone\right)_j^\top \left(\mathrm{orth}(V) \otimes \vone\right)_i = \frac{1}{k}\sum_{t=1}^k \left(\mathrm{orth}(V)_j^\top \mathrm{orth}(V)_i^\top\right) = 0.$$
+\end{proof}
+
+\begin{lemma}[Reduced rank regression]\label{lem:understanding:rrr}
+    Let $C,D \in \vecR{n}{n}$, $A\in\vecR{n}{k}$, and $B\in\vecR{k}{n}$ be full rank matrices with $n \geq k$. Let $A^*, B^* = \min_{A,B} \lVert CAB - DC\rVert^2_F$. Let ${u_1,\dots,u_k}$ and ${v_1\dots,v_k}$ be the top-k singular vectors of $C^{-1}DC$ according to \autoref{def:understanding:topk-single}. Then $\mathrm{span}(A^*) = \mathrm{span}({u_1,\dots,u_k})$ and $\mathrm{span}(B) = \mathrm{span}({v_1,\dots,v_k})$.
+\end{lemma}
+
+This is a reduced rank regression problem \parencite{izenman1975reduced} or low-rank matrix approximation problem. 
+
+The unconstrained solution to the problem is given by $\hat{A}\hat{B} = C^{-1}DC$. From the Eckhart-Young theorem, we know that the optimal low-rank approximation to $C^{-1}DC$ is given by the top-k singular vectors.
+Therefore $A$ and $B$ span top-$k$ left and right singular vectors respectively.
+For a more extensive proof, please refer to \textcite{izenman1975reduced}.
+
+\subsection{Stochastic matrices}
+\begin{lemma}[Spectrum of a resolvent matrix]\label{lem:understanding:spectrum_resolvent}
+    Let $A$ be an invertible matrix with unique real eigenvalues and $-1 \leq \lambda_{\min} \leq \lambda_{\max} \leq 1 $. Let $\gamma\in(0,1)$.
+    The matrices $A$ and $(I - \gamma A)^{-1}$ have the same eigenvectors and the ordering of the corresponding eigenvalues remains the same.
+\end{lemma}
+
+\begin{proof}
+    Let $e$ be an eigenvector of $A$ and $\lambda$ the corresponding eigenvalue. Then $$(I - \gamma A)^{-1}e = \sum_{i=0}^n \gamma^n A^ne = \sum_{i=0}^n (\gamma\lambda)^n e = \frac{1}{1 - \gamma\lambda}e.$$ As $(1-\gamma\lambda)^{-1}$ is a monotonic function for $-1 \leq \lambda \leq 1$ and $\gamma\in[0,1]$, the ordering of the eigenvalues remains the same.
+\end{proof}
+
+\begin{lemma}[Basis equivalence of linear reward and value function]\label{lem:understanding:spectrum_rew_value}
+    Let $r$ be the vector representation of the reward function and $V$ of the value function respectively for an MDP with fixed policy and transition matrix $P^\pi$.
+    Let $U = \{u_1,\dots,u_n\}$ be the set of eigenvectors of $P^\pi$, and let $U^r \subseteq U$ be a minimal set of eigenvectors so that $r \in \mathrm{span}(U^r)$.
+    Then $V \in \mathrm{span}(U^r)$.
+\end{lemma}
+\begin{proof}
+    Let $r = \sum_{i=1}^k \alpha_i\, u^r_i$ be the reward representation in the basis $U^r$. Then, by \autoref{lem:understanding:spectrum_resolvent} $$V^\pi = (I - \gamma P^\pi)^{-1} r = \sum_{i=1}^k \frac{\alpha}{1 - \lambda_i\gamma}  u^r_i.$$
+\end{proof}
+
+
+\subsection{Ordinary differential equations}
+
+For describing the stability of ODEs, we use the notion of \emph{asymptotic stability}, with the condition $\Re(\lambda_i) < 0$ for all eigenvalues $\lambda_i$ of the Jacobian at a critical point.
+
+\begin{lemma}[Linear reparameterization of an autonomous ODE]
+\label{lem:understanding:stability}
+Let $y' = f(y)$ be an autonomous ordinary differential equation. Let $y^*$ be any critical point for which $f(y^*) = 0$. Let furthermore $x' = f(A x)$ be a reparameterized autonomous ODE for any invertible matrix $A$.
+Then the $x^*$ is a critical point with $f(Ax) = 0$ iff $x^* = A^{-1}y^*$.
+Furthermore, the eigenvalues of the Jacobian of $y'$ at $y^*$ are equal to the eigenvalues of the Jacobian of $x'$ at $x^* = A^{-1}y^*$.
+\end{lemma}
+
+\begin{proof}
+The direction $x = A^{-1}y^* \Rightarrow f(Ax) = 0$ is clear by direct evaluation. We now focus on the direction $f(Ax) = 0 \Rightarrow x = A^{-1}y^*$. Assume that $f(Ax)$ is $0$ and $x = A^{-1}y$ for a $y$ which is not a point satisfying $f(y)=0$. But then $0 = f(AA^{-1}y) = f(y) \neq 0$, a contradiction.
+
+For stability, note that
+\begin{alignat*}{2}
+    &\qquad&\ddt{t} y & = f(y) \\
+    \implies&&\ddt{t} x & = \ddt{y} x \ddt{t} y\\
+    && &= A^{-\top} f(y)\\
+    \implies&& \ddt{x} \ddt{t} x &= A^{-\top} \ddt{x} f(A x)\\
+    && &= A^{-\top}  \ddt{y} f(y) \ddt{x} A x\\
+    && &= A^{-\top}  \ddt{y} f(y) A^\top.
+\end{alignat*}
+This shows that the Jacobian $\ddt{x} f(Ax)|_{x=A^{-1}y_0}$ is similar to the Jacobian $\ddt{y} f(y)|_{y=y_0}$, which means their spectra are identical.
+\end{proof}
+
+
+\subsection{MDP representation and TD learning}
+
+\begin{lemma}[Lemma 5 of \textcite{tang2022understanding}]\label{prop:understanding:TangResult2}
+    Suppose $P^\pi$ is real-diagonalizable, and write $u_1,\dots, u_n$ for its eigenvectors. Then any orthonormal matrix $\Phi$ which has the same span as a set of $k$ eigenvectors is a minimizer of $L_{\text{lat}}$.
+\end{lemma}
+
+
+The next three statements are taken from \textcite{ghosh2020representations}.  They address the TD loss wrt to the learned weights $\hat{V}$ and fixed $\Phi$ (compare \autoref{sec:understanding:background}).
+We changed the notation of the statements to fit our notation here, we have denoted the diagonal matrix of the state distribution as $D$ and assume that $D=I$ in \autoref{assumption:understanding:1}, while \textcite{ghosh2020representations} uses $\Xi$. They use $\theta$ for the value function weights while we use $\hat{V}$.
+They also uses $\text{Spec}(A)$ to denote the spectrum, the set of all eigenvalues of a matrix $A$.
+
+The notion of stability used in \textcite{ghosh2020representations} is that of convergence to the unique fixed point of the projected Bellman update of the linear ODE induced by the $L_\text{TD}$ loss when fixing $\Phi$. In the two-timescale scenario considered in this paper, this corresponds to the ``inner'' ODE over $\hat{V}$.
+
+\begin{lemma}[Proposition 3.1 of \textcite{ghosh2020representations}]\label{prop:understanding:gosh1}
+    TD(0) is stable if and only if the eigenvalues of the implied iteration matrix $A_\Phi = \Phi^\top D (I - \gamma P^\pi) \Phi$ have positive real components, that is $$\text{Spec}\left(A_\Phi\right) \subset \mathbb{C}_+ \coloneq \{z : \text{Re}(z) > 0 \}.$$
+    We say that a particular choice of representation $\Phi$ is stable for $(P^\pi, \gamma, D)$ when $A_\Phi$ satisfies the above condition.
+\end{lemma}
+
+\begin{lemma}[Proposition 3.2 of \textcite{ghosh2020representations}]\label{prop:understanding:gosh2}
+    An orthogonal representation $\Phi$ is stable if and only if the real part of the eigenvalues of the induced transition matrix $\Pi P^\pi \Pi$ where $\Pi = \Phi\Phi^\top$ is bounded above, according to $$\text{Spec}\left(\Pi P^\pi \Pi\right) \subset \{z \in \mathbb{C}: \text{Re}(z) < \frac{1}{\gamma} \}.$$
+    In particular, $\Phi$ is stable if $\rho(\Pi P^\pi\Pi) < \frac{1}{\gamma}$.
+\end{lemma}
+
+\begin{lemma}[Theorem 4.1 of \textcite{ghosh2020representations}]\label{prop:understanding:gosh3}
+    An orthogonal invariant representation $\Phi$ (meaning $\text{span}(P^\pi \Phi) \subseteq \text{span}(\Phi)$) satisfies $$\text{Spec}\left(\Pi P^\pi \Pi\right) \subseteq \text{Spec}(P^\pi) \cup \{0\}$$ and is therefore stable.
+\end{lemma}
+
+As a corollary of their proof we have that 
+
+\begin{lemma}[Corollary of \textcite{ghosh2020representations}]\label{lem:understanding:gosh:corr}
+    Let $\Phi$ be an orthogonal (but not necessarily square) invariant representation of $P^\pi$. Then the spectral radius $\rho(\Phi^\top P^\pi \Phi) \leq 1.$ 
+\end{lemma}
+
+The proof follows directly from \autoref{prop:understanding:gosh3} by the cyclical property of the spectrum.
+    
+
+The following two results are our own, although closely related results exist in the literature.
+
+\begin{lemma}[Lossless approximation of $V$]\label{lem:understanding:lossless_approx}
+    Let $\Phi$ be an orthonormal basis of an invariant subspace of $P^\pi$ and let \autoref{assumption:understanding:low_rank} hold. Let $V = (I - \gamma P^\pi)^{-1} r$ be the value function of $P^\pi$ and $r^\pi$. Then $$\Phi (I - \gamma \Phi^\top P^\pi \Phi)^{-1} \Phi^\top r^\pi = V.$$
+\end{lemma}
+\begin{proof}
+    By \autoref{assumption:understanding:low_rank} we can find a matrix $A$ so that $r^\pi = \Phi A$ and $\Phi\Phi^\top r^\pi = r^\pi$, and by the invariant subspace assumption, we can find a matrix $B$ so that $P^\pi \Phi = \Phi B$.
+    Writing the inverted matrix as an infinite sum, which is valid as the spectrum of $\Phi^\top P^\pi \Phi$ is bounded by 1 following from \autoref{gosh:understanding:corr} and Carl Neumann's theorem over power series, we obtain
+    \begin{align*}
+        \Phi (I - \gamma \Phi^\top P^\pi \Phi)^{-1} \Phi r^\pi &= \Phi \sum_{n=0}^\infty \gamma^n (\Phi^\top P^\pi \Phi)^n \Phi r^\pi \\
+        &= \Phi \sum_{n=0}^\infty \gamma^n B^n \Phi^\top r^\pi &\quad (P^\pi \Phi = \Phi B)~\text{and}~(\Phi^\top \Phi = I)\\
+        &= \sum_{n=0}^\infty \gamma^n \Phi B^n \Phi^\top r^\pi \\
+        &= \sum_{n=0}^\infty \gamma^n {P^\pi}^n \Phi\Phi^\top r^\pi &\quad (\Phi B = P^\pi \Phi)~\text{iterated} \\
+        &= \sum_{n=0}^\infty \gamma^n {P^\pi}^n r^\pi &\quad (\Phi\Phi^\top r^\pi = r^\pi) \\
+        &= V
+    \end{align*}
+\end{proof}
+
+
 
 \section{\autoref{chap:cvaml}: Helpful definitions and lemmata}
 \label{app:formal:cvaml}
@@ -8,7 +160,7 @@
 We provide helper lemmata for \autoref{sec:cvaml:theory_1} and \autoref{sec:cvaml:theory_2} in this section.
 
 All of our proofs rely heavily on a standard expansion technique which is used to prove that sample-based losses correctly approximate population losses.
-This is found in standard textbooks on learning theory such as \citet{gyrfi2002adt}. 
+This is found in standard textbooks on learning theory such as \textcite{gyrfi2002adt}. 
 
 It proceeds by expanding a loss $\EEX{x\sim p, y\sim q(\cdot|x)}{\left|f(x) - y\right|^2}$ with an expected target $f^*(x)$.
 In our case, this is mostly the minimizer of the target loss when evaluating surrogate losses.
@@ -35,7 +187,7 @@ This excludes a corner case of our proof, as fully deterministic environments an
 
 We now obtain three simple lemmata about the minima of the function $g$.
 
-\begin{lemma}\label{lemma3}
+\begin{lemma}\label{lemma:cvaml:3}
 There does not exist a distribution $p'$ such that $p'\not\in \P^*$, $\EEX{p'}{f(x)} = \EEX{p}{f(x)}$, and $g(p') \leq g(p^*)$ for any $p^*\in\P$.
 \end{lemma}
 
@@ -65,10 +217,10 @@ We can rewrite $g$ as
 \begin{align}
     g(q) &=\EEX{p}{\left(\EEX{q}{f(y)} - f(x)\right)^2} + \frac{1}{k}\mathrm{Var}_q[f(x)] \\
     &= \EEX{p}{f(x)^2} - 2\EEX{p}{f(x)}\EEX{q}{f(x)} + \EEX{q}{f(x)}^2 + \frac{1}{k}\mathrm{Var}_q[f(x)]\\
-    & \leq \EEX{p}{f(x)^2} - 2\EEX{p}{f(x)}\EEX{q}{f(x)} + \EEX{q}{f(x)^2}  + \frac{1}{k}\mathrm{Var}_q[f(x)]\label{ineq:jensen}\\
+    & \leq \EEX{p}{f(x)^2} - 2\EEX{p}{f(x)}\EEX{q}{f(x)} + \EEX{q}{f(x)^2}  + \frac{1}{k}\mathrm{Var}_q[f(x)]\label{eq:cvaml:jensen}\\
     & = \mathrm{Var}_p[f(x)] + \frac{k + 1}{k}\mathrm{Var}_q[f(x)] + (\EEX{p}{f(x)} - \EEX{q}{f(x)})^2
 \end{align}
-\autoref{ineq:jensen} follows from Jensen's inequality.
+\autoref{eq:cvaml:jensen} follows from Jensen's inequality.
 Intuitively, the function $g$ depends on the squared deviation of the expectation and the variance of both $p$ and $q$.
 If the variance of $q$ can be reduced more than the squared deviation of the means, then $\P^*$ will not contain the minimum of $g$.
 
@@ -78,7 +230,7 @@ In practice, any distribution with $\frac{k + 1}{k}\mathrm{Var}_q[f(x)] + (\EEX{
 As our definition of calibration does not require us to exhaustively characterize all cases for $p$, $p^*$, and $q$, we have chosen this set of conditions which simplifies the proof. 
 As our Garnet experiments show, many randomly generated transition distributions admit distributions where the minimizer of $g$ does not match $p$ in expectation.
 
-\begin{lemma}\label{lemma4}
+\begin{lemma}\label{lemma:cvaml:4}
     If there exists a distribution $q$ with $(\EEX{q}{f(x)} - \EEX{p}{f(x)})^2 < \frac{1}{k} \mathrm{Var}_{p^*}[f(x)]$, and $\mathrm{Var}_{q}[f(x)] = 0$, then $g(q) < g(p^*)$ for all $p^*$ and, by the assumptions on $p$ and $f$, $\EEX{x\sim q}{f(x)} \neq \EEX{x \sim p}{f(x)}$.
     % $q \in \argmin_{\xi\in \P} q(\xi)$ and $\EEX{x\sim q}{f(x)} \neq \EEX{x \sim p}{f(x)}$.
 \end{lemma}
@@ -87,32 +239,32 @@ As our Garnet experiments show, many randomly generated transition distributions
     \begin{align}
         g(q) = \EEX{p}{\left(\EEX{q}{f(y)} - f(x)\right)^2} &= \EEX{p}{f(x)^2} - 2\EEX{p}{f(x)}\EEX{q}{f(x)} + \EEX{q}{f(x)}^2 \\
         & = \mathrm{Var}_p[f(x)] + (\EEX{p}{f(x)} - \EEX{q}{f(x)})^2 \\
-        &< \mathrm{Var}_p[f(x)] + \frac{1}{k}\mathrm{Var}_{p^*}[f(x)] = g(p^*) \label{eq:final_line}
+        &< \mathrm{Var}_p[f(x)] + \frac{1}{k}\mathrm{Var}_{p^*}[f(x)] = g(p^*) \label{eq:cvaml:final_line}
     \end{align}
-    \autoref{eq:final_line} follows from the assumption on q.
+    \autoref{eq:cvaml:final_line} follows from the assumption on q.
     
     By the assumptions on $p$ and $f$ there does not exist a $x\in\mathcal{X}$ so that $f(x) = \EEX{p}{f(x)}$. However, as $\mathrm{Var}_q[f(x)] = 0$, $\EEX{q}{f(x)} = f(x_i)$ for some $x_i\in\mathcal{X}$. Therefore, $\EEX{q}{f(x)} \neq \EEX{p}{f(x)}$, which concludes the proof.
 \end{proof}
 
 As a consequence, we obtain the following, final lemma.
 
-\begin{lemma}\label{lemma5}
+\begin{lemma}\label{lemma:cvaml:5}
     Let $\P^\mathbb{E}$ be the set of all distributions $\xi$ so that $\EEX{p}{f(x)} = \EEX{\xi}{f(x)}.$
-    Assume $q$ satisfying \autoref{lemma4} exists.
+    Assume $q$ satisfying \autoref{lemma:cvaml:4} exists.
 
     Then $\argmin_\xi g(\xi) \not \subseteq \P^\mathbb{E}$.
 \end{lemma}
 
 \begin{proof}
-    The lemma is a direct consequence of \autoref{lemma3} and \autoref{lemma4}. 
-    By \autoref{lemma3}, for all $p' \in \P^\mathbb{E}$ $g(p') \geq g(p^*)$. As a consequence of \autoref{lemma4}, there exists at least one $q$ with $g(q) < g(p^*)$ and that $q$ has $\EEX{q}{f(x)} \neq \EEX{p}{f(x)}.$ Then the statement follows directly as $q \not \in \P^\mathbb{E}.$
+    The lemma is a direct consequence of \autoref{lemma:cvaml:3} and \autoref{lemma:cvaml:4}. 
+    By \autoref{lemma:cvaml:3}, for all $p' \in \P^\mathbb{E}$ $g(p') \geq g(p^*)$. As a consequence of \autoref{lemma:cvaml:4}, there exists at least one $q$ with $g(q) < g(p^*)$ and that $q$ has $\EEX{q}{f(x)} \neq \EEX{p}{f(x)}.$ Then the statement follows directly as $q \not \in \P^\mathbb{E}.$
 \end{proof}
 
 
 The following lemma shows that a function that minimizes a quadratic and a variance term cannot be the minimum function of the quadratic. This is used to show that the minimum of the MuZero value function learning term is not the same as applying the model-based Bellman operator.
 
 \begin{lemma}
-\label{lemma_muzero}
+\label{lemma:cvaml:muzero}
 Let $g: \mathcal{X} \rightarrow \mathbb{R}$ be a function that is not constant and let $\mu$ be a non-degenerate probability distribution over $\mathcal{X}$. 
 Let $\mathcal{L}\roundb{f} = \mathbb{E}_{x\sim\mu}\squareb{\roundb{f(x) - g(x)}^2} + \mathbb{E}_{x\sim\mu}\squareb{f(x) g(x)} - \mathbb{E}_{x\sim\mu}\squareb{f(x)}\mathbb{E}_\mu\squareb{g(x)}$.
 There exists a function space $\mathcal{F}$ with $g \in \mathcal{F}$ so that $g \notin \argmin_{f \in \mathcal{F}} \mathcal{L}(f)$.
@@ -144,18 +296,18 @@ We now can construct the function space $\mathcal{F}$ so that it includes at lea
 
 \end{proof}
 
-\subsection{\autoref{sec:cvaml:theory_2} Propositions from \citet{bertsekasshreve1978}}
-\label{sec:bertsekas}
+\subsection{\autoref{sec:cvaml:theory_2} Propositions from \textcite{bertsekasshreve1978}}
+\label{sec:cvaml:bertsekas}
 
-For convenience, we quote some results from~\citet{bertsekasshreve1978}.
+For convenience, we quote some results from~\textcite{bertsekasshreve1978}.
 These are used in the proof of Lemma~\ref{lem:cvaml:deterministic_representation_lemma}.
 While some of the definitions are rather technical, it is mostly sufficient to see a \emph{stochastic kernel} as the continuous generalization of the transition matrix in finite MDPs.
-The projection used in \autoref{prop:733} is simply a restriction of a set of tuples $(x,y)$ on the $x$ values.
-Other topological statements are standard and can be found in textbooks such as~\citet{Munkres2018}.
+The projection used in \autoref{prop:cvaml:733} is simply a restriction of a set of tuples $(x,y)$ on the $x$ values.
+Other topological statements are standard and can be found in textbooks such as~\textcite{munkres2018}.
 
 
 \begin{proposition}[Proposition~7.30]
-\label{prop:730}
+\label{prop:cvaml:730}
     Let $\mathcal{X}$ and $\mathcal{Y}$ be separable metrizable spaces and let $q(\mathrm{d}y|x)$ be a continuous stochastic kernel on $\mathcal{Y}$ given $\mathcal{X}$. If $f\in\mathcal{C}(\mathcal{X}\times \mathcal{Y})$, the function $\lambda: \mathcal{X} \rightarrow \mathbb{R}$ defined by
     \[
         \lambda(x) = \int f(x,y) q(\mathrm{d}y|x)
@@ -165,167 +317,16 @@ Other topological statements are standard and can be found in textbooks such as~
 
 \newcommand{\proj}{\text{proj}}
 \begin{proposition}[Proposition~7.33]
-\label{prop:733}
-    Let $\mathcal{X}$ be a metrizable space, $\mathcal{Y}$ a compact metrizable space, $\mathcal{D}$ a closed subset of $\mathcal{X}\times\mathcal{Y}$, $\mathcal{D}_x = \{y | (x,y) \in \mathcal{D} \}$, and let $f:\mathcal{D}\rightarrow \mathbb{R}^*$ be lower semicontinuous.
+\label{prop:cvaml:733}
+    Let $\mathcal{X}$ be a metrizable space, $\mathcal{Y}$ a compact metrizable space, $\mathcal{D}$ a closed subset of $\mathcal{X}\times\mathcal{Y}$, $\mathcal{D}_x = \{y | (x,y) \in \mathcal{D} \}$, and let $f:\mathcal{D}\rightarrow \mathbb{R}^*$ be lower semi-continuous.
     Let $f^*:\proj_\mathcal{X}(\mathcal{D}) \rightarrow \mathbb{R}^*$ be given by \[
     f^*(x) = \min_{y \in \mathcal{D}_x} f(x,y).
     \]
-    Then $\proj_\mathcal{X}(\mathcal{D})$ is closed in $\mathcal{X}$, $f^*$ is lower semicontinuous, and there exists a Borel-measurable function $\varphi: \proj_\mathcal{X}(\mathcal{D}) \rightarrow \mathcal{Y}$ such that $\text{range}(\varphi) \subset \mathcal{D}$ and \[
+    Then $\proj_\mathcal{X}(\mathcal{D})$ is closed in $\mathcal{X}$, $f^*$ is lower semi-continuous, and there exists a Borel-measurable function $\varphi: \proj_\mathcal{X}(\mathcal{D}) \rightarrow \mathcal{Y}$ such that $\text{range}(\varphi) \subset \mathcal{D}$ and \[
     f\squareb{x, \varphi(x)} = f^*(x), \quad \forall x \in \proj_\mathcal{X}(\mathcal{D}).
     \]
 \end{proposition}
 
 In our proof, we construct $f^*$ as the minimum of an IterVAML style loss and equate $\varphi$ with the function we call $f$ in our proof.
-The change in notation is chosen to reflect the modern notation in MBRL -- in the textbook, older notation is used.
-\label{app:conjecture}
-
-\section{\autoref{chap:understanding}: Helpful definitions and lemmata}
-\label{app:formal:understanding}
-
-This section contains helpful lemmata that are used for our proofs.
-Where we took these from existing work, we provide references, otherwise the proofs are our own, although probably also known in the literature.
-
-\subsection{Linear Algebra}
-\label{app:linalg}
-
-As before, for matrices $V$ we write $\mathrm{span}(V)$ to denote the span of their column vectors. 
-
-\begin{definition}[Top-$k$ singular vectors]\label{def:topk-single}
-Let $P^\pi = U^\top \Sigma V$ be the singular value decomposition, and assume that the diagonal of $\Sigma$ is arranged in decreasing order.
-The first $k$ rows of $U^\top$ and the first $k$ columns of $V$ are called the top-k left and right singular vectors, respectively.
-\end{definition}
-
-\begin{lemma}[Spectrum of Kronecker product matrix]\label{lem:spectrum_kronecker}
-    Consider two non-singular matrices $M$ and $N$. Let $\lambda_i$ be the eigenvalues of $M$ and $\mu_j$ be the eigenvalues of $N$, with eigenvectors $u_i$ and $v_j$ respectively. Then the eigenvalues of $M\otimes N$ are $\lambda_i\mu_j$ with eigenvectors $u_i \otimes v_j$ respectively.
-\end{lemma}
-
-\begin{proof}
-For any eigenvector $u_i$ of $M$ and $v_j$ of $N$, we have
-    $$\left(M\otimes N\right) \left(u_i \otimes v_j\right) = \left(M u_i\right) \otimes \left(N v_j\right) = \left(\lambda_i u_i\right)\otimes\left(\mu_j v_j\right) = \lambda_i\mu_j \left(u_i \otimes v_j\right).$$
-
-    So $u_i\otimes v_j$ is an eigenvector of $M\otimes N$ with eigenvalue $\lambda_i \mu_j$
-\end{proof}
-
-\begin{lemma}[Orthogonalized bases and the Kronecker product]\label{lem:orth_kronecker}
-    Let $V \in \vecR{n}{m}$ be a matrix. Let $\mathrm{orth}(V)$ be a matrix of any orthonormal basis vectors for the column vectors of $V$. Then $\mathrm{span}(V\otimes \vone) = \mathrm{span}(\mathrm{orth}(V) \otimes \vone)$. Furthermore $(1/k) \mathrm{orth}(V) \otimes \vone$ is an orthonormal basis of $\mathrm{span}(V \otimes \vone)$.
-\end{lemma}
-
-\begin{proof}
-    Let $V_i \otimes \vone^k$ be any column vector of $V\otimes \vone^k$. Let $\alpha_1,\dots,\alpha_m$ be coefficients so that $V_i = \sum_{j=1}^m \alpha_j \mathrm{orth}(V)_j$. Then $$\sum_{j=1}^m \alpha_j \left(\mathrm{orth}(V)_j \otimes \vone^k\right) = \left(\sum_{j=1}^m \alpha_j \mathrm{orth}(V)_j\right) \otimes \vone^k = V_i \otimes \vone^k,$$ following the standard associative and distributive properties of the Kronecker product.
-
-    As every vector in the original span can be represented in the orthogonalized span, the two are equivalent.
-
-    Finally note that $$\frac{1}{k}\left(\mathrm{orth}(V) \otimes \vone\right)_i^\top \left(\mathrm{orth}(V) \otimes \vone\right)_i = \frac{1}{k}\sum_{j=1}^k \left(\mathrm{orth}(V)_i^\top \mathrm{orth}(V)_i^\top\right) = 1,\,\text{and}$$ $$\frac{1}{k}\left(\mathrm{orth}(V) \otimes \vone\right)_j^\top \left(\mathrm{orth}(V) \otimes \vone\right)_i = \frac{1}{k}\sum_{t=1}^k \left(\mathrm{orth}(V)_j^\top \mathrm{orth}(V)_i^\top\right) = 0.$$
-\end{proof}
-
-\begin{lemma}[Reduced rank regression]\label{lem:rrr}
-    Let $C,D \in \vecR{n}{n}$, $A\in\vecR{n}{k}$, and $B\in\vecR{k}{n}$ be full rank matrices with $n \geq k$. Let $A^*, B^* = \min_{A,B} \lVert CAB - DC\rVert^2_F$. Let ${u_1,\dots,u_k}$ and ${v_1\dots,v_k}$ be the top-k singular vectors of $C^{-1}DC$ according to \autoref{def:topk-single}. Then $\mathrm{span}(A^*) = \mathrm{span}({u_1,\dots,u_k})$ and $\mathrm{span}(B) = \mathrm{span}({v_1,\dots,v_k})$.
-\end{lemma}
-
-This is a reduced rank regression problem \parencite{izenman1975reduced} or low-rank matrix approximation problem. 
-
-The unconstrained solution to the problem is given by $\hat{A}\hat{B} = C^{-1}DC$. From the Eckhart-Young theorem, we know that the optimal low-rank approximation to $C^{-1}DC$ is given by the top-k singular vectors.
-Therefore $A$ and $B$ span top-$k$ left and right singular vectors respectively.
-For a more extensive proof, please refer to \cite{izenman1975reduced}.
-
-\subsection{Stochastic matrices}
-\begin{lemma}[Spectrum of a resolvent matrix]\label{lem:spectrum_resolvent}
-    Let $A$ be an invertible matrix with unique real eigenvalues and $-1 \leq \lambda_{\min} \leq \lambda_{\max} \leq 1 $. Let $\gamma\in(0,1)$.
-    The matrices $A$ and $(I - \gamma A)^{-1}$ have the same eigenvectors and the ordering of the corresponding eigenvalues remains the same.
-\end{lemma}
-
-\begin{proof}
-    Let $e$ be an eigenvector of $A$ and $\lambda$ the corresponding eigenvalue. Then $$(I - \gamma A)^{-1}e = \sum_{i=0}^n \gamma^n A^ne = \sum_{i=0}^n (\gamma\lambda)^n e = \frac{1}{1 - \gamma\lambda}e.$$ As $(1-\gamma\lambda)^{-1}$ is a monotonic function for $-1 \leq \lambda \leq 1$ and $\gamma\in[0,1]$, the ordering of the eigenvalues remains the same.
-\end{proof}
-
-\begin{lemma}[Basis equivalence of linear reward and value function]\label{lem:spectrum_rew_value}
-    Let $r$ be the vector representation of the reward function and $V$ of the value function respectively for an MDP with fixed policy and transition matrix $P^\pi$.
-    Let $U = \{u_1,\dots,u_n\}$ be the set of eigenvectors of $P^\pi$, and let $U^r \subseteq U$ be a minimal set of eigenvectors so that $r \in \mathrm{span}(U^r)$.
-    Then $V \in \mathrm{span}(U^r)$.
-\end{lemma}
-\begin{proof}
-    Let $r = \sum_{i=1}^k \alpha_i\, u^r_i$ be the reward representation in the basis $U^r$. Then, by \autoref{lem:spectrum_resolvent} $$V^\pi = (I - \gamma P^\pi)^{-1} r = \sum_{i=1}^k \frac{\alpha}{1 - \lambda_i\gamma}  u^r_i.$$
-\end{proof}
-
-
-\subsection{Ordinary differential equations}
-
-For describing the stability of ODEs, we use the notion of \emph{asymptotic stability}, with the condition $\Re(\lambda_i) < 0$ for all eigenvalues $\lambda_i$ of the Jacobian at a critical point.
-
-\begin{lemma}[Linear reparameterization of an autonomous ODE]
-\label{lem:stability}
-Let $y' = f(y)$ be an autonomous ordinary differential equation. Let $y^*$ be any critical point for which $f(y^*) = 0$. Let furthermore $x' = f(A x)$ be a reparameterized autonomous ODE for any invertible matrix $A$.
-Then the $x^*$ is a critical point with $f(Ax) = 0$ iff $x^* = A^{-1}y^*$.
-Furthermore, the eigenvalues of the Jacobian of $y'$ at $y^*$ are equal to the eigenvalues of the Jacobian of $x'$ at $x^* = A^{-1}y^*$.
-\end{lemma}
-
-\begin{proof}
-The direction $x = A^{-1}y^* \Rightarrow f(Ax) = 0$ is clear by direct evaluation. We now focus on the direction $f(Ax) = 0 \Rightarrow x = A^{-1}y^*$. Assume that $f(Ax)$ is $0$ and $x = A^{-1}y$ for a $y$ which is not a point satisfying $f(y)=0$. But then $0 = f(AA^{-1}y) = f(y) \neq 0$, a contradiction.
-
-For stability, note that
-\begin{alignat*}{2}
-    &\qquad&\ddt{t} y & = f(y) \\
-    \implies&&\ddt{t} x & = \ddt{y} x \ddt{t} y\\
-    && &= A^{-\top} f(y)\\
-    \implies&& \ddt{x} \ddt{t} x &= A^{-\top} \ddt{x} f(A x)\\
-    && &= A^{-\top}  \ddt{y} f(y) \ddt{x} A x\\
-    && &= A^{-\top}  \ddt{y} f(y) A^\top.
-\end{alignat*}
-This shows that the Jacobian $\ddt{x} f(Ax)|_{x=A^{-1}y_0}$ is similar to the Jacobian $\ddt{y} f(y)|_{y=y_0}$, which means their spectra are identical.
-\end{proof}
-
-
-\subsection{MDP representation and TD learning}
-
-\begin{lemma}[Lemma 5 of \cite{tang2022understanding}]\label{prop:TangResult2}
-    Suppose $P^\pi$ is real-diagonalizable, and write $u_1,\dots, u_n$ for its eigenvectors. Then any orthonormal matrix $\Phi$ which has the same span as a set of $k$ eigenvectors is a minimizer of $L_{\text{lat}}$.
-\end{lemma}
-
-
-The next three statements are taken from \cite{ghosh2020representations}.  They address the TD loss wrt to the learned weights $\hat{V}$ and fixed $\Phi$ (compare \autoref{sec:understanding:background}).
-We changed the notation of the statements to fit our notation here, we have denoted the diagonal matrix of the state distribution as $D$ and assume that $D=I$ in \autoref{assumption:understanding:1}, while \cite{ghosh2020representations} uses $\Xi$. They use $\theta$ for the value function weights while we use $\hat{V}$.
-They also uses $\text{Spec}(A)$ to denote the spectrum, the set of all eigenvalues of a matrix $A$.
-
-The notion of stability used in \cite{ghosh2020representations} is that of convergence to the unique fixed point of the projected Bellman update of the linear ODE induced by the $L_\text{TD}$ loss when fixing $\Phi$. In the two-timescale scenario considered in this paper, this corresponds to the ``inner'' ODE over $\hat{V}$.
-
-\begin{lemma}[Proposition 3.1 of \cite{ghosh2020representations}]\label{prop:gosh1}
-    TD(0) is stable if and only if the eigenvalues of the implied iteration matrix $A_\Phi = \Phi^\top D (I - \gamma P^\pi) \Phi$ have positive real components, that is $$\text{Spec}\left(A_\Phi\right) \subset \mathbb{C}_+ \coloneq \{z : \text{Re}(z) > 0 \}.$$
-    We say that a particular choice of representation $\Phi$ is stable for $(P^\pi, \gamma, D)$ when $A_\Phi$ satisfies the above condition.
-\end{lemma}
-
-\begin{lemma}[Proposition 3.2 of \cite{ghosh2020representations}]\label{prop:gosh2}
-    An orthogonal representation $\Phi$ is stable if and only if the real part of the eigenvaluse of the induced transition matrix $\Pi P^\pi \Pi$ where $\Pi = \Phi\Phi^\top$ is bounded above, according to $$\text{Spec}\left(\Pi P^\pi \Pi\right) \subset \{z \in \mathbb{C}: \text{Re}(z) < \frac{1}{\gamma} \}.$$
-    In particular, $\Phi$ is stable if $\rho(\Pi P^\pi\Pi) < \frac{1}{\gamma}$.
-\end{lemma}
-
-\begin{lemma}[Theorem 4.1 of \cite{ghosh2020representations}]\label{prop:gosh3}
-    An orthogonal invariant representation $\Phi$ (meaning $\text{span}(P^\pi \Phi) \subseteq \text{span}(\Phi)$) satisfies $$\text{Spec}\left(\Pi P^\pi \Pi\right) \subseteq \text{Spec}(P^\pi) \cup \{0\}$$ and is therefore stable.
-\end{lemma}
-
-As a corollary of their proof we have that 
-
-\begin{lemma}[Corollary of \cite{ghosh2020representations}]\label{gosh:corr}
-    Let $\Phi$ be an orthogonal (but not necessarily square) invariant representation of $P^\pi$. Then the spectral radius $\rho(\Phi^\top P^\pi \Phi) \leq 1.$ 
-\end{lemma}
-
-The proof follows directly from \autoref{prop:gosh3} by the cyclicality of the spectrum.
-    
-
-The following two results are our own, although closely related results exist in the literature.
-
-\begin{lemma}[Lossless approximation of $V$]\label{lem:lossless_approx}
-    Let $\Phi$ be an orthonormal basis of an invariant subspace of $P^\pi$ and let \autoref{assumption:understanding:low_rank} hold. Let $V = (I - \gamma P^\pi)^{-1} r$ be the value function of $P^\pi$ and $r^\pi$. Then $$\Phi (I - \gamma \Phi^\top P^\pi \Phi)^{-1} \Phi^\top r^\pi = V.$$
-\end{lemma}
-\begin{proof}
-    By \autoref{assumption:understanding:low_rank} we can find a matrix $A$ so that $r^\pi = \Phi A$ and $\Phi\Phi^\top r^\pi = r^\pi$, and by the invariant subspace assumption, we can find a matrix $B$ so that $P^\pi \Phi = \Phi B$.
-    Writing the inverted matrix as an infinite sum, which is valid as the spectrum of $\Phi^\top P^\pi \Phi$ is bounded by 1 following from \autoref{gosh:corr} and Carl Neumann's theorem over power series, we obtain
-    \begin{align*}
-        \Phi (I - \gamma \Phi^\top P^\pi \Phi)^{-1} \Phi r^\pi &= \Phi \sum_{n=0}^\infty \gamma^n (\Phi^\top P^\pi \Phi)^n \Phi r^\pi \\
-        &= \Phi \sum_{n=0}^\infty \gamma^n B^n \Phi^\top r^\pi &\quad (P^\pi \Phi = \Phi B)~\text{and}~(\Phi^\top \Phi = I)\\
-        &= \sum_{n=0}^\infty \gamma^n \Phi B^n \Phi^\top r^\pi \\
-        &= \sum_{n=0}^\infty \gamma^n {P^\pi}^n \Phi\Phi^\top r^\pi &\quad (\Phi B = P^\pi \Phi)~\text{iterated} \\
-        &= \sum_{n=0}^\infty \gamma^n {P^\pi}^n r^\pi &\quad (\Phi\Phi^\top r^\pi = r^\pi) \\
-        &= V
-    \end{align*}
-\end{proof}
-
+The change in notation is chosen to reflect the modern notation in \ac{mbrl} -- in the textbook, older notation is used.
+\label{app:cvaml:conjecture}

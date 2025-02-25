@@ -55,7 +55,7 @@ This allows us to discuss the mechanisms underlying representation learning in a
 
 Rigorously analyzing the effect of different loss functions on neural networks is challenging due to non-linearities in the networks, shifting data distributions, and policy updates.
 Therefore, we have to resort to studying simplified models to obtain quantitative and qualitative results, and only consider the fixed policy case in our analysis.
-Studying feature learning dynamics using linear networks was popularized by \textcite{saxe2014exact} and has proven to be a valuable tool to analyze diverse objectives such as TD learning \parencite{tang2023towards,lelan2023bootstrapped}, latent self-prediction \parencite{tian2021understanding,tang2022understanding}, and linear autoencoders \parencite{pretorius2018learning,bao2020regularized}.
+Studying feature learning dynamics using linear networks was popularized by \textcite{saxe2014exact} and has proven to be a valuable tool to analyze diverse objectives such as TD learning \parencite{tang2023towards,lelan2023bootstrapped}, latent self-prediction \parencite{tian2021understanding,tang2022understanding}, and linear auto-encoders \parencite{pretorius2018learning,bao2020regularized}.
 
 We rewrite the feature learning algorithms using two to three matrices in lieu of more complex functions. Furthermore, we use several assumptions throughout this chapter that are listed here for clarity.
 
@@ -135,7 +135,7 @@ If $R_N = 0$, we refer to $N$ as a distracting process, as it does not contribut
 This process models a common occurrence: two non-interacting processes unfold simultaneously, with the states being a combination of the two.
 Such a process can model a well-studied form of distraction, the background distractions in \cite{stone2021thedc} or the random observation dimension in \textcite{nikishin2021control,voelcker2022value}.
 In this case, the foreground process $M$ is assumed to carry the reward information, while the reward vector of the background process $N$ is 0.
-We review important properties of the Kronecker product in \autoref{app:understanding:linalg}.
+We review important properties of the Kronecker product in \autoref{app:formal:understanding:linalg}.
 
 
 Note that our formalizations of observation functions and distracting processes is distinct from the assumptions in \emph{linear MDPs} \parencite{jin2020provably}. Concretely we do not assume that the processes are low-rank compressible, just that they are factorizable.
@@ -151,9 +151,9 @@ These \emph{insights} present the basis for our empirical comparison in \autoref
 
 
 \cite{tang2022understanding} show that for symmetric MDPs, latent self-prediction converges to subspaces spanned by eigenvectors of $P^\pi$. 
-We extend this result in the following sense: if $P^\pi$ has positive real eigenvalues, invariant sub-spaces which are not spanned by the top-k eigenvectors are unstable for gradient descent.\footnote{The assumption of real \emph{positive} eigenvalues is both more and less restrictive than the symmetry assumption made by \textcite{tang2022understanding}. An extension of our result to negative eigenvalues is presented in \autoref{app:understanding:proofs}, together with an extended comparison to the results obtained by \textcite{tang2022understanding} and \textcite{lelan2023bootstrapped}.}
+We extend this result in the following sense: if $P^\pi$ has positive real eigenvalues, invariant sub-spaces which are not spanned by the top-k eigenvectors are unstable for gradient descent.\footnote{The assumption of real \emph{positive} eigenvalues is both more and less restrictive than the symmetry assumption made by \textcite{tang2022understanding}. An extension of our result to negative eigenvalues is presented below, together with an extended comparison to the results obtained by \textcite{tang2022understanding} and \textcite{lelan2023bootstrapped}.}
 It is interesting to note that the resulting features are identical to those obtained using the multi-reward approach described by \cite{lelan2023bootstrapped} (albeit under slightly different technical conditions), which highlights the close connection between the self-predictive approach and bootstrapped generalized value function learning.
-This furthermore suggests that using random rewards as auxiliary objectives \parencite{farebrother2023protovalue} could result in very similar features as using self-prediction, which presentes an interesting avnue for further empirical study.
+This furthermore suggests that using random rewards as auxiliary objectives \parencite{farebrother2023protovalue} could result in very similar features as using self-prediction, which presents an interesting avenue for further empirical study.
 
 \begin{assumption}
 \label{assumption:understanding:3}
@@ -170,7 +170,7 @@ Furthermore, if $P^\pi$ is real-diagonalizable with positive eigenvalues, all in
 \end{restatable}
 
 \begin{proof}
-    At any stationary point the gradient $\frac{d}{dt}\Phi_t$ must be equal to $0$, which from \cref{eq:BYOLTwoTimescale} means that we must have $\left(\Phi_t\left(\Phi^\top_t \Phi\right)^{-1}\Phi_t^\top - I\right)P^\pi\Phi_t \Phi_t^\top {P^\pi}^\top \Phi_t\left(\Phi^\top_t \Phi\right)^{-\top}=0$.
+    At any stationary point the gradient $\frac{d}{dt}\Phi_t$ must be equal to $0$, which from \cref{eq:understanding:BYOLTwoTimescale} means that we must have $\left(\Phi_t\left(\Phi^\top_t \Phi\right)^{-1}\Phi_t^\top - I\right)P^\pi\Phi_t \Phi_t^\top {P^\pi}^\top \Phi_t\left(\Phi^\top_t \Phi\right)^{-\top}=0$.
 
     Assume that the column vectors of $\Phi^*$ spans an invariant subspace of $P^\pi$. This implies that there exists a full rank matrix $A$ so that $P^\pi \Phi^* = \Phi^*A$.
     Then 
@@ -292,14 +292,14 @@ Plugging this solution back into the original equation,
     &= \lVert \Phi \left(\Phi^\top \Phi\right)^{-1} \Phi^\top P - P \rVert_F^2,
 \end{align}
 we notice that $F$ cancels.
-Therefore, the optimality conditions for $A$ follow from the Eckart-Young theorem, as presented in \autoref{lem:rrr}
+Therefore, the optimality conditions for $A$ follow from the Eckart-Young theorem, as presented in \autoref{lem:understanding:rrr}
 \end{proof}
 
 
 Features of this form have been studied extensively and the convergence properties of linear auto-encoders are well understood \parencite{baldi1989neural,pretorius2018learning,bao2020regularized}.
 
 \autoref{prop:understanding:1} and \autoref{prop:understanding:2} together show that there is a subtle but important difference between latent self-prediction and observation reconstruction: the features will converge to eigenspaces in the former case, and to singular space in the latter case.
-Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the eigen-spaces coincide and latent self-prediction and reconstruction converge to the same features \parencite{tang2022understanding}.
+Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the eigenspaces coincide and latent self-prediction and reconstruction converge to the same features \parencite{tang2022understanding}.
 
 \textcite{behzadian2019fast} show that top $k$ singular vectors are optimal low-rank linear features when making no assumptions on the reward, meaning observation reconstruction should lead to the best features when considering every possible bounded (or unknown) reward.
 \textcite{behzadian2019fast} and \textcite{lelan2023bootstrapped} both highlight that if eigenvectors and singular vectors differ, singular vectors often lead to better performing features.
@@ -315,10 +315,10 @@ Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the eig
 
 Recall that the gradient dynamics presented in (\ref{eq:understanding:BYOLTwoTimescale}) and analyzed in \autoref{prop:understanding:1} and \autoref{prop:understanding:2} rely on the assumption that $\mathbb{E}[xx^\top] = I$ (see \autoref{assumption:understanding:1}).
 We now introduce the observation matrix $\gO$, which leads to correlations between different features.
-To do this, we simply replace every occurence of $x^\top$ in the losses presented in \autoref{sec:understanding:background} with $x^\top \gO$.
+To do this, we simply replace every occurrence of $x^\top$ in the losses presented in \autoref{sec:understanding:background} with $x^\top \gO$.
 We assume that $x$ is a one-hot vector as discussed before and the coverage is still uniform (\autoref{assumption:understanding:1} still holds), so all correlation between states arise as $\mathbb{E}[\gO^\top x x^\top\gO] = \gO^\top \gO$.
 
-It is important to note that for BYOL and TD this rewriting leads to a linear basis change of $\Phi$ compared to the original loss, as each occurrence of $\gO$ is multiplied by $\Phi$. The only loss for which this is not the case is the reconstruction approach.
+It is important to note that for \ac{byol} and \ac{td} this rewriting leads to a linear basis change of $\Phi$ compared to the original loss, as each occurrence of $\gO$ is multiplied by $\Phi$. The only loss for which this is not the case is the reconstruction approach.
 
 \begin{restatable}{proposition}{ReparameterizationInvariance} 
 Assume \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:3} hold. Let $\{\Phi^*_\mathrm{lat/td}\}$ be the set of critical points of $L_\mathrm{lat}$ or $L_\mathrm{td}$ respectively.
@@ -334,7 +334,7 @@ We first write out all losses with the observation matrix $\gO$. The reward func
 \end{align*}
 
 Note that in the cases of $L_{\text{lat}}$ and $L_\text{TD}$, all occurrences of $\gO$ are multiplied by $\Phi$.
-Therefore the corresponding gradient flows are reparameterizations as defined in \autoref{lem:stability}, and the proof follows directly.
+Therefore the corresponding gradient flows are reparameterizations as defined in \autoref{lem:understanding:stability}, and the proof follows directly.
 \end{proof}
 
 Note that while the stationary points and asymptotic stability conditions of the gradient flow might be unaffected by the introduction of observation distortions, the same might not be true for the dynamics of descent with finite step sizes.
@@ -363,7 +363,7 @@ Substituting into $L_\mathrm{rec}^\gO$, we obtain
 \end{align*}
 which again implies that $F$ is stationary.
 
-We note that $\lVert \gO \Phi\Psi - P\gO\rVert^2_F$ is the reduced rank regression problem solved in \autoref{lem:rrr} which solution is given by the top-k left and right singular vectors of $\gO^{-1} P \gO$.
+We note that $\lVert \gO \Phi\Psi - P\gO\rVert^2_F$ is the reduced rank regression problem solved in \autoref{lem:understanding:rrr} which solution is given by the top-k left and right singular vectors of $\gO^{-1} P \gO$.
 \end{proof}
 
 
@@ -404,7 +404,7 @@ Let $U_k$ be an orthonormal basis for the top-k eigenspace of $\gM \otimes \gN$.
 Then $\mathrm{span}(U_k) = \mathrm{span}(\{\vone \otimes v_i|\forall i \leq k\})$ and $\mathrm{proj}_{U_k}(r_\gM \otimes \vone) = (\sum_{i=0}^m r_i / n) \vone_{n\cdot m}$.
 \end{restatable}
 \begin{proof}
-We first note that $\mathrm{span}(V_k) = \mathrm{span}(\{v_i\otimes u_1|\forall i \leq k\})$ follows directly from \autoref{lem:spectrum_kronecker} and \autoref{lem:orth_kronecker}. The eigenvector $u_1 = \vone$ as $M$ is a stochastic matrix.
+We first note that $\mathrm{span}(V_k) = \mathrm{span}(\{v_i\otimes u_1|\forall i \leq k\})$ follows directly from \autoref{lem:understanding:spectrum_kronecker} and \autoref{lem:understanding:orth_kronecker}. The eigenvector $u_1 = \vone$ as $M$ is a stochastic matrix.
 
 As $V_k$ is an orthogonal basis, write the projection operation as 
 \begin{align*}
@@ -420,7 +420,7 @@ V_k V_k^\top \left(r_\gM \otimes \vone\right) &= \frac{1}{m}\left(\vone \otimes 
 This means that there is a natural notion of a process in which the top-$k$ eigenvectors do not span the reward function well.
 In this case, the distracting process has larger eigenvalues than the reward-relevant process.
 As the eigenvector basis is composed of Kronecker products of the individual eigenvectors, the top-$k$ eigenspace contains redundant copies of the reward relevant processes eigenvectors.
-By \autoref{lem:spectrum_rew_value}, this directly implies suboptimal value function approximation.
+By \autoref{lem:understanding:spectrum_rew_value}, this directly implies suboptimal value function approximation.
 Note that our assumptions here are restrictive as we consider a \emph{worst case} distraction for clarity, but the problem emerges whenever the distracting process has several large eigenvalues.
 
 \subsection{Value function learning and auxiliary tasks}
@@ -441,7 +441,7 @@ Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:3}, 
 \end{lemma}
 
 \begin{proof}
-    By \autoref{prop:gosh1}, \autoref{prop:gosh2}, and \autoref{prop:gosh3} and the stated assumptions the weights $\hat{V}$ converge. Therefore, we can analyze the induced dynamical system with $\hat{V}*$.
+    By \autoref{prop:understanding:gosh1}, \autoref{prop:understanding:gosh2}, and \autoref{prop:understanding:gosh3} and the stated assumptions the weights $\hat{V}$ converge. Therefore, we can analyze the induced dynamical system with $\hat{V}*$.
 
     Find $\hat{V}^*$ as the stationary point of $\nabla_{\hat{V}} L_\text{TD}$
     \begin{align*}
@@ -461,7 +461,7 @@ Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:3}, 
         & = \underbrace{\left(r^\pi - r^\pi \right)}_{=0}({\hat{V}}^*)^\top = 0
     \end{align*}
     The final line is due to the fact that the columns of $\Phi^*$ are orthonormal, which means that $\Phi^*{\Phi^*}^\top$ is an orthogonal projection onto the span of $\Phi^*$. To verify, note that $$\left(\Phi^*{\Phi^*}^\top\right)^2 = \left(\Phi^* \underbrace{{\Phi^*}^\top \Phi^*}_{=I}{\Phi^*}^\top\right) = \left(\Phi^*{\Phi^*}^\top\right).$$ Furthermore, by \autoref{assumption:understanding:low_rank}, $r^\pi \in \text{span}(\Phi^*)$, which means $\Phi^*{\Phi^*}^\top r^\pi = r^\pi$ for an orthogonal projection $\Phi^*{\Phi^*}^\top$.
-    Moreover, by \autoref{lem:lossless_approx}, $\Phi^* \hat{V}^* = V$, which concludes the proof.
+    Moreover, by \autoref{lem:understanding:lossless_approx}, $\Phi^* \hat{V}^* = V$, which concludes the proof.
 \end{proof}
 
 This proof closely follows related statements by \cite{ghosh2020representations}, \cite{tang2022understanding}, and \cite{lelan2022generalization}. 
@@ -474,10 +474,10 @@ We present the argument here for clarity with all assumptions necessary for our 
     Furthermore, $\Phi^*$ is a critical point of the two-timescale joint loss $L_{\text{td}+\text{lat}}$. Therefore combining $L_\text{TD}$ and $L_\text{Lat}$ does not exclude the existence of a stationary point with $0$ value function approximation error.
 \end{restatable}
 \begin{proof}
-        By \autoref{ass:low_rank} there exists a set of $k$ vectors $\phi_1,\dots,\phi_k$ such that $r^\pi \in \text{span}(\phi_1,\dots,\phi_k)$ and $\phi_1,\dots,\phi_k$ span an invariant subspace of $P^\pi$.
+        By \autoref{assumption:understanding:low_rank} there exists a set of $k$ vectors $\phi_1,\dots,\phi_k$ such that $r^\pi \in \text{span}(\phi_1,\dots,\phi_k)$ and $\phi_1,\dots,\phi_k$ span an invariant subspace of $P^\pi$.
         We can choose this set of vectors to orthonormal, e.g. by applying the Gram Schmidt procedure to the eigenvectors $({w_i}_1,\dots{w_i}_m)$. 
-        By \autoref{prop:TangResult2} the matrix $\Phi\in \mathbb{R}^{n\times k}$ whose columns are $\phi_1,\dots,\phi_k$ is a critical point for $L_\text{lat}$ and spans an invariant subspace of $P^\pi$.
-        In addition, by \autoref{lem:spectrum_rew_value}, $\Phi$ forms a complete basis for the value function $V^\pi$.
+        By \autoref{prop:understanding:TangResult2} the matrix $\Phi\in \mathbb{R}^{n\times k}$ whose columns are $\phi_1,\dots,\phi_k$ is a critical point for $L_\text{lat}$ and spans an invariant subspace of $P^\pi$.
+        In addition, by \autoref{lem:understanding:spectrum_rew_value}, $\Phi$ forms a complete basis for the value function $V^\pi$.
         By \autoref{prop:td_critical}, $\Phi$ is also a critical point of $L_\text{TD}$, with $0$ value function approximation error. 
         As $\Phi$ is a critical point for both $L_\text{TD}$ and $L_\text{Lat}$, it is a critical point of $L_\text{TD} + L_\text{Lat}$.
 \end{proof}
@@ -490,7 +490,7 @@ Note that without the addition of TD learning, the latent loss would stabilize t
     Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:low_rank} hold. If the reward spanning eigenvectors do not lie within the span of the top-k singular vectors, $\mathrm{span}\,(w_{i_1},\dots,w_{i_m}) \not\subseteq \mathrm{span}\,(u_1,\dots,u_k)$, the critical points of the two-timescale joint loss $L_{\text{td}+\text{rec}}$ are guaranteed to not be minimizers of the value function approximation error. 
 \end{restatable}
 \begin{proof}
-    Following from \autoref{ass:low_rank} and \cref{lem:spectrum_rew_value}, we have that any critical point $\Phi^*$ of $L_\text{td}$ with perfect value function approximation fulfils $\mathrm{span}(r^\pi)\subseteq \mathrm{span}(\Phi^*)$, as without this condition, $\Phi$ would not have all necessary basis vectors to represent $V^\pi$. Under our low-dimensionality assumption $r^\pi \in \mathrm{span}(w_{i_1},\dots,w_{i_m})$, this condition implies that $\mathrm{span}(w_{i_1},\dots,w_{i_m})\subseteq \mathrm{span}(\Phi^*)$. From \cref{prop:2} we know that any critical point $\Phi^*$ of $L_\text{rec}$ satisfies $\mathrm{span}\,({\Phi^*})=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, where $u_1,\dots,u_k$ are the top $k$ left singular vectors of $P^\pi$. Under the assumption that $\mathrm{span}(w_{i_1},\dots,w_{i_m}) \not\subseteq \mathrm{span}(u_1,\dots,u_k)$ these conditions cannot happen simultaneously, and hence no critical point of the joint loss achieves perfect value function reconstruction.
+    Following from \autoref{assumption:understanding:low_rank} and \cref{lem:understanding:spectrum_rew_value}, we have that any critical point $\Phi^*$ of $L_\text{td}$ with perfect value function approximation fulfils $\mathrm{span}(r^\pi)\subseteq \mathrm{span}(\Phi^*)$, as without this condition, $\Phi$ would not have all necessary basis vectors to represent $V^\pi$. Under our low-dimensionality assumption $r^\pi \in \mathrm{span}(w_{i_1},\dots,w_{i_m})$, this condition implies that $\mathrm{span}(w_{i_1},\dots,w_{i_m})\subseteq \mathrm{span}(\Phi^*)$. From \cref{prop:understanding:2} we know that any critical point $\Phi^*$ of $L_\text{rec}$ satisfies $\mathrm{span}\,({\Phi^*})=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, where $u_1,\dots,u_k$ are the top $k$ left singular vectors of $P^\pi$. Under the assumption that $\mathrm{span}(w_{i_1},\dots,w_{i_m}) \not\subseteq \mathrm{span}(u_1,\dots,u_k)$ these conditions cannot happen simultaneously, and hence no critical point of the joint loss achieves perfect value function reconstruction.
 \end{proof}
 
 
@@ -511,7 +511,7 @@ We aim to empirically verify the statements marked as \emph{``Insights''} throug
 As our theory addresses the simplified setting of policy evaluation with linear models, we seek to test if the insights transfer to the more common setting of control with neural networks.
 Across all experiments, we report mean performance over 30 seeds and shaded $95$ bootstrapped confidence interval.
 
-To test these hypotheses, we use the MinAtar suite of five Atari inspired videogames \parencite{young19minatar} and the DMC 15 suite  \parencite{tunyasuvunakool2020}.\footnote{DMC experiments are presented in the appendix due to space constraints.}
+To test these hypotheses, we use the MinAtar suite of five Atari inspired video games \parencite{young19minatar} and the DMC 15 suite  \parencite{tunyasuvunakool2020}.\footnote{DMC experiments are presented in the appendix due to space constraints.}
 Both are small enough to perform thorough investigations, while providing non-trivial observation spaces and dynamics.
 Detailed information about the implementation and hyperparameters can be found in \autoref{app:understanding:empirical}.
 
@@ -536,7 +536,7 @@ As expected from prior work \parencite{jaderberg2016reinforcement,schwarzer2021d
 We find that as expected from \\autoref{insight:understanding:3}, latent self-prediction is a stronger auxiliary loss function than observation reconstruction in three out of five environments.
 However, when using the general-purposes losses alone, we clearly see observation reconstruction performing significantly better than latent self-prediction, which fails to learn any relevant features in several cases. This verifies \\autoref{insight:understanding:1}.
 
-Curiously, in the case of the Seaquest environment, we find that using observation prediction alone outperforms using it as an auxilliary task strongly, and performs on par with the auxiliary task variant of the latent self prediction loss.
+Curiously, in the case of the Seaquest environment, we find that using observation prediction alone outperforms using it as an auxiliary task strongly, and performs on par with the auxiliary task variant of the latent self prediction loss.
 Seaquest also has the sparsest reward structure in the test suite, which can make it a challenging environment for DQN. In this case, features based purely on the observed transition might allow for better policy learning.
 
 This highlights that no algorithm is clearly superior in all settings and the reward and observation structure is very relevant for the performance of each loss.
@@ -593,7 +593,7 @@ Structured noise poses a much larger challenge to most algorithms, completely pr
 This partially validates that not only the presence or absence of noise matters, but also how it changes relevant quantities, e.g. the eigenvalues of the transition kernel.
 
 In the continuous control experiments presented in \autoref{app:understanding:mujoco_results}, we find that the self-prediction loss performs generally better than in the MinAtar suite.
-As the observation and reward structure differs between these two benchmark suite, this obvservation lends more credibility to our claims that the observation structure impacts the performance of algorithms.
+As the observation and reward structure differs between these two benchmark suite, this observation lends more credibility to our claims that the observation structure impacts the performance of algorithms.
 
 \section{Conclusions}
 

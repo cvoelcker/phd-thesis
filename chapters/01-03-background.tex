@@ -7,8 +7,8 @@ To develop the core algorithms and proofs of the thesis, we need a brief survey 
 These fields form the basis for the research presented in this thesis, and the methods and results are built on the established knowledge in these areas.
 The definitions and results presented here are well established in the literature.
 The Markov Decision Process is discussed thoroughly in \parencite{puterman1994markov}, and extensions to general continuous state- and action-spaces can be found in \textcite{bertsekasshreve1978} (these will be relevant for \autoref{chap:cvaml}).
-For reinforcement learning, thorough introductions are presented in \textcite{suttonbook} and \textcite{Farahmand2021}.
-The presentation of the Markov Decision Process and Reinforcement Learning basics here roughly follows \textcite{farahmand2011thesis} and \textcite{Farahmand2021}.
+For reinforcement learning, thorough introductions are presented in \textcite{suttonbook} and \textcite{farahmand2021}.
+The presentation of the Markov Decision Process and Reinforcement Learning basics here roughly follows \textcite{farahmand2011thesis} and \textcite{farahmand2021}.
 
 
 \section{General mathematical notation and definitions}
@@ -54,7 +54,7 @@ At every timestep, after choosing an action $a$ in state $\state$, the agent rec
 
 Importantly, the term \emph{Markov} refers to the fact that the process is memory-less.
 This means that the next state distribution only depends on the current state and action, not on the past history of states.
-Following the first German chancellors witticism, a \emph{Markov} decision process does not need to remember what happeed in the past, all information is captured in the present state.
+Following the first German chancellor's witticism, a \emph{Markov} decision process does not need to remember what happened in the past, all information is captured in the present state.
 
 The agent's strategy for choosing actions is described by its policy, which describes the likelihood of the agent choosing different actions in state $\state$.
 
@@ -200,7 +200,7 @@ The true policy state-action value function $Q^\pi$ is the fixed point of this o
 
 With this $Q$ function, we can define our new policy as $\pi^\mathrm{new}(\state) \leftarrow \argmax_{a\in\actions} Q(\state,a)$ and then repeat the process.
 This can be proven to converge to the optimal policy $\pi^*$, by noticing that we have guaranteed improvement in $\pi$ and that the process cannot get stuck in a local optimum.
-For a full proof, refer to \textcite{Farahmand2021}.
+For a full proof, refer to \textcite{farahmand2021}.
 
 \paragraph{Value Iteration}
 
@@ -514,7 +514,7 @@ One of the most prominent examples are the structured latent spaces obtained by 
 
 The core challenges for representation learning in \ab{RL} is that the tasks are fundamentally non-stationary in nature \parencite{kumar2021implicit,nikishin2022primacy}.
 As the agent explores the environment, value function and policy continually change, meaning that both the input distribution and the prediction targets change over time.
-This has led to the establishment of research into \emph{learning dynamics} \parencite{lyle2022earning,lyle2022understanding}, \emph{metric learning} \parencite{ferns2011bisimulation,barreto2017successor,borsa2018universal,le2021metrics}, and \emph{auxiliary tasks} \parencite{jaderberg2017reinforcement,bellemare2019geometric,lyle2021effect,farebrother2023protovalue} to address these challenges.
+This has led to the establishment of research into \emph{learning dynamics} \parencite{lyle2022learning,lyle2022understanding}, \emph{metric learning} \parencite{ferns2011bisimulation,barreto2017successor,borsa2018universal,le2021metrics}, and \emph{auxiliary tasks} \parencite{jaderberg2017reinforcement,bellemare2019geometric,lyle2021effect,farebrother2023protovalue} to address these challenges.
 In this thesis, we will see how the learning dynamics of latent representations can be shaped by and used for model-based reinforcement learning.
 
 \subsubsection{Desirable properties of representations}

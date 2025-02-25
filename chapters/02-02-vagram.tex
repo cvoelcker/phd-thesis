@@ -7,11 +7,11 @@
 
 \newcommand{\revised}[1]{#1}
 \section{Introduction}
-Model-based Reinforcement Learning (MBRL) is a sample-efficient approach to obtain a policy for a given control problem. 
+\ac{mbrl} is a sample-efficient approach to obtain a policy for a given control problem. 
 It solves the control optimization into two interleaved stages: model learning and policy learning or planning. 
 In the \emph{model learning} stage, an approximate model of the environment is learned which is then utilized in the \emph{planning} stage to generate new experience without having to query the original environment. 
 Often this process is repeated by continuously updating the model with new experience and replanning based on the updated model. 
-MBRL is an enticing paradigm for scenarios in which samples of the true environment are difficult or expensive to obtain, such as computationally intensive simulators, real-world robots, or environments involving humans, since the model can be used to generalize the policy to unseen regions of the state space. 
+\ac{mbrl} is an enticing paradigm for scenarios in which samples of the true environment are difficult or expensive to obtain, such as computationally intensive simulators, real-world robots, or environments involving humans, since the model can be used to generalize the policy to unseen regions of the state space. 
 The approach has received a lot of attention and significant progress has been made in the field \parencite{dyna,deisenroth2011pilco,levine2013guided,hafner2020dream,moerland,schrittwieser2020mastering}.
 
 One of the core problems of model-based policy learning methods, however, is that the accuracy of the model directly influences the quality of the learned policy or plan \parencite{schneider1997exploiting,kearns2002near,ross2012agnostic,talvitie2017self,luo2018algorithmic,mbpo}. 
@@ -20,14 +20,14 @@ This is especially prevalent in settings with complex dynamics, such as robotic 
 These model approximation errors are nearly impossible to avoid with current methods due to limits of function approximation in model and value learning algorithms, which cannot fully capture the full distribution over dynamics functions perfectly, and the use of finite datasets.
 
 Hence, it is important that a model is accurate \textit{where it counts} for the planning procedure, by modelling dimensions and data points that have a higher impact on the planning.
-But this objective is not captured in most current MBRL methods, which generally use \ac{mle}-based losses to train a parametric model of the environment without involving information from the planning process.
-The misalignment between the \emph{model learning} and \emph{planning} stages of MBRL has received renewed interest and is now commonly termed the \textit{objective mismatch} of reinforcement learning~\parencite{lambert202objective}, but the problems has been investigated in earlier works \parencite{joseph2013reinforcement}.
+But this objective is not captured in most current \ac{mbrl} methods, which generally use \ac{mle}-based losses to train a parametric model of the environment without involving information from the planning process.
+The misalignment between the \emph{model learning} and \emph{planning} stages of \ac{mbrl} has received renewed interest and is now commonly termed the \textit{objective mismatch} of reinforcement learning~\parencite{lambert202objective}, but the problems has been investigated in earlier works \parencite{joseph2013reinforcement}.
 Several recent papers have investigated the objective mismatch~\parencite{abachi2020policy,zhang2021learning,ayoub2020model,grimm2020value,grimm2021proper,nikishin2021control}, but currently theoretical investigation and understanding of possible approaches do not perform well when applied to complex deep learning based approaches~\parencite{lovatto2020decision} or the proposed approaches rely on heuristics which might not be applicable generally~\parencite{nair2020goal}.
 
 \noindent \textbf{Summary of Contributions}. We present the \textit{Value-Gradient Weighted MOdel Learning}~(VaGraM) which rescales the mean squared error loss function with gradient information from the current value function estimate.
 We demonstrate the advantage of the VaGraM loss over previous approaches via the analysis of the optimization behavior of the Value-Aware Model Learning framework \parencite{vaml, itervaml} and form two hypotheses for the lack of empirical performance gain despite theoretical intuition: (a) the theory does not account for the optimization trajectory induced by the loss function and (b) it also does not address how to counter problems that arise when the state-space is yet insufficiently explored in early stages of the model training.
 Our experiments show, qualitatively and quantitatively, that the VaGraM loss impacts the resulting state and value prediction accuracy, and that it solves the optimization problems of previously published approaches.
-Beyond pedagogical domains, we show that VaGraM performs on par with a current state-of-the art MBRL algorithms in more complex continuous control domains, while improving robustness to irrelevant dimensions in the state-space and smaller model sizes.
+Beyond pedagogical domains, we show that VaGraM performs on par with a current state-of-the art \ac{mbrl} algorithms in more complex continuous control domains, while improving robustness to irrelevant dimensions in the state-space and smaller model sizes.
 
 
 
@@ -60,7 +60,7 @@ A stable value-aware loss function should therefore have only one minimum in the
 \subsection{Approximating a value-aware loss with the value function gradient}
 From our insights, we obtain two criteria: a stable loss should not depend on the value function at states not captured in the dataset, and it should not admit local minima beyond an \ac{mle} solution.
 To derive a loss function that fulfils these requirements, we start from the assumption that the difference between the model prediction and the environment next states $\state'$ are small.
-This is implicitly required by many MBRL approaches, since an MLE model cannot be used to estimate the next state's value otherwise. 
+This is implicitly required by many \ac{mbrl} approaches, since an MLE model cannot be used to estimate the next state's value otherwise. 
 \revised{We also assume that the model has small transition noise, akin to the model assumptions underlying MSE regression, otherwise the difference between a model sample and the next state sample might be large.}
 Under this assumption, the IterVAML loss can be approximated by a Taylor expansion of the value function, where we denote the expansion of $V$ around a reference point $\state'$ as $\hat{V}_{\state'}$ and obtain $\hat{V}_{\state'}(\state) \approx V(\state') + (\nabla_\state V(\state)|_{\state'})^\intercal (\state - \state')$.
 Using this expansion at the next state sample $\state'_i \in \mathcal{D}$ collected from the environment for each tuple independently instead of the original value function, the VAML error can be stated as:
@@ -81,7 +81,7 @@ The model loss can then be expressed as:
     \sum_i {\left((\nabla_\state V(\state)|_{\state'_i})^\intercal (f_\theta(\state_i,a_i) - \state'_i) \right)^2} \label{eq:vagram:taylor_vaml}
 \end{align}
 
-We can see that the objective is similar to a mean squared error regression with a vector that defines the local geometry of the objective function. This vector can be interpreted as a measure of sensitivity of the value function at each data point and dimension. In regions where the value function changes significantly, the regression incentivises the model to be very accurate. 
+We can see that the objective is similar to a mean squared error regression with a vector that defines the local geometry of the objective function. This vector can be interpreted as a measure of sensitivity of the value function at each data point and dimension. In regions where the value function changes significantly, the regression pushes the model to be very accurate. 
 
 \subsection{Bound between Value-Aware Model Learning and VaGraM}
 \label{app:taylor_bound}
@@ -106,7 +106,7 @@ However, without bounding the second term, we are faced with the issue of spurio
 \begin{figure}[!t]
 \centering
     \includegraphics[clip, trim=0.cm 0.5cm 0.cm 0.45cm, width=\textwidth]{figures/vagram/all_losses.pdf}
-    \caption{\revised{Visualization of discussed loss function with regards to a reference point marked with the white cross and the corresponding value function on the Pendulum environment. For the value function, darker color indicates a lower value. In the loss figures, darker color indicates how large the loss is if the model predicts $(\theta, \dot{\theta})$ instead of the reference sample marked in white. The VAML loss has a complex non-linear shape in the state space that follows isolines of the value function, while MSE and VaGraM are centered around the sample. For VaGraM, the rescaling of the MSE in the direction of high gradient along the $\theta$ axis is visible. Due to \autoref{eq:vagram:upper_bound}, the scaling is aligned with the axis of the coordinate system and not rotated to fit the value function closer.}}
+    \caption{\revised{Visualization of discussed loss function with regards to a reference point marked with the white cross and the corresponding value function on the Pendulum environment. For the value function, darker color indicates a lower value. In the loss figures, darker color indicates how large the loss is if the model predicts $(\theta, \dot{\theta})$ instead of the reference sample marked in white. The VAML loss has a complex non-linear shape in the state space that follows iso-lines of the value function, while MSE and VaGraM are centered around the sample. For VaGraM, the rescaling of the MSE in the direction of high gradient along the $\theta$ axis is visible. Due to \autoref{eq:vagram:upper_bound}, the scaling is aligned with the axis of the coordinate system and not rotated to fit the value function closer.}}
     \label{fig:vagram:all_losses}
 \end{figure}
 
@@ -145,7 +145,7 @@ We denote the diagonal matrix with vector $a$ on the diagonal as $\text{diag}(a)
 
 This reformulation is equivalent to a mean squared error loss function with a per-sample-dimension diagonal scaling matrix.
 Because the scaling matrix is positive semi-definite by design, each summand in the loss is a quadratic function with a single solution as long as the derivative of the value function does not become zero in any component.
-Therefore this upper bound assures our second requirement: the loss function does not admit spurious local minima.\footnote{We note that state dimensions are ignored for points in which components of the value function become zero, potentially leading to spurious minma as before solutions, but in practice this rarely happens for more than a few points.}
+Therefore this upper bound assures our second requirement: the loss function does not admit spurious local minima.\footnote{We note that state dimensions are ignored for points in which components of the value function become zero, potentially leading to spurious minima as before solutions, but in practice this rarely happens for more than a few points.}
 
 To give an intuitive insight into all the discussed loss functions, we visualized each one for a pedagogical environment, the Pendulum stabilization task.
 The resulting loss curves can be seen in \autoref{fig:vagram:all_losses}.
@@ -203,12 +203,6 @@ In the experiment, we see that the MSE and VaGraM models converge to a similar s
 This leads us to the conclusion that our loss function really only admits a single solution and that this solution coincides with the mean square error prediction when the function approximation has sufficient capacity to model the dynamics function with high precision.
 On the other hand, the VAML network converges to solutions that are far away from the environment sample measured in the $L_2$ norm and it cannot recover from these spurious minima due to the complex optimization landscape.
 
-% \begin{figure}[t]
-% \centering
-%     \includegraphics[width=1.\textwidth]{figures/vagram/vaml_loss.png}
-%     \caption{Comparison of the VAML loss functions over the state space of the pendulum swingup problem. The empirical value function is shown in the left column. The loss function is shown in reference to an example point marked with a white cross and the color intensity shows the loss incurred when predicting the location instead of the reference point from the model.}
-%     \label{fig:vagramvaml_different_epochs}
-% \end{figure}
 
 \section{\revised{Experiment: Model-based Continuous Control}}
 
@@ -224,8 +218,8 @@ The dynamics function of the environment can be approximated sufficiently well w
 
 The underlying theory supporting VAML states that a value-aware loss is preferable to a mean squared error loss in a setting where the capacity of the model is too small to fully approximate the problem or the state space contains dimensions that are irrelevant for the control problem.
 To test whether our loss function is superior to a maximum likelihood approach in these cases, we used the Hopper environment from the OpenAI gym benchmark \parencite{brockman2016openai}. 
-As a deep learning based Dyna algorithm, we chose Model-based Policy Optimization (MBPO) \parencite{mbpo} and ran all of our experiments using the implementation provided by \cite{pineda2021mbrl}.
-We kept the structure of the MBPO algorithm and models and replaced the model loss function with VaGraM.
+As a deep learning based Dyna algorithm, we chose \ac{mbpo} \parencite{mbpo} and ran all of our experiments using the implementation provided by \cite{pineda2021mbrl}.
+We kept the structure of the \ac{mbpo} algorithm and models and replaced the model loss function with VaGraM.
 
 \subsection{Hopper with reduced model capacity}
 In the first experiment, we decreased the network size of the used neural network ensemble.
@@ -244,12 +238,13 @@ But when reducing the model size, the maximum likelihood models quickly lose per
     \label{fig:vagram:pendulum_distraction}
 \end{figure}
 
-To show that VaGraM is able to achieve good performance in a setting where there are additional dynamics in the environment that do not contribute to the control problem, we appended distractor dimensions to the Hopper observations.
+To show that VaGraM is able to achieve good performance in a setting where there are additional dynamics in the environment that do not contribute to the control problem, we appended distracting dimensions to the Hopper observations.
+This mirrors the experimental setup used in \autoref{chap:understanding}.
 These are independent of the original environment state space and reward function, and evolve under non-linear and discontinuous dynamics (details in \autoref{app:vagram:implementation}).
 A setting with distracting dimensions is known to pose difficulty for model-based control algorithms \parencite{stone2021thedc} and neural networks struggle to model non-linear, discontinuous dynamics, so with an increasing number of dimensions the task becomes harder.
 
 The results of this experiment are shown in \autoref{fig:vagram:pendulum_distraction}.
-When using five distractor dimensions, both models are able to capture the dynamics sufficiently well to achieve comparable reward to the original environment.
+When using five distracting dimensions, both models are able to capture the dynamics sufficiently well to achieve comparable reward to the original environment.
 When increasing the number of dimensions, the performance of the MLE model deteriorates, as more and more of its capacity is used to model the added dynamics.
 VaGraM continues to be able to achieve reward even under the presence of distracting dimensions, since the gradient of the value function with regards to the state dimensions which are irrelevant to the control problem becomes small over training.
 Still, the performance of VaGraM also suffers with increasing dimensions: when adding 20 distracting dimensions, neither algorithm is able to stabilize the Hopper consistently.
@@ -269,7 +264,7 @@ Inspired by VAML, \cite{abachi2020policy} present a method that seeks to align t
 An alternative to characterizing the problem in the state space of the MDP are representation learning approaches, which seek to map the original states to a latent representation that is more amenable to control. Such approaches include Value Prediction Networks \parencite{oh2017value}, Embed-to-Control \parencite{10.5555/2969442.2969546} and related proposals \parencite{levine2020prediction,cui2021controlaware}. \cite{zhang2021learning} build on the idea of bisimulation metrics \parencite{ferns2004metrics,ferns2011bisimulation} which seeks to characterize the difference between MDPs by finding a state mapping that is reward-invariant under policy and value function. 
 In this work, we did not investigate learning state embeddings, but combining our work with representation learning approaches is an exciting direction for future research.
 
-\cite{lambert202objective} hypothesize that the objective mismatch could be solved by reweighing the training buffer for model learning to prioritize datapoints with high value. These are more likely to matter for obtaining an optimal policy. A similar proposal was evaluated empirically by \cite{nair2020goal}. Contrary to our work however, this technique cannot account for the differing impact of the state space dimensions and scaling, since the data points are weighted as a whole.
+\cite{lambert202objective} hypothesize that the objective mismatch could be solved by reweighing the training buffer for model learning to prioritize data points with high value. These are more likely to matter for obtaining an optimal policy. A similar proposal was evaluated empirically by \cite{nair2020goal}. Contrary to our work however, this technique cannot account for the differing impact of the state space dimensions and scaling, since the data points are weighted as a whole.
 
 
 \section{Conclusion}

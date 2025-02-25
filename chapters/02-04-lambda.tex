@@ -53,7 +53,7 @@ We also define $[\mathcal{T}_{\P^\pi}^0 V](x) = V(x).$
 
 \textbf{Model-based RL:} In this chapter, we focus on value learning with model data, which is commonly referred to as Dyna~\parencite{dyna}.
 We use $\hat{p}$ to refer to a stochastic model, and $\hat{f}$ for deterministic models.
-When a model is used to predict the observation $x'$ from $x,a$ (such as the model used in MBPO \parencite{mbpo}) we call it an \emph{observation-space models}.
+When a model is used to predict the observation $x'$ from $x,a$ (such as the model used in \ac{mbpo} \parencite{mbpo}) we call it an \emph{observation-space models}.
 Alternatively, \emph{latent-space models} of the form $\hat{p}(z'|z, a)$ are used, where $z\in\mathcal{Z}$ is a representation of a state $x\in\mathcal{X}$ given by $\varphi: \mathcal{X} \rightarrow \mathcal{Z}$.
 Observation-space models predict next states in the representation of the environment, while latent-space models reconstruct learned features of these states.
 
@@ -119,7 +119,7 @@ Intuitively, a model achieving $0$ loss can be used instead of the ground truth 
 The set of models that achieve $0$ IterVAML error is equal to the set of proper value-equivalent models for the value estimate $\hat{V}$ \cite{grimm2021proper}.
 
 \subsection{The $(m,b)$-VAML Family}
-The MuZero loss~\parencite{schrittwieser2020mastering} was introduced to unify the value function and model learning components of an MBRL algorithm.
+The MuZero loss~\parencite{schrittwieser2020mastering} was introduced to unify the value function and model learning components of an \ac{mbrl} algorithm.
 It can be interpreted as a variation of the IterVAML loss that uses a single sample estimate of the Bellman Operator and a bootstrapped target estimate. 
 To unify the losses, we present them in a single equation with two important hyperparameters: $m$, the number of steps in the trajectory that the loss is computed over, and $b$, the number of steps for the multi-step Bellman operator.
 We refer to this unified family of losses as $(m,b)$-Value Aware Model Losses (VAML)
@@ -131,7 +131,6 @@ We refer to this unified family of losses as $(m,b)$-Value Aware Model Losses (V
 where $V_\mathrm{tar}$ is a target network \parencite{mnih2013playing}.
 We denote the stop-gradient operation with $\squareb{\cdot}_\mathrm{sg}$.
 Note that samples from the real environment are used to approximate $[\mathcal{T}_{\P^\pi}^j \hat{V}]$.
-% Furthermore, the loss requires a re-parametrizeable function class if used with stochastic models.
 The loss function and the relation of the model and environments rollout are visualized in \autoref{fig:cvaml:loss_graphic}.
 
 Several works use variations of this loss:
@@ -144,13 +143,13 @@ Finally, regular model-free TD learning corresponds to $m=0,b\geq1$.
 
 \section{Analysis of decision-aware losses in stochastic environments}
 \label{sec:cvaml:theory_1}
-The goal of learning in MBRL is to recover an (approximately) optimal model and to learn a correct value function.
+The goal of learning in \ac{mbrl} is to recover an (approximately) optimal model and to learn a correct value function.
 As we have shown, minimizing the IterVAML loss perfectly results in a model that leads to a correct Bellman Operator.
 However, in practice, the inner expectation of the IterVAML loss has to be replaced by a sampling-based approximation.
 In addition, $(m,b)$-VAML is often used to update the value function directly in addition to the model.
 We show when this leads to learning correct models and value functions asymptotically.
 An overview of our conclusions can be found in \autoref{tab:cvaml:bias_overview}.
-Proofs are found in \autoref{app:main_proofs}.
+Proofs are found in \autoref{app:formal:cvaml}.
 \subsection{Calibration of surrogate loss functions}
 
 Formally, we ask whether the surrogate $(m,b)$-VAML is \emph{calibrated}.
@@ -227,13 +226,13 @@ The second term $(2)$ can again be decomposed as
 The middle term of the binomial expansion again vanishes as $\EEX{\P^\pi}{\EEX{\P^\pi}{V\left(x^{(m)}\right)} - V\left(x^{(m)}\right)} = 0,$ and samples from $\hat{p}$ and $\P^\pi$ are independent.
 
  % As $k \rightarrow \infty$, the first term vanishes and the surrogate loss approaches the target loss.
-When we drop the term that is independent of the model, the loss has the form of $g$ in \autoref{lemma5}
+When we drop the term that is independent of the model, the loss has the form of $g$ in \autoref{lemma:cvaml:5}
 \begin{align}
    & \EEX{\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{i\geq1,0}\left(\hat{p},V|x,x^{(m)}\right)} \\
    \quad & =  \underbrace{\EEX{\hat{p},\P^\pi}{\left(V\left(\hat{x}^{(m)}\right) - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2}}_{= \mathrm{Var}} + \underbrace{\EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - \EEX{\P^\pi}{V\left(x^{(m)}\right)}\right)^2}}_{= \mathrm{IterVAML}}
 \end{align}
 
- Let $\P^\pi(\cdot|x)$ be a distribution so that \autoref{lemma5} holds. Then there exists a $\hat{p}$ with $\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}\left(\hat{p},V|x,x^{(m)}\right) < \hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}\left(\P^\pi,V|x,x^{(m)}\right)$ and $\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} \neq \EEX{\P^\pi}{V(x^{(m)})}.$
+ Let $\P^\pi(\cdot|x)$ be a distribution so that \autoref{lemma:cvaml:5} holds. Then there exists a $\hat{p}$ with $\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}\left(\hat{p},V|x,x^{(m)}\right) < \hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}\left(\P^\pi,V|x,x^{(m)}\right)$ and $\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} \neq \EEX{\P^\pi}{V(x^{(m)})}.$
 \end{proof}
 
 If we use the $k$ sample version of the empirical IterVAML loss instead, we obtain the following decomposition
@@ -242,7 +241,7 @@ If we use the $k$ sample version of the empirical IterVAML loss instead, we obta
     &\quad = \underbrace{\frac{1}{k}\EEX{\hat{p},\P^\pi}{\left(V\left(\hat{x}^{(m)}\right) - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2}}_{=\frac{1}{k} \mathrm{Var}} + \underbrace{\EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\right)^2}}_{\mathrm{IterVAML}}.
 \end{align}
 The only difference when using more samples is that the variance term is scaled by the factor $\frac{1}{k}$, as the variance of the mean estimator $\sum_{i=1}^k V\left(x^{(m)}_i\right)$ decreases.
-Consequently, for larger values of $k$, the condition in \autoref{lemma4} for $g$ becomes stricter.
+Consequently, for larger values of $k$, the condition in \autoref{lemma:cvaml:4} for $g$ becomes stricter.
 As $k \rightarrow \infty$, the condition becomes unfulfillable. 
 This is also intuitive, as $\sum_{i=1}^k V\left(x^{(m)}_i\right) \rightarrow \EEX{\hat{p}}{V\left(x^{(m)}\right)}$ as $k \rightarrow \infty$ almost surely (assuming standard conditions hold).
 
@@ -340,7 +339,7 @@ Combining this with \autoref{eq:first}, we obtain
 \end{align}
 
 The first summand is the Bellman residual, for which the only minimizer is $\mathcal{T}_{\P^\pi}V_\mathrm{tar}$.
-However, by \autoref{lemma_muzero}, we can construct a function class so that $\Argmin \EEX{\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{m,b}(\P^\pi, V| V_{\mathrm{tar}}, x, x^{(m)})} \not \subseteq \{\mathcal{T}_{\P^\pi}V_\mathrm{tar}\}$
+However, by \autoref{lemma:cvaml:muzero}, we can construct a function class so that $\Argmin \EEX{\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{m,b}(\P^\pi, V| V_{\mathrm{tar}}, x, x^{(m)})} \not \subseteq \{\mathcal{T}_{\P^\pi}V_\mathrm{tar}\}$
 \end{proof}
 
 While our proof only discusses the case $b=1$, the same issue also appears with larger $b$.
@@ -434,7 +433,7 @@ The first proposition relies on the existence of a deterministic mapping, which 
 
 
 \begin{lemma}[Deterministic Representation Lemma]
-\label{lem:deterministic_representation_lemma}
+\label{lem:cvaml:deterministic_representation_lemma}
     Let $\mathcal{X}$ be a compact, connected, metrizable space. Let $p$ be a continuous kernel from $\mathcal{X}$ to probability measures over $\mathcal{X}$. Let $\mathcal{Z}$ be a metrizable space. Consider a bijective mapping $\varphi: \mathcal{X} \rightarrow \mathcal{Z}$ and any $V: \mathcal{Z} \rightarrow \mathbb{R}$. Assume that they are both continuous. Denote $V_\mathcal{X} = V \circ \varphi$.
     
     Then there exists a measurable function $f^*: \mathcal{Z} \rightarrow \mathcal{Z}$ such that we have $V(f^*(\varphi(x))) = \EEX{p}{V_\mathcal{X}(x')|x}$ for all $x \in \mathcal{X}$.
@@ -446,7 +445,7 @@ Since $\varphi$ is a bijective continuous function over a compact space and maps
 The image of $\mathcal{X}$ under $\varphi$, $\mathcal{Z}_\mathcal{X}$ is then connected and compact.
 Since $\mathcal{X}$ is metrizable and compact and $\varphi$ is a homeomorphism, $\mathcal{Z}_\mathcal{X}$ is metrizable and compact.
 Let $\theta_{V,\mathcal{X}}(x) = \EEX{x' \sim p(\cdot|x)}{V(x')}$.
-Then, $\theta_{V,\mathcal{X}}$ is continuous (Proposition \autoref{prop:730}).
+Then, $\theta_{V,\mathcal{X}}$ is continuous (Proposition \autoref{prop:cvaml:730}).
 Define $\theta_{V, \mathcal{X}} = \theta_{V, \mathcal{Z}} \circ \varphi$.
 Since $\varphi$ is a homeomorphism, $\varphi^{-1}$ is continuous.
 The function $\theta_{V, \mathcal{Z}}$ can be represented as a composition of continuous functions $\theta_{V, \mathcal{Z}} = \theta_{V, \mathcal{X}} \circ \varphi^{-1}$ and is therefore continuous.
@@ -464,7 +463,7 @@ For any $z \in \mathcal{Z}_\mathcal{X}$, by the intermediate value argument, the
 Therefore $h^*(z)$ can be minimized perfectly for all $z \in \mathcal{Z}_\mathcal{X}$.
 
 Since $\mathcal{Z}_\mathcal{X}$ is compact, $h$ is defined over a compact subset of $\mathcal{Z}$.
-By Proposition \autoref{prop:733}, there exists a measurable function $f^*(z)$ so that $\min_{z'} h(z, z') = h(z, f^*(z)) = 0$.
+By Proposition \autoref{prop:cvaml:733}, there exists a measurable function $f^*(z)$ so that $\min_{z'} h(z, z') = h(z, f^*(z)) = 0$.
 Therefore, the function $f^*$ has the property that $V(f^*(z)) = \EEX{p}{V(z')|z}$, as this minimizes the function $h$.
 
 Now consider any $x\in\mathcal{X}$ and its corresponding $z=\varphi(x)$.
@@ -488,7 +487,7 @@ Equipped with this lemma, we can now prove the main result.
 As we only deal with single steps here, we use $x^{(1)}$ and $x'$ interchangeably as the latter is simpler and more common nomenclature.
 The statement of the proposition itself is written with the $x^{(1)}$ notation to remain consistent with the main body of the paper.
 
-The existence of $f^*$ follows under the stated assumptions (compact, connected, and metrizable state space, metrizable latent space, continuity of all involved functions) from \autoref{lem:deterministic_representation_lemma}.
+The existence of $f^*$ follows under the stated assumptions (compact, connected, and metrizable state space, metrizable latent space, continuity of all involved functions) from \autoref{lem:cvaml:deterministic_representation_lemma}.
 
 First, expand the equation to obtain:
 \begin{align}
@@ -532,7 +531,7 @@ Note that our conditions solely ensure the \emph{existence} of a measurable func
 While the original MuZero algorithm only uses the MuZero loss to update the latent embedding, dynamics model, and value function estimation, several more recent works add auxiliary stabilizing losses \parencite{ye2021mastering,hafner2021mastering,hansen2024tdmpc,voelcker2025mad}.
 These allow the model to learn meaningful transitions even before the value function is properly approximated, which helps e.g. in sparse-reward environments.
 
-Most prior works use some form of Bootstrap-your-own-latent (BYOL) \parencite{grill2020bootstrap} loss, which minimizes the difference between the next states encoding $\varphi(x^{(m)})$ and the model prediction $f^m(x^{(0)})$.
+Most prior works use some form of \ac{byol} \parencite{grill2020bootstrap} loss, which minimizes the difference between the next states encoding $\varphi(x^{(m)})$ and the model prediction $f^m(x^{(0)})$.
 In the case of linear features, models, and value functions, recent works, discussed in \autoref{chap:understanding}, have shown that such a loss can greatly aid in learning meaningful features for value function prediction \parencite{lyle2022understanding,tang2022understanding,ni2024bridging,voelcker2024when}.
 
 When the difference is computed with an $L_2$, the model loss is
@@ -565,7 +564,7 @@ The introduction of a stabilizing loss poses a challenge for the result in \auto
 For example, a pre-trained LLM backbone might be used, which is naturally stochastic due to the sampling strategies used to query it.
 Therefore, it is still important to have a calibrated surrogate loss for stochastic models, as many use cases make stochastic models attractive.
 
-For a flexible enough model and embedding function class, the perfect BYOL-based model $f^*_\mathrm{aux}$ would predict $\EEX{\P^\pi}{\varphi(x')| x}$.
+For a flexible enough model and embedding function class, the perfect \ac{byol}-based model $f^*_\mathrm{aux}$ would predict $\EEX{\P^\pi}{\varphi(x')| x}$.
 However, $f^*_\mathrm{aux}$ only coincides with the optimal model under the VAML loss iff
 \begin{align}
     \EEX{\P^\pi}{\hat{V}(\varphi(x^{(1)}))} = \hat{V}\biggl(\EEX{\P^\pi}{\varphi(x^{(1)})}\biggr).
@@ -606,7 +605,7 @@ where $a^{(0:m-1)}$ is a sequence of actions of length $m$ starting from state $
 The actor and the critic are trained with the TD3 algorithm \cite{fujimoto2018addressing}, while the executed policy is obtained from the actor and environment model using MPC \cite{hansen2022temporal}: initialized at the action produced by the actor for the current state this algorithm iteratively refines the action to maximize the expected return.
 
 For $(m,b)$-CVAML, the calibration term is computed by sampling multiple trajectories from the model and calculating the means and variances of next-state values produced by the critic across the different samples.
-Additional implementation details are provided in \autoref{app:model_design}.
+Additional implementation details are provided in \autoref{app:cvaml:model_design}.
 
 \textbf{Results:} We show results across both domains in \autoref{fig:cvaml:agg_results}.
 We plot aggregated final performance over 20 random seeds per environment-loss pair with 95\% CI,  estimated with stratified percentile bootstrap \cite{agarwal2021deep}.
@@ -619,14 +618,14 @@ In the dog domain, we observe a performance improvement when using the calibrati
 The humanoid domain exhibits a larger variance in performance across random seeds, making the analysis less conclusive.
 This is mostly due to the fact that some runs fail to achieve any meaningful performance.
 For these, more advanced architectures such as TD-MPC2 \parencite{hansen2024tdmpc} might be necessary.
-However, most SOTA algorithms on the dog domain use categorical value representations \parencite{farebrother2024stop}, for which further theoretical analysis is necessary before calibration can be addressed.
+However, most current algorithms on the dog domain use categorical value representations \parencite{farebrother2024stop}, for which further theoretical analysis is necessary before calibration can be addressed.
 
 In addition to the calibration effect, we observe that probabilistic models outperform deterministic ones in the dog domain, even though the simulator is deterministic.
 This is in line with previous work \parencite{pets,mbpo}, as stochastic models can reduce the tendency of the critic to exploit model errors.
 However, this advantage seems to be domain-specific and is not replicated in the humanoid suite.
 
 Finally, we observe an advantage of $(0,1)$-updates over the $(1,1)$-updates.
-While previous work has found IterVAML to be unstable \parencite{lovatto2020decision,voelcker2022value}, comparisons were not made with SOTA model architectures, latent models, and auxiliary tasks.
+While previous work has found IterVAML to be unstable \parencite{lovatto2020decision,voelcker2022value}, comparisons were not made with current model architectures, latent models, and auxiliary tasks.
 A wider empirical investigation into the merits of both IterVAML and MuZero style learning is an important direction for future work.
 
 \begin{boxinsight}[Remarks for practitioners]

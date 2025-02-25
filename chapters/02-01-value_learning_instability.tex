@@ -92,7 +92,7 @@ We first collect a small amount of random samples. Then, using the SAC algorithm
 \subsection{An old acquaintance: Q-value overestimation} \label{sec:overestimation}
 We first ask whether there is a barrier as to how many steps an agent can be primed for before it becomes unable to learn. We test this by collecting 1,000 samples and varying the number of updates during priming from 25,000 to 50,000 and 100,000. The results are presented in Figure~\ref{fig:overestimationpriming_base}. 
 
-We make two key observations. First, lower amounts of priming are correlated with higher early performance. More precisely, it seems that many runs simply take longer before they start learning as the number of priming steps increases. Second, during priming the scale of the average Q-value estimates on observed state-action pairs increases drastically. We find that the Q-values start out at a reasonable level, but as priming goes on they eventually start to diverge drastically. Once the agent estimates very large Q-values, the final performance in terms of average returns deteriorates. We also observe that the second moment of the Adam optimizer~\parencite{kingma2015adam} is correlated with the divergence effect. Optimizer divergence has been observed before as a cause of plasticity loss under non-stationarity~\parencite{lyle2023understanding}, but in our experiments the data is stationary during priming. We conjecture that the momentum terms lead to much quicker propagation of poor Q-values and ultimately to prediction of incorrect Q-values, even on in-distribution data.
+We make two key observations. First, lower amounts of priming are correlated with higher early performance. More precisely, it seems that many runs simply take longer before they start learning as the number of priming steps increases. Second, during priming the scale of the average Q-value estimates on observed state-action pairs increases drastically. We find that the Q-values start out at a reasonable level, but as priming goes on they eventually start to diverge drastically. Once the agent estimates very large Q-values, the final performance in terms of average returns deteriorates. We also observe that the second moment of the Adam optimizer~\parencite{kingma2015adam} is correlated with the divergence effect. Optimizer divergence has been observed before as a cause of plasticity loss under non-stationary data \parencite{lyle2023understanding}, but in our experiments the data is stationary during priming. We conjecture that the momentum terms lead to much quicker propagation of poor Q-values and ultimately to prediction of incorrect Q-values, even on in-distribution data.
 
 % However, without regularization it seems that once the effective dimension falls below a certain threshold, agents take substantially longer to recover and learning becomes essentially impossible (see Appendix~\ref{todo}). 
 
@@ -148,7 +148,7 @@ After priming, there exist two cases: 1) either the Q-values need to be unlearne
         \label{subfig:overestimation:priming_abl_Q}
     \end{subfigure}%
     \caption{Return and
-    Q-values of priming runs with weight decay and dropout. Results indicate that both regularizations mitigate priming to some extent but not sufficiently. }
+    Q-values of priming runs with weight decay and dropout. Results indicate that both regularizers mitigate priming to some extent but not sufficiently. }
     \label{fig:overestimationpriming_abl}
 \end{minipage}
 \end{figure}
@@ -156,9 +156,6 @@ After priming, there exist two cases: 1) either the Q-values need to be unlearne
 % A well-known phenomenon that was already identified in the early stages of reinforcement learning research is that trying to find a value function via function approximation can quickly lead to overestimates of said values~\textcite{thrun1993issues}. This overestimation of the value function remains a challenge even for modern algorithms like SAC, due to the hurdles that emerge with what is often referred to as the \emph{deadly triad}: function approximation, reliance on bootstrap updates and off-policy data in the form of replay buffers. While this would naively suggest that these algorithms cannot work, empirical evidence strongly suggest that these algorithms are not impacted by the deadly triad to such an extent as to prevent good performance. 
 
 We conjecture that Q-value divergence starts with overestimated values of OOD actions. This overestimation could cause the optimizer to continually increase Q-values via its momentum leading to divergence. 
-%To test our hypothesis, we repeat the priming with 100,000 steps but perform an intervention regularizing the actions that the actor ouputs during priming (see Figure~\ref{fig:overestimationpriming_causes}). 
-% To dig deeper, we conjecture twofold: 1) Q-value divergence starts with overestimated values of OOD actions. 2) This overestimation triggers the optimizer to continually increase Q-values via the second-order optimizer momentum leading to divergence. To test our hypotheses, we repeat the priming with 100,000 steps but perform two interventions on the priming updates (see Figure~\ref{fig:overestimationpriming_causes}). 
-% \comE{It isn't 100\% clear how Fig 2 matches up with these interventions. The wording/names should match between Fig 2 and its caption and the interventions.}
 To test this hypothesis, we add a conservative behavioral cloning~\parencite{pomerleau1988alvinn, atkeson1997robot} loss term to our actor that forces the policy to be close to replay buffer actions. Prior work employed this technique in offline RL to mitigate value overestimation~\parencite{fujimoto2021td3bc}. More formally, our actor update is extended by the loss $
         \mathcal{L}_{c, \psi} = \min_{\psi} \mathbb{E}_{a \sim \mathcal{D}, \hat{a} \sim \pi_{\psi}(\state)}[||a - \hat{a}||_2]$. 
 The results in Figure~\ref{fig:overestimationpriming_causes} indicate that the basis of the conjecture is corroborated as divergence is much smaller---but not mitigated completely---when values are learned on actions similar to seen ones. However, in practice we do not know when divergence sets in, which limits the applicability of this technique in realistic scenarios. Using it throughout all of training, rather than just during priming, impairs the learner's ability to explore. We investigate the effects of the optimizer in more detail and provide preliminary evidence that the second-order term may be at fault in Appendix~\ref{app:priming_opt}. 
@@ -266,16 +263,6 @@ $f(\mathbf{x}) = \frac{\mathbf{x} }{\|\mathbf{x}\|_2}$~\parencite{zhang2019root}
 where $\|\cdot\|_2$ denotes the L$^2$ vector norm and $\mathbf{x}$ is the output of our encoder $\phi(\state, a)$. This ensures that all values are strictly between $0$ and $1$ and the gradients will be tangent to the unit sphere. Note that this function's gradient is not necessarily bounded to ensure low gradient propagation (see Appendix~\ref{app:unitnorm}), but we argue that if large values are never created in the early layers, gradient explosion will not occur. The unit ball has previously been used to mitigate large action prediction in the actor~\parencite{wang2020striving} or to stabilize RL training in general~\parencite{bjorck2022is}. 
 For brevity, we will refer to this method as {\em output feature normalization} (OFN). We solely apply OFN to the critic, unlike~\textcite{wang2020striving}, since our goal is to mitigate value divergence. OFN is very simple and requires only a one-line change in implementation.
 
-% We note the simplicity of the approach as it essentially requires a one-line change in implementation.
-
-% A common technique for normalization of intermediate embeddings is Layer normzliation....
-% However, here we make a crucial design choice. Common implementations of layer normalization are implemented via the following rule
-% \begin{equation*}
-%     l
-% \end{equation*}
-% where... . We need to ensure that scaling cannot be propagated into our earlier layers and need to disable the learnable parameters of this normalizer. We ablate this choice in Appendix~\ref{todo}
-
-
 \subsection{Evaluating feature output normalization during priming} \label{sec:evalmethod}
 
 To test the efficacy of the OFN-based approach, we repeat the priming experiment in Figure~\ref{fig:overestimationpriming_norm}.
@@ -298,7 +285,6 @@ To understand the efficacy of output normalization on real environments under hi
 
 \begin{figure}[t]
 \begin{minipage}[b]{0.67\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering
@@ -311,16 +297,7 @@ To understand the efficacy of output normalization on real environments under hi
 \end{minipage}
 \hfill
 \begin{minipage}[b]{.3\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
-    % \begin{subfigure}[b]{\textwidth}
-    %     %\hspace{15pt}
-    %     \centering
-    %     %\setlength{\fboxsep}{0pt}\fbox{
-    %     \includegraphics[height=0.8cm]{figures/dissecting/main_exp/hopper_hop_legend.pdf}
-    %     %}
-    % \end{subfigure}
-    % \\%
     \begin{subfigure}[b]{\textwidth}
         \centering
         %\setlength{\fboxsep}{0pt}\fbox{
@@ -516,5 +493,5 @@ This offers a starting point towards explaining the challenges of high-UTD train
 
 This chapter shines a light on the important role that the implicit representations learned from end-to-end critic optimization play in value function learning.
 In essence, model-free value learning is a purely \emph{decision-aware} method, as it solely focuses on extracting good features for the current value prediction target.
-But due to the deep entanglement between optimization, exploration, and non-stationarity, we can see that relying solely on end-to-end learning for value estimation is a potentially perilous endeavour.
+But due to the deep entanglement between optimization, exploration, and non-stationary data, we can see that relying solely on end-to-end learning for value estimation is a potentially perilous endeavour.
 While simple regularization can already alleviate some of the issues with value learning,  the next chapter takes an in-depth look at more explicit ways of constructing good representative features.
