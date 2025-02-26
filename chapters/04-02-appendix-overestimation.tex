@@ -95,9 +95,11 @@ We employ two commonly used implementations, one for fast iterations on priming 
     \label{fig:elu_priming_base}
 \end{figure}
 
-During our experiments, we found that the ReLU activation can sometimes lead to destabilization of other parts of the SAC agent during priming. We found that using ELU~\parencite{clevert2016accurate} activations instead remedies some of these issues. We repeat various experiments from Section~\ref{sec:investigating} again but with more stable activations. First, we show in Figure~\ref{fig:elu_priming_base} that divergence happens similar to before and that it is correlated with the amount of priming.
+During our experiments, we found that the ReLU activation can sometimes lead to destabilization of other parts of the SAC agent during priming. We found that using ELU~\parencite{clevert2016accurate} activations instead remedies some of these issues. We repeat various experiments from Section~\ref{sec:overestimation:investigating} again but with more stable activations. First, we show in Figure~\ref{fig:elu_priming_base} that divergence happens similar to before and that it is correlated with the amount of priming.
 
-Furthermore, we discussed that the divergence is most likely triggered by out of distribution action prediction (see Figure~\ref{fig:elu_priming_causes}) and that regularization can help. When using ELUs, the effect of regularization is much more stable and as expected but still not as good as our OFN approach from Section~\ref{sec:evalmethod} (compare with Figure~\ref{fig:elu_priming_abl}). Dropout leads to significantly worse performance and L$^2$ regularization learns Q-values too small for the obtained return which we suspect correlates with decreased exploration.
+Furthermore, we discussed that the divergence is most likely triggered by out of distribution action prediction (see Figure~\ref{fig:overestimation:elu_priming_causes}) and that regularization can help. 
+When using ELUs, the effect of regularization is much more stable and as expected but still not as good as our OFN approach from Section~\ref{sec:overestimation:evalmethod} (compare with Figure~\ref{fig:overestimation:elu_priming_abl}). 
+Dropout leads to significantly worse performance and L$^2$ regularization learns Q-values too small for the obtained return which we suspect correlates with decreased exploration.
 
 \begin{figure}[H]
 \begin{minipage}[b]{.35\textwidth}

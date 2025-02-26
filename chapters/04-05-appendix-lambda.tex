@@ -1,7 +1,7 @@
 \chapter{Appendix \autoref{chap:cvaml}}
 
-\section{Implementation Details -- \autoref{sec:empirical1}: Garnet}
-\label{app:model_design}
+\section{Implementation Details -- \autoref{sec:cvaml:empirical1}: Garnet}
+\label{app:cvaml:model_design}
 
 Each Garnet is defined by a randomly generated transition matrix and a random reward function.
 Across all experiments we use 50 dimensional state spaces.
@@ -16,7 +16,7 @@ As $\tau \rightarrow \infty$, the problem becomes deterministic with $p(x_j|x_i)
 For $\tau \rightarrow \infty$, the probabilities for all successor states become equal $p(x_j|x_i) = \frac{1}{k}.$
 In our experiments, we vary $\tau$ such that for almost all Garnets we obtain full determinism and equal transition probabilities, which empirically happens in the range $\tau \in [0.001, 10.0].$
 
-\section{Implementation Details --  \autoref{sec:empirical2}: DM Control}
+\section{Implementation Details --  \autoref{sec:cvaml:empirical2}: DM Control}
 \label{app:model_design}
 
 \begin{table}[]
@@ -55,7 +55,7 @@ In addition to the $L_2$ based deterministic latent setup, we also use a Gaussia
 This implementation follows similar ideas used in observation-space models, such as \textcite{pets,mbpo}.
 While the stochastic environment models used in Dreamer \parencite{hafner2021mastering} would have been an alternative, it has not shown strong performance in continuous control tasks and is significantly more expensive to run.
 In addition, \textcite{voelcker2024when} shows that observation-space reconstruction can be a suboptimal auxiliary task for aligning a latent space with value function prediction.
-Finally, we adopt the joint model-free and model-based training proposed in \textcite{voelcker2024mad}.
+Finally, we adopt the joint model-free and model-based training proposed in \textcite{voelcker2025mad}.
 For the MuZero setting ($b=1$) we update the value function both for the state and the predicted latent state.
 In the IterVAML setting, there is no meaningful way to update the model's predicted value function, and therefore we only update the current state's value function.
 
@@ -66,7 +66,7 @@ Hyperparameters can be found in \autoref{tab:hyperparams}.
 \subsection{Environment}
 \label{app:stoch_env}
 As several recent papers have shown, the vast majority of environments in the DM Control suite are effectively saturated. 
-We, therefore, restrict our experiments to the most difficult domains, \emph{humanoid} and \emph{dog}, on which large performance differences still appear \parencite{nauman2024bigger,voelcker2024mad,fujimoto2025towards}.
+We, therefore, restrict our experiments to the most difficult domains, \emph{humanoid} and \emph{dog}, on which large performance differences still appear \parencite{nauman2024bigger,voelcker2025mad,fujimoto2025towards}.
 
 % One challenge in evaluating the claims made in this paper is that no commonly used Deep RL environment has stochastic transitions.
 % While some variants of the Atari benchmark include \emph{sticky actions} \textcite{machado18arcade}, a technique that randomly executes past actions multiple times, this does not create a large amount of variability in the returns.
@@ -85,7 +85,7 @@ This however does not lead to a noticeable difference in the VAML error itself.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/plts/app_metrics.pdf} 
+    \includegraphics[width=0.9\textwidth]{figures/lambda/plts/app_metrics.pdf} 
     \caption{Model entropy (left) and loss value for the VAML-losses (right) aggregated across all environments. The shaded area represents a 95\% stratified bootstrap interval. We see that the model entropy of the corrected $(1,0)$-VAML differs significantly, as we expect. However, this does not translate to a pronounced difference in the VAML error itself. Therefore, while the calibration term does indeed lead to a higher variance, this does not directly translate into an improvement in performance. In $(1,1)$-VAML, the model entropy does not differ significantly, however, without calibration, the VAML error seems to be growing slightly stronger (although not outside of overlapping confidence intervals). Given the large deviation in performance we observe in the main results for $(1,1)$-VAML, we conjecture that correcting the value function learning term is significantly more important for performance.}
    \label{fig:vaml_entropy}
 \end{figure}

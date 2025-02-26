@@ -2,7 +2,7 @@
 
 
 \section{Implementation details for the experiments}
-\label{app:empirical}
+\label{app:understanding:empirical}
 
 \begin{table}[]
     \centering
@@ -95,19 +95,19 @@ Full code is available at \url{https://github.com/adaptive-agents-lab/understadi
 
 
 \section{DMC results}
-\label{app:mujoco_results}
+\label{app:understanding:mujoco_results}
 
 The DMC environments have a very different observation structure and transition dynamics compared to those of the MinAtar games. The observation spaces are dense and often contain topological discontinuities such as those outlined in \autoref{app:observation_motivation}.
 
 All experiments are repeated across 10 seeds.
 
 We find slightly different results in these environments compared to MinAtar, especially about the efficacy of the latent self-prediction and observation reconstructions in the stand-alone setting (\autoref{fig:muj_sta} and \autoref{fig:muj_sta_rew}). Overall, latent self-prediction performs much more strongly in these environments compared to the MinAtar experiments, especially when using it as a stand-alone loss.
-Curiously, in the only environment where observation prediction shines (quadruped-walk), stand-alone latent self-prediciton and reward prediction seems to outperform all other test settings.
+Curiously, in the only environment where observation prediction shines (quadruped-walk), stand-alone latent self-prediction and reward prediction seems to outperform all other test settings.
 This highlights the second important difference between the MinAtar games and the DMC suite: dense rewards.
 We conjecture that most of the differences between observation prediction and latent self-prediction in the DMC suite comes from dense rewards and different topological continuity, but a precise investigation is needed in future work.
 
 Finally, our assumptions about the impact of noise distortions on the efficacy of different loss functions seems to be much more clearly apparent in DMC than in MinAtar. This suggests that the differing primary observation spaces also change how the learning process interacts with the noise, i.e. because the spectral properties of the underlying environments might differ.
-Especially in the challenging distraction setting of structured noise, non trivial policies (as measured by a strong performance improvement over a random baseline) can only be observed in 7 out of the 15 environemnts. Of these 7, latent self prediction seems to outperform the other baselines in 3 cases, only falling behind in 1. However, we observed that the pendulum environment has a strong bimodal distribution with some runs completely failing to perform for each experimental scenario, so the number of seeds might be insufficient to disambiguate performance here, as evidenced by the large confidence interval at the $95\%$ level.
+Especially in the challenging distraction setting of structured noise, non trivial policies (as measured by a strong performance improvement over a random baseline) can only be observed in 7 out of the 15 environments. Of these 7, latent self prediction seems to outperform the other baselines in 3 cases, only falling behind in 1. However, we observed that the pendulum environment has a strong bimodal distribution with some runs completely failing to perform for each experimental scenario, so the number of seeds might be insufficient to disambiguate performance here, as evidenced by the large confidence interval at the $95\%$ level.
 
 Overall, 10 seeds, even though widely used in the community, might not be sufficient to fully represent the performance in the DMC suite, suggesting that more work is needed on the inherent variations of these environments.
 We do not present aggregate performance over the environments, as the different reward scales makes a comparison prone to be driven by outliers such as the humanoid environments, in which several algorithms fail to learn at all at 10 seeds.
@@ -174,4 +174,4 @@ While the observation space of e.g. the MinAtar games is relatively large, depen
 Studying these kinds of nonlinear image transformations in more detail would require deviating farther from the previous literature.
 
 In this paper, we aim to (re-)introduce the notion of distraction into the learning dynamics literature, and so we use a relatively simplistic notion of distraction.
-Going beyond the independence assumption in the distraction model (due to the Kronecker formulation) and analysing more complex forms of distractions e.g. processes in which the reward-relevant process causally influences the distracting process but not vice versa is an exciting direction for future work.
+Going beyond the independence assumption in the distraction model (due to the Kronecker formulation) and analyzing more complex forms of distractions e.g. processes in which the reward-relevant process causally influences the distracting process but not vice versa is an exciting direction for future work.

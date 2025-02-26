@@ -53,7 +53,6 @@ To fully elucidate the role that increasing the update ratio plays in destabiliz
 \section{Investigating the effects of large update-to-data ratios during priming} \label{sec:overestimation:investigating}
 
 \begin{figure}[t!]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -72,50 +71,33 @@ To fully elucidate the role that increasing the update ratio plays in destabiliz
     \begin{subfigure}[b]{0.25\textwidth}
         \centering
         \includegraphics[width=3.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/priming_base_exp_avg.pdf}
-        \label{subfig:overestimation:priming_base_mom}
     \end{subfigure}%
     \begin{subfigure}[b]{0.25\textwidth}
         \centering
         \includegraphics[width=3.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/priming_base_exp_avg_sq.pdf}
-        \label{subfig:overestimation:priming_base_mom}
     \end{subfigure}%
     \caption{Return, in-distribution Q-values and Adam optimizer moments during priming for different lengths. Dotted lines correspond to end of priming. More priming leads to lower return and larger Q-value and optimizer divergence.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:overestimationpriming_base}
 \end{figure}
 
 As mentioned, the definition of the primacy bias is broad.
 To obtain a more nuanced understanding, we set out to re-investigate the early stages of high-UTD training. To do so, we repeat the priming experiment conducted by~\textcite{nikishin2022primacy}.\footnote{For consistency with later sections, we use the ReLU activation here which can lead to unstable learning of other components. We repeat all the experiments with ELUs in Appendix~\ref{app:priming} to provide even stronger support of our findings.}
 We first collect a small amount of random samples. Then, using the SAC algorithm, we perform a priming step, training the agent for a large number of updates without additional data. After priming, training continues as usual. Prior results reported by~\textcite{nikishin2022primacy} suggest that once the priming step has happened, agents lose their ability to learn completely. We use the simple Finger-spin task \parencite{tunyasuvunakool2020dmcontrol} to study the root causes for this systematic failure and to examine if there are ways to recover without resets. In this section, we report means over five random seeds with standard error in shaded regions. Hyperparameters are kept consistent with previous work for ease of comparison.
-% \mh{we should maybe add something about more stable results from elu in appendix}
 
 \subsection{An old acquaintance: Q-value overestimation} \label{sec:overestimation}
 We first ask whether there is a barrier as to how many steps an agent can be primed for before it becomes unable to learn. We test this by collecting 1,000 samples and varying the number of updates during priming from 25,000 to 50,000 and 100,000. The results are presented in Figure~\ref{fig:overestimationpriming_base}. 
 
 We make two key observations. First, lower amounts of priming are correlated with higher early performance. More precisely, it seems that many runs simply take longer before they start learning as the number of priming steps increases. Second, during priming the scale of the average Q-value estimates on observed state-action pairs increases drastically. We find that the Q-values start out at a reasonable level, but as priming goes on they eventually start to diverge drastically. Once the agent estimates very large Q-values, the final performance in terms of average returns deteriorates. We also observe that the second moment of the Adam optimizer~\parencite{kingma2015adam} is correlated with the divergence effect. Optimizer divergence has been observed before as a cause of plasticity loss under non-stationary data \parencite{lyle2023understanding}, but in our experiments the data is stationary during priming. We conjecture that the momentum terms lead to much quicker propagation of poor Q-values and ultimately to prediction of incorrect Q-values, even on in-distribution data.
 
-% However, without regularization it seems that once the effective dimension falls below a certain threshold, agents take substantially longer to recover and learning becomes essentially impossible (see Appendix~\ref{todo}). 
 
 After priming, there exist two cases: 1) either the Q-values need to be unlearned before the agent can make progress or 2) there is a large drop from very high to very low Q-values that is strongly correlated with loss in effective dimension of the embedding, as defined by~\cite{yang2020harnessing} (see Appendix~\ref{app:priming_dim}). In the second case, we find that contrary to previous claims in the literature, rank can sometimes be recovered upon seeing new, counter-factual data and the network continues to learn. Yet, in other cases the agent gets stuck at low effective dimension; a possible explanation for the failure to learn observed in the priming experiments of~\textcite{nikishin2022primacy}. This is orthogonal to a previously studied phenomenon where target network-based updates lead to perpetually reduced effective rank~\parencite{kumar2021implicit}.
 
-%However, the priming experiment alone does not allow us to conclude whether overestimation is a symptom or a cause of the primacy effect.
-% To differentiate, we need a way to either prevent capacity loss in the network, or to regularize the Q values as to control for the impact of one or the other. 
-
-% When looking at the resetting results in~\textcite{nikishin2022primacy, doro2023barrier}, several interesting observations can be made. First, it seems that in many cases a large part of the performance gains that are obtained from resetting seem to happen after the first reset. Additionally, after resetting for the first time, the variance across random seeds ostensibly reduces significantly in many of the experiments. \mh{Lastly, it seems unclear when exactly resetting which network should happen.} We set out to explore the cause for these events by considering a similar priming experiment as suggested in~\textcite{nikishin2022primacy}. We collect an initial sample of $2560$ observations from the environment, train for a large number of updates $U$ and this initial set and then return to standard SAC training. In doing so, we vary the number $U$ to artificially create the effects of increased UTD-ratios. 
-
-% \subsection{Q-value divergence as a root cause}
-
-% The results in~\ref{fig:overestimationpriming} indicate that a key property of the training runs is that with increased $U$, 
-
-% So as long as priming is not too strong, we can live with it. However, we must "unlearn" bad Q-values before we can start learning to solve the task. We hypothesize that resetting helps both to speed-up unlearning as well as getting back from the point of no return. We hypothesize that, if divergence never happens, we never have to do either of these and should simply be able to learn removing the need for expensive retraining after resets.
-% Our core observation is that the priming procedure produces strong Q value - not only overestimation but - divergence which up to a certain extent can be combated with more training. 
 
 
 \subsection{On the potential causes of divergence} \label{sec:causes}
 
 \begin{figure}[t]
 \begin{minipage}[b]{.35\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering

@@ -1,6 +1,5 @@
 \chapter{Appendix \autoref{chap:mad}}
 
-
 \section{Implementation}
 \label{app:implementation}
 
@@ -96,7 +95,7 @@ Other hyperparameters were left as-is.
 \label{app:results_q}
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\linewidth]{clean_plots/q_values_utd.pdf}
+    \includegraphics[width=\linewidth]{figures/mad-td/q_values_utd.pdf}
     \caption{Return curves and Q values with differing UTD values.}
     \label{fig:q_hard}
 \end{figure}
@@ -114,7 +113,7 @@ As we see, across all tasks the model free variant strongly overestimates the Q 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{clean_plots/humanoid_random_actions.pdf}
+    \includegraphics[width=0.9\linewidth]{figures/mad-td/humanoid_random_actions.pdf}
     \caption{Return curves for the humanoid tasks when using on-policy (blue), random (green) and no model-generated data (orange). The observed performance impacts are comparable to the dog case.}
     \label{fig:humanoid_random_actions}
 \end{figure}
@@ -136,14 +135,14 @@ This observation is consistent with similar observation about model exploration 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{clean_plots/higher_data.pdf}
+    \includegraphics[width=\linewidth]{figures/mad-td/higher_data.pdf}
     \caption{Return curves on the hard suite. We see that using substantially more data than 5\% does not improve performance in a statistically significant way.}
     \label{fig:higher_data}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.4\linewidth]{clean_plots/higher_data_aggregate.pdf}
+    \includegraphics[width=0.4\linewidth]{figures/mad-td/higher_data_aggregate.pdf}
     \caption{Aggregate statistics for differing values of $\alpha$ (amount of model data used) at UTD 8.}
     \label{fig:higher_data_aggregate}
 \end{figure}
@@ -164,7 +163,7 @@ This strengthens our hypothesis that for hard tasks, off-policy action correctio
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{clean_plots/hard_fs_1_synther.pdf}
+    \includegraphics[width=\linewidth]{figures/mad-td/hard_fs_1_synther.pdf}
     \caption{\rebuttal{Performance curves for MAD-TD and SynthER on the hard DMC tasks. SynthER fails to achieve nontrivial results on most tasks, only outperforming a random policy on the humanoid walk and stand tasks. }}
     \label{fig:synther}
 \end{figure}
@@ -186,7 +185,7 @@ We find that this does not significantly change the overall results achieved by 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{clean_plots/ablation.pdf}
+    \includegraphics[width=\linewidth]{figures/mad-td/ablation.pdf}
     \caption{\rebuttal{Performance variation of the base MAD-TD model compared to TD-MPC2. Our changes only very few times lead to lower performance which is acceptable given the large reduction in computational cost.}}
     \label{fig:tdmpc_ablation}
 \end{figure}
@@ -205,14 +204,14 @@ Yet, across both action repeat setting MAD-TD outperforms BRO without resetting 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{clean_plots/hard_all_fs_2.pdf}
+    \includegraphics[width=0.8\linewidth]{figures/mad-td/hard_all_fs_2.pdf}
     \caption{Return curves with action repeat set to 2.}
     \label{fig:hard_all_fs_2}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{clean_plots/hard_all_fs_1.pdf}
+    \includegraphics[width=0.8\linewidth]{figures/mad-td/hard_all_fs_1.pdf}
     \caption{Return curves with action repeat set to 1.}
     \label{fig:hard_all_fs_1}
 \end{figure}
@@ -232,27 +231,27 @@ We conducted more experiments on all DMC environments which were shown to benefi
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{clean_plots/model_impact.pdf}
+    \includegraphics[width=0.8\linewidth]{figures/mad-td/model_impact.pdf}
     \caption{Return curves evaluating the impact of model-based data for critic learning and MPC. Overall, MPC and model-based critic learning both stabilize the learning process, as conjectured.}
     \label{fig:all_model_impact}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{clean_plots/mpc_reset.pdf}
+    \includegraphics[width=0.8\linewidth]{figures/mad-td/mpc_reset.pdf}
     \caption{Return curves for the impact of resetting on MAD-TD with and without MPC. Without MPC, resetting can still improve the performance, but with MPC, we see no significant benefits from resetting across environments except pendulum. The hopper results highlight the importance (and danger) of the reset interval, as seemingly the reset algorithm is not able to recover ``in time'' to improve performance.}
     \label{fig:mpc_comp}
 \end{figure}
 
 % \begin{figure}
 %     \centering
-%     \includegraphics[width=\linewidth]{clean_plots/mpc_reset.pdf}
+%     \includegraphics[width=\linewidth]{figures/mad-td/mpc_reset.pdf}
 %     \caption{Placehilder for the damned trot}
 %     \label{fig:enter-label}
 % \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.8\linewidth]{clean_plots/all_baseline_comp_rewards.pdf}
+    \includegraphics[width=.8\linewidth]{figures/mad-td/all_baseline_comp_rewards.pdf}
     \caption{Comparison of MAD-TD and TD-MPC2 across more environments of the DMC suite. We observe gains compared to TD-MPC2 in the hard tasks, especially in terms of early learning performance, while TD-MPC2 has advantages on the pendulum\_swingup and acrobot\_swingup tasks. These seem to be exploration and stability issues for which the longer model rollouts of TD-MPC2 seem to help.}
     \label{fig:all_baseline}
 \end{figure}
@@ -284,7 +283,7 @@ This is, to the best of our knowledge, not discussed in the literature, and shou
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{clean_plots/metaworld.pdf}
+    \includegraphics[width=0.8\linewidth]{figures/mad-td/metaworld.pdf}
     \caption{\rebuttal{Performance comparison on Metaworld between MAD-TD, BRO, and TD-MPC2. MAD-TD performs strongly on tasks which provide sufficient reward information to bootstrap the value function quickly, while learning more slowly on sparse reward tasks. This is consistent with the core goal of our algorithm, to stabilize and improve value function learning.}}
     \label{fig:metaworld}
 \end{figure}

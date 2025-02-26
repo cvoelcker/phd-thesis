@@ -1,7 +1,7 @@
 \chapter{Appendix \autoref{chap:vagram}}
 
 \section{Full VAML for SAC}
-\label{app:vaml_sac}
+\label{app:vagram:vaml_sac}
 The formulation of VAML which we derive for SAC is a direct extension of the VAML loss to the SAC soft bellman backup. Specifically, given some distribution over the state-action space $\mathcal{D}$, state-action value function $Q$ and policy $\pi$, we can define a SAC-aware loss.
 
 \begin{align}
@@ -103,7 +103,7 @@ As is apparent from the results, the issue of destabilization on the Ant task is
 \end{figure}
 
 \section{Experiment details}
-\label{app:implementation}
+\label{app:vagram:implementation}
 
 As described in the main paper, we conducted our experiment in two domains from the OpenAI benchmark OpenAI Gym \parencite{brockman2016openai}, Pendulum-v2 and Hopper-v0.
 We used both environments as provided by the framework without further modification in our capacity tests.
@@ -179,7 +179,7 @@ Initialize policy $\pi_\phi$, value function $v_\psi$, model $\hat{f}_\theta$, e
 \end{algorithm}
 
 \section{Deterministic vs probabilistic models}
-\label{app:deterministic}
+\label{app:vagram:deterministic}
 
 Our derivation of VaGraM lead us to the conclusion that a deterministic model was sufficient to achieve the goal of value-aware model learning in environments with small transition noise.
 This insight stands in contrast to the current literature, which often claims that probabilistic models are needed to achieve optimal performance in model-based reinforcement learning.

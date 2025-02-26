@@ -141,7 +141,7 @@ The following two results are our own, although closely related results exist in
 \end{lemma}
 \begin{proof}
     By \autoref{assumption:understanding:low_rank} we can find a matrix $A$ so that $r^\pi = \Phi A$ and $\Phi\Phi^\top r^\pi = r^\pi$, and by the invariant subspace assumption, we can find a matrix $B$ so that $P^\pi \Phi = \Phi B$.
-    Writing the inverted matrix as an infinite sum, which is valid as the spectrum of $\Phi^\top P^\pi \Phi$ is bounded by 1 following from \autoref{gosh:understanding:corr} and Carl Neumann's theorem over power series, we obtain
+    Writing the inverted matrix as an infinite sum, which is valid as the spectrum of $\Phi^\top P^\pi \Phi$ is bounded by 1 following from \autoref{lem:understanding:gosh:corr} and Carl Neumann's theorem over power series, we obtain
     \begin{align*}
         \Phi (I - \gamma \Phi^\top P^\pi \Phi)^{-1} \Phi r^\pi &= \Phi \sum_{n=0}^\infty \gamma^n (\Phi^\top P^\pi \Phi)^n \Phi r^\pi \\
         &= \Phi \sum_{n=0}^\infty \gamma^n B^n \Phi^\top r^\pi &\quad (P^\pi \Phi = \Phi B)~\text{and}~(\Phi^\top \Phi = I)\\
