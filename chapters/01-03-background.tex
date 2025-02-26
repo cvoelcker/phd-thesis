@@ -1,7 +1,6 @@
 \chapter{Background}
 \label{chap:background}
 
-% \todo[inline]{Missing citations}
 
 To develop the core algorithms and proofs of the thesis, we need a brief survey of the fundamentals of \ac{rl}, \ac{mbrl}, and representation learning.
 These fields form the basis for the research presented in this thesis, and the methods and results are built on the established knowledge in these areas.
@@ -13,10 +12,8 @@ The presentation of the Markov Decision Process and Reinforcement Learning basic
 
 \section{General mathematical notation and definitions}
 To define the concepts used in \ac{ml} and especially in \ac{rl} we require some mathematical language.
-% Although this thesis does not aim for the level of rigor of a mathematical textbook, some care needs to be taken nonetheless to be precise with terminology and definitions.
 
 When talking about sets, we will generally use italic capital letters such as $\states$ or $\actions$, except for canonical terms such as the symbol $\mathbb{R}$ used for the real numbers.
-% All sets used in this thesis are assumed to be measurable with standard measures, such as a counting measure in the case of a finite set, or a Borel measure in other cases.
 
 Functions are denoted following standard terminology as lower case letters, and operators use upper case letters.
 We will write $M(\mathcal{X})$ to denote the set of possible distributions over the set $\mathcal{X}$ equipped with an appropriate $\sigma$-algebra.
@@ -265,7 +262,6 @@ We need to show that the intended target, $V^\pi$, does not properly minimize th
 To do this, we decompose the loss function as follows
 \begin{align}
     \mathbb{E}_{D} \left[\mathcal{L}_\mathrm{res}(\hat{V}, \{\state_i, r_i, \state'_i\})\right] &= \mathbb{E}_{D} \left[\frac{1}{n} \sum_{i=1}^n \left(\hat{V}(\state_i) - r_i - \gamma \hat{V}(\state'_i)\right)^2\right] \\
-    % &= \frac{1}{n} \sum_{i=1}^n \mathbb{E}_{D} \left[\left(\hat{V}(x_i) - r - \gamma \hat{V}(x'_i)\right)^2\right] \\
     &=\mathbb{E}_{D} \left[\left(\hat{V}(x_i) - r_i - \gamma \hat{V}(x'_i)\right)^2\right] \\
     &=\mathbb{E}_{D} \left[\left(\hat{V}(x_i) - V^\pi(x_i) + V^\pi(x_i) - r_i - \gamma \hat{V}(x'_i)\right)^2\right] \\
     &=\mathbb{E}_{D} \left[\left(\hat{V}(x_i) - V^\pi(x_i)\right)^2\right] + \mathbb{E}_{D}\left[\left( V^\pi(x_i) - r_i - \gamma \hat{V}(x'_i)\right)^2\right] \\

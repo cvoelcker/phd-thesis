@@ -68,7 +68,6 @@ We employ two commonly used implementations, one for fast iterations on priming 
 \subsection{Activation functions}
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -91,7 +90,6 @@ We employ two commonly used implementations, one for fast iterations on priming 
     \end{subfigure}%
     \vspace{-5pt}
     \caption{ELU activations. Return, in-distribution Q-values and Adam optimizer moments during priming for different lengths. Dotted lines correspond to end of priming. More priming leads to lower return and larger Q-value and optimizer divergence.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:elu_priming_base}
 \end{figure}
 
@@ -103,7 +101,6 @@ Dropout leads to significantly worse performance and L$^2$ regularization learns
 
 \begin{figure}[H]
 \begin{minipage}[b]{.35\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering
@@ -120,7 +117,6 @@ Dropout leads to significantly worse performance and L$^2$ regularization learns
 \end{minipage}
 \hfill
 \begin{minipage}[b]{.62\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
     \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -138,7 +134,7 @@ Dropout leads to significantly worse performance and L$^2$ regularization learns
     \end{subfigure}%
     \vspace{-18pt}
     \caption{ELU activations. Return and
-    Q-values of priming runs with weight decay and dropout. Results indicate that both regularizations mitigate priming more than with ReLUs. }
+    Q-values of priming runs with weight decay and dropout. Results indicate that both regularization strategies mitigate priming more than with ReLUs. }
     \label{fig:elu_priming_abl}
 \end{minipage}
     \vspace{-5pt}
@@ -146,10 +142,9 @@ Dropout leads to significantly worse performance and L$^2$ regularization learns
 
 \subsection{Optimizer divergence} \label{app:priming_opt}
 
-With more stable effects from the ELU activation, we introduce a second intervention to the priming stage. We hypothesize that most of the divergence stems from the second optimizer term that will propell the gradients to increase more and more over time. To test this, we run an additional experiment in which we use standard stochastic gradient descent (SGD)~\parencite{robbins1951stochastic} with first-order momentum~\parencite{rumelhart1986learning, sutskever2013on} during priming to isolate the effect of the second-order momentum term. We compare this against RMSProp which is equivalent to Adam but without the first optimizer term instead. The results are shown in Figure~\ref{app:priming_opt}. As we can see, the divergence is almost completely gone when using SGD with momentum but is even larger in RMSProp. Note that running the same experiment with ReLU activations  leads to divergence in the actor when using SGD only. We suspect this might have to do with divergence in the actor entropy.
+With more stable effects from the ELU activation, we introduce a second intervention to the priming stage. We hypothesize that most of the divergence stems from the second optimizer term that will propel the gradients to increase more and more over time. To test this, we run an additional experiment in which we use standard stochastic gradient descent (SGD)~\parencite{robbins1951stochastic} with first-order momentum~\parencite{rumelhart1986learning, sutskever2013on} during priming to isolate the effect of the second-order momentum term. We compare this against RMSProp which is equivalent to Adam but without the first optimizer term instead. The results are shown in Figure~\ref{app:priming_opt}. As we can see, the divergence is almost completely gone when using SGD with momentum but is even larger in RMSProp. Note that running the same experiment with ReLU activations  leads to divergence in the actor when using SGD only. We suspect this might have to do with divergence in the actor entropy.
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -185,7 +180,6 @@ Previous work on effective rank loss has often assumed that it is mostly irrever
 We suspect that in complete failure cases, the policy has collapse and rarely any new data is seen.
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -208,7 +202,6 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
     \end{subfigure}%
     \vspace{-5pt}
     \caption{Returns, Mean Q-values and effective dimension for $3$ seeds of standard priming for 75,000 steps. When divergence happens, effective dimension is lost. If the effective dimension drops too far, the agent has difficulties to recover.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:elu_priming_dim}
 \end{figure}
 
@@ -219,7 +212,6 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
 \subsection{Returns on all environments} \label{app:exp_ret}
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -231,14 +223,12 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
     \end{subfigure}%
     \vspace{-5pt}
     \caption{UTD8 Returns on Full DMC15-500K.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:utd8_ret}
 \end{figure}
 
 \newpage
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -250,7 +240,6 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
     \end{subfigure}%
     \vspace{-5pt}
     \caption{UTD32 Returns on Full DMC15-500K.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:utd32_ret}
 \end{figure}
 
@@ -259,7 +248,6 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
 \subsection{Q-values on all environments} \label{app:exp_q}
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -271,14 +259,12 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
     \end{subfigure}%
     \vspace{-5pt}
     \caption{UTD8 Q-values on Full DMC15-500K. Resetting often works when Q-values diverge. ONF mitigates divergence.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:utd8_Q}
 \end{figure}
 
 \newpage
 
 \begin{figure}[H]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -290,7 +276,6 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
     \end{subfigure}%
     \vspace{-5pt}
     \caption{UTD32 Q-values on Full DMC15-500K. Resetting often works when Q-values diverge. ONF mitigates divergence.}
-    % \caption{Mean return, Q-values and Adam moments for priming of different lengths. Dotted lines indicate end of priming. More priming leads to lower return and Q-value and optimizer divergence.}
     \label{fig:utd32_Q}
 \end{figure}
 
@@ -329,7 +314,7 @@ However, our experiments also highlight that without the accelerated optimizatio
 {\bf Conservative Learning for Online RL}~~ Most current actor-critic methods use some form of pessimistic value estimate to combat the overestimation bias inherent in off-policy Q learning. i.e. via the use of a twinned Q network \parencite{fujimoto2018addressing}.
 However, this can lead to pessimistic under-exploration \parencite{lan2020maxmin}.
 To address this, \textcite{moskovitz2021tactical} propose to tune the relative impact of pessimistic and optimistic exploration for the environments, while \textcite{lee2021sunrise} show that by combining independent critic estimates from ensembles, a UBC like exploration bound can be computed.
-These changes could be combined with the mitigation strategies for the feature layer divergence in future work to mitigate the harmful effects of underexploration further.
+These changes could be combined with the mitigation strategies for the feature layer divergence in future work to mitigate the harmful effects of under-exploration further.
 
 As our work shows, some of the previous problems with overestimation might not emerge from the bias introduced by off-policy actions, but from the learning dynamics of neural network updates.
 This suggests that more work on the exact causes of overestimation might allow us to move beyond the overly pessimistic twinned network minimization trick without needing costly solutions like ensemble methods.
@@ -340,7 +325,6 @@ Updating the network too fast can exacerbate the impact of value divergence, whi
 There have also been attempts to accelerate optimization not via the neural network optimization, but through adapting the updates of the target networks \parencite{vieillard2020momentum,farahmand2021pid}.
 This is an orthogonal direction to the one presented here, and the interplay between target network updates and neural network optimization steps are an important topic for future work.
 
-% We experimented with higher update speeds for the $\tau$ factor in the Polyak averaging scheme of SAC, but were not successful in achieving stable speedup, even after introducing the stabilizing feature normalization.
 
 {\bf Reward Shaping Impact}~~ In several environments, we observe almost no detrimental effects due to high update ratios, while in others the Q-values diverge even without moving beyond one update per sample collected.
 A closer inspection suggests that environments in which the initial reward is small and uninformative are much more prone to lead to catastrophic divergence, suggesting a close connection between reward shaping and divergence.

@@ -40,7 +40,7 @@ In our experiments, we vary $\tau$ such that for almost all Garnets we obtain fu
     Gradient clipping & 10 \\
     \end{tabular}
     \caption{Hyperparameter of the deep learning experiments. Aside from the $(m,b)$-(C)VAML relevant hyperparameters, we keep all others consistent across environments and algorithms.}
-    \label{tab:hyperparams}
+    \label{tab:cvaml:hyperparams}
 \end{table}
 
 \subsection{Architecture}
@@ -61,21 +61,13 @@ In the IterVAML setting, there is no meaningful way to update the model's predic
 
 Code is provided in the supplementary files and open-sourced after the review process.
 
-Hyperparameters can be found in \autoref{tab:hyperparams}.
+Hyperparameters can be found in \autoref{tab:cvaml:hyperparams}.
 
 \subsection{Environment}
 \label{app:stoch_env}
 As several recent papers have shown, the vast majority of environments in the DM Control suite are effectively saturated. 
 We, therefore, restrict our experiments to the most difficult domains, \emph{humanoid} and \emph{dog}, on which large performance differences still appear \parencite{nauman2024bigger,voelcker2025mad,fujimoto2025towards}.
 
-% One challenge in evaluating the claims made in this paper is that no commonly used Deep RL environment has stochastic transitions.
-% While some variants of the Atari benchmark include \emph{sticky actions} \textcite{machado18arcade}, a technique that randomly executes past actions multiple times, this does not create a large amount of variability in the returns.
-% Nonetheless, \textcite{schrittwieser2020mastering}, the original MuZero paper, do not use the \emph{sticky actions} setting, although they do not provide a reason for this choice.
-% 
-% To introduce stochasticity in the DMC environments, we use \emph{action noise}.
-% This is implemented with an environment wrapper: before passing the action to the environment, the wrapper adds noise sampled from a uniform distribution $U[-0.4,0.4]$ to the action.
-% This noise is not visible to the agent, the replay buffer stores the original action.
-% Interestingly, we found that this type of noise does not greatly impact whether a stochastic or deterministic model is preferable.
 
 \subsection{Additional results}
 

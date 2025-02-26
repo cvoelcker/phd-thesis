@@ -26,7 +26,6 @@ The name stresses the two core hyperparameters: the model rollout steps, $m$, an
 The $(m,b)$-VAML losses are used as surrogate losses in place of other value- or model learning losses.
 Therefore, it is important to ask whether they are calibrated \parencite{steinwart2008support}.
 A calibrated loss does not lead to suboptimal minima when the function class includes optimal functions for the original target loss.
-% We focus our investigation on stochastic environment models, which parameterize a distribution over the next state prediction.
 
 \textbf{Research question:} This chapter has three parts, each with a theoretical and empirical section. We answer two questions about the $(m,b)$-VAML family: (a) What variants of the $(m,b)$-VAML losses are well-calibrated to recover correct models and value functions? (b) How do deterministic latent-model architectures impact the stability of $(m,b)$-VAML algorithms? (c) Do we observe problems with uncalibrated losses when using stochastic architectures?
 
@@ -39,10 +38,9 @@ In the second part, we address issues arising from the way current algorithms in
 We prove that a stochastic model class is not necessary to learn a single-step decision-equivalent model in stochastic environments.
 This validates the practice of primarily using deterministic models in empirical work~\parencite{oh2017value,schrittwieser2020mastering,hansen2022temporal}.
 Empirically we find that using stochastic models can still lead to improved performance, although this is environment-dependent.
-% We,  corroborate our results empirically in challenging continuous control tasks \parencite{tunyasuvunakool2020dmcontrol} and show that correcting the $(mb,b)$-VAML leads to empirical performance gains.
 
 
-\section{Background}
+\section{Notation}
 
 \textbf{Reinforcement Learning:} We consider a standard as presented in \autoref{chap:background:mdp}.
 As a brief reminder, we review the notation.
@@ -98,7 +96,6 @@ This more general IterVAML still computes the difference between the expected va
     \squareb{V\roundb{x^{(m)}}}_\mathrm{sg}\biggr|^2. 
 \end{aligned}
 \end{equation}
-%
 We will use $\mathcal{L}_{\mathrm{IterVAML}, m}$ to refer to the expectation-based version, and $\hat{\mathcal{L}}^k_{\mathrm{IterVAML}, m}$ to refer to the sampling-based version.
 To reduce notational complexity, we drop the action dependence in all following propositions; all results hold without loss of generality for the action-conditioned case as well.
 The expectation-based version of the IterVAML loss has an important relationship to the error of computing the model's Bellman operator compared to the true environments Bellman operator.
@@ -127,7 +124,6 @@ We refer to this unified family of losses as $(m,b)$-Value Aware Model Losses (V
     & \hat{\mathcal{L}}^{\P^\pi}_{m,b}\left(\hat{p},\hat{V}|V_\mathrm{tar},x, x^{(m)}\right) = \biggl|\hat{V}\roundb{\hat{x}^{(m)}} - 
     \squareb{[\mathcal{T}_{\P^\pi}^b V_\mathrm{tar}]\roundb{x^{(m)}}}_\mathrm{sg}\biggr|^2, \label{eq:cvaml:dal_loss}
 \end{align}
-%
 where $V_\mathrm{tar}$ is a target network \parencite{mnih2013playing}.
 We denote the stop-gradient operation with $\squareb{\cdot}_\mathrm{sg}$.
 Note that samples from the real environment are used to approximate $[\mathcal{T}_{\P^\pi}^j \hat{V}]$.
@@ -136,7 +132,6 @@ The loss function and the relation of the model and environments rollout are vis
 Several works use variations of this loss:
 The original MuZero algorithm \parencite{schrittwieser2020mastering} and follow-up work \parencite{ye2021mastering,antonoglou2022planning} use $m\geq1$ and $b\geq1$.
 In continuous control, $m\geq1,b=1$ has been used in the TD-MPC line of work \parencite{hansen2022temporal,hansen2024tdmpc}.
-% The IterVAML loss \parencite{itervaml} can be recovered by choosing $i\geq1, j=0$, 
 When using only a single sample $k=1$, the sample-based IterVAML loss is equal to $\hat{\mathcal{L}}^{\P^\pi}_{m,0}$.
 Finally, regular model-free TD learning corresponds to $m=0,b\geq1$.
 
@@ -153,7 +148,6 @@ Proofs are found in \autoref{app:formal:cvaml}.
 \subsection{Calibration of surrogate loss functions}
 
 Formally, we ask whether the surrogate $(m,b)$-VAML is \emph{calibrated}.
-%A calibrated surrogate loss has a set of minimizers that is a subset of the set of minimizers of some target loss.
 Intuitively, a calibrated surrogate loss does not select a suboptimal function for the target loss.
 \begin{definition}[$\mathcal{F}$-Uncalibrated surrogate losses]
     Let $\mathcal{L}_\mathrm{tar}(f,x,x^{(m)})$ be a loss function defined over samples from an MDP.
@@ -163,7 +157,6 @@ Intuitively, a calibrated surrogate loss does not select a suboptimal function f
     A surrogate function is $F$-\emph{uncalibrated} for the target loss if there exists an MDP and a state $x$ so that 
     $$\argmin_{f \in \mathcal{F}} \mathbb{E}_{x^{(m)}\sim\P^\pi(\cdot|x)}\left[\mathcal{L}_\mathrm{sur}(f,x,x^{(m)})\right] \not\subseteq \mathcal{F}^*.$$
 \end{definition}
-%
 A prominent example of an $\mathcal{F}$-uncalibrated loss is Bellman Residual Minimization (BRM), which results in the \emph{double sampling issue}.
 We reviewed this issue and a proof in \autoref{chap:background:rl} and will see how related issues arise here.
 Recall that while in BRM the target loss is minimized by the ground-truth value function, BRM actually chooses a function that minimizes an additional variance term.
@@ -197,7 +190,6 @@ For a stochastic model class, $(m,0)$-VAML is uncalibrated for the target loss $
 
 We begin with analyzing the loss for $m\geq1$ and $b=0$.
 For simplicity we assume that $V_\mathrm{tar} = \hat{V}$.
-%
 \begin{restatable}{proposition}{IterVAMLUncal}\label{prop:cvaml:2_1}
     Let $\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}(\hat{p},V|x,x^{(m)})$ be the surrogate loss for $\mathcal{L}_{\mathrm{IterVAML}, m}^{\P^\pi}(\hat{p}, V|x, x^{(m)})$.
     Let $\P^*$ be the set of all distributions $p$ for which $\EEX{p}{V(\hat{x}^{(m)})} = \EEX{\P^\pi}{V(x^{(m)})}.$
@@ -225,7 +217,6 @@ The second term $(2)$ can again be decomposed as
 \end{align}
 The middle term of the binomial expansion again vanishes as $\EEX{\P^\pi}{\EEX{\P^\pi}{V\left(x^{(m)}\right)} - V\left(x^{(m)}\right)} = 0,$ and samples from $\hat{p}$ and $\P^\pi$ are independent.
 
- % As $k \rightarrow \infty$, the first term vanishes and the surrogate loss approaches the target loss.
 When we drop the term that is independent of the model, the loss has the form of $g$ in \autoref{lemma:cvaml:5}
 \begin{align}
    & \EEX{\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{i\geq1,0}\left(\hat{p},V|x,x^{(m)}\right)} \\
@@ -246,12 +237,10 @@ As $k \rightarrow \infty$, the condition becomes unfulfillable.
 This is also intuitive, as $\sum_{i=1}^k V\left(x^{(m)}_i\right) \rightarrow \EEX{\hat{p}}{V\left(x^{(m)}\right)}$ as $k \rightarrow \infty$ almost surely (assuming standard conditions hold).
 
 
-%
 When using samples from a stochastic model to compute the loss function in \autoref{eq:cvaml:dal_loss}, we are left with a variance error term that is closely related to the double-sampling problem
 \begin{align}
  &\mathbb{E}_{\hat{p}}[\hat{\mathcal{L}}^{\P^\pi}_{1,0}(\hat{p},V|x)] = {\mathcal{L}}^{\P^\pi}_{\mathrm{IterVAML}, 1}\left(\hat{p},V|x,x'\right) + \mathrm{Var}_{\hat{p}}\left(V(\hat{x})\right).
 \end{align}
-%
 In the classic double-sampling problem, we cannot correct the variance term as we do not have oracle access to the environment.
 Here the issue is our model, and we can generate multiple samples from it.
 Therefore, we can estimate this variance term from samples and correct the loss.
@@ -331,7 +320,6 @@ Instead, it decomposes into a variance-like term, using the conditional independ
 \end{align}
 
 Combining this with \autoref{eq:first}, we obtain
-%
 \begin{align}
   &\EEX{\hat{p},\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{m,b}(\P^\pi, V| V_{\mathrm{tar}}, x, x^{(m)})}\\
   &\quad = \EEX{\hat{p},\P^\pi}{ \roundb{\hat{V}\roundb{\mx{m}} - \roundb{\mathcal{T}_{\P^\pi}V_\mathrm{tar}}\roundb{\mx{m}}}^2} + \\
@@ -358,7 +346,6 @@ In many cases, the problem will be exacerbated by longer rollout horizons $m$ an
 \end{figure*}
 
 The problem in the loss function again depends on the variance of the value function with regard to the model.
-%
 To overcome this issue, we can introduce another variance correction term, similar to $\hat{\mathcal{L}}_\mathrm{CVAML}$. 
 This retains the advantage that the MuZero loss is used for both model and value updates.
 However, as we average over the value prediction from the model, we only guarantee that 
@@ -371,9 +358,7 @@ These are necessary for accurate planning or policy improvement, therefore, it i
 \subsection{Discussion of theoretical results}
 While the problem resulting from the use of stochastic models is resolvable, the MuZero loss is still insufficient for learning \emph{per state} value function with stochastic models.
 In addition, we observe issues with learning accurate value functions with the $(m\geq1,b\geq1)$-VAML loss even after correctly calibrating it.
-% However, the major issue is the use of the MuZero loss ($j\leq1$) for updating the value function estimate.
 If the corrected loss is used to update the model, and a standard model-free or model-based value estimate is used as the value function learning target, the correct value function can be learned.
-% Such an algorithm can also interleave model-free and model-based updates, such as the procedure used in \textcite{voelcker2024mad}.
 
 \begin{boxinsight}[Calibrated losses]
     To obtain a calibrated loss, we propose using $\hat{\mathcal{L}}_\mathrm{CVAML}$ to update the model and $\hat{\mathcal{L}}^{\hat{p}}_{0,j}$, or $\hat{\mathcal{L}}^{\P^\pi}_{0,j}$, to update the value function.
@@ -408,7 +393,6 @@ As we initialize the models with high entropy, $(1,1)$-VAML is unable to learn a
 
 Calibrated $(1,1)$-VAML still struggles in environments with low stochasticity.
 We find that due to the variance term over value functions, the model is prone to get stuck in local minima as it reduces the value function difference per state faster than the model predictive variance.
-% This suggests that the variance correction might be insufficient to achieve good learning in the non-asymptotic regime.
 This suggests that a $(m\geq1,0)$-CVAML loss is preferable with stochastic environments.
 
 \section{Latent environment models and auxiliary losses}
@@ -559,7 +543,6 @@ These two domains are the most challenging in the DMC suite, and the standard co
 \section{Stochasticity and auxiliary models}
 \label{sec:cvaml:theory_2}
 
-%
 The introduction of a stabilizing loss poses a challenge for the result in \autoref{prop:cvaml:3_1}.
 For example, a pre-trained LLM backbone might be used, which is naturally stochastic due to the sampling strategies used to query it.
 Therefore, it is still important to have a calibrated surrogate loss for stochastic models, as many use cases make stochastic models attractive.

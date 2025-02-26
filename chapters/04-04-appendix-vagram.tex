@@ -40,9 +40,13 @@ We do not address this matching explicitly in this work, but a hybrid policy-awa
     \label{fig:ablations}
 \end{figure}
 
-To test the performance of VaGraM and \ac{mbpo} against alternative models, we used the classic Pendulum swingup and Cartpole benchmarks. As points of comparison, we used IterVAML \parencite{itervaml} and a simple value-weighted regression similar to \textcite{nair2020goal}, where the MSE error is multiplied by the inverse of the value function of the sample. The results are visualized in \autoref{fig:ablations}. Hyperparameters follow the Cartpole task baseline in \textcite{Pineda2021MBRL}.
+To test the performance of VaGraM and \ac{mbpo} against alternative models, we used the classic Pendulum swingup and Cartpole benchmarks.
+As points of comparison, we used IterVAML \parencite{itervaml} and a simple value-weighted regression similar to \textcite{nair2020goal}, where the MSE error is multiplied by the inverse of the value function of the sample. The results are visualized in \autoref{fig:ablations}.
+Hyperparameters follow the Cartpole task baseline in \textcite{pineda2021mbrl}.
 
-Since IterVAML suffers from strong destabilization on the Pendulum model learning problem, as discussed in \autoref{sec:experiments}, we added an MSE loss to the original formulation $\mathcal{L}_\text{joint} = \mathcal{L}_\text{IterVAML} + \lambda \mathcal{L}_\text{MSE}$ with a tradeoff factor of $\lambda = 0.01$. We see that this is sufficient to stabilize the performance in the Pendulum swingup task and prevent catastrophic divergence, but the model still performs significantly below the \ac{mbpo} and VaGraM results in the Cartpole stabilization task. This is evidence that even with additional stabilization mechanisms, the issues presented in \autoref{sec:method} prevents the easy adoption of IterVAML to complex domains.
+Since IterVAML suffers from strong destabilization on the Pendulum model learning problem, as discussed in \autoref{sec:vagram:experiments}, we added an MSE loss to the original formulation $\mathcal{L}_\text{joint} = \mathcal{L}_\text{IterVAML} + \lambda \mathcal{L}_\text{MSE}$ with a tradeoff factor of $\lambda = 0.01$.
+We see that this is sufficient to stabilize the performance in the Pendulum swingup task and prevent catastrophic divergence, but the model still performs significantly below the \ac{mbpo} and VaGraM results in the Cartpole stabilization task.
+This is evidence that even with additional stabilization mechanisms, the issues presented in \autoref{sec:method} prevents the easy adoption of IterVAML to complex domains.
 
 The value-weighing baseline is unable to achieve satisfactory performance even on the simple pendulum task, leading us to conclude that more complex reweighing schemes such as VaGraM are indeed necessary.
 
@@ -69,16 +73,22 @@ The value-weighing baseline is unable to achieve satisfactory performance even o
     \label{fig:mujoco}
 \end{figure}
 
-% {\color{red}The comparison runs on the Mujoco benchmark environments presented in \autoref{fig:mujoco} are faulty due to a bug that was pointed out to us at the poster session. The bug only harms the performance of VaGraM, so we do not see it as a reason to withdraw the paper, but due to limited time and computational resources, we were unable to repeat the full comparison presented here. All other experiments are corrected and to the best of our knowledge reflect the performance of VaGraM. We will update the paper with updated comparisons once they are finished.}
 
 In a previous version of the paper, the following experiments were faulty due to a bug in the experimental code discovered after publication.
 This version includes the revised experiments.
 
-The results of VaGraM and \ac{mbpo} are presented in \autoref{fig:mujoco}. We find that VaGraM is able to perform on par with the \ac{mbpo} baseline on two of the remaining tasks, while not performing well on Ant. Due to stability issues, the Humanoid-v2 task is excluded, no algorithm achieved satisfactory performance (compare \textcite{pineda2021mbrl} for a discussion). 
+The results of VaGraM and \ac{mbpo} are presented in \autoref{fig:mujoco}.
+We find that VaGraM is able to perform on par with the \ac{mbpo} baseline on two of the remaining tasks, while not performing well on Ant.
+Due to stability issues, the Humanoid-v2 task is excluded, no algorithm achieved satisfactory performance (compare \textcite{pineda2021mbrl} for a discussion). 
 
-On the Ant task, a manual inspection of the gradients of the value function reveals that they vary across different datapoints very strongly. We therefore hypothesise that the VaGraM objective can destabilize if confronted with very sharp value function gradients and requires additional regularization in challenging tasks. To test this hypothesis, we adapt the normalization method from \textcite{bjorck2022is}. The results are visualized in \autoref{fig:norm_mujoco}.
+On the Ant task, a manual inspection of the gradients of the value function reveals that they vary across different data points very strongly.
+We therefore hypothesize that the VaGraM objective can destabilize if confronted with very sharp value function gradients and requires additional regularization in challenging tasks.
+To test this hypothesis, we adapt the normalization method from \textcite{bjorck2022is}.
+The results are visualized in \autoref{fig:norm_mujoco}.
 
-As is apparent from the results, the issue of destabilization on the Ant task is solved using the normalization, but it is not a panacea, as the performance on HalfCheetah suffers heavily. It is likely that the HalfCHeetah environment is now over-regularized which would explain the lack of performance with \ac{mbpo} as well. Overall these additional experiments suggest that there is a non-trivial relationship between the observation space, value function regularization and model-based RL. Testing more involved normalization schemes such as those used by \textcite{bjorck2021towards} and \textcite{zheng2023is} would be a promising direction for more in-depth research.
+As is apparent from the results, the issue of destabilization on the Ant task is solved using the normalization, but it is not a panacea, as the performance on HalfCheetah suffers heavily. 
+It is likely that the HalfCHeetah environment is now over-regularized which would explain the lack of performance with \ac{mbpo} as well. Overall these additional experiments suggest that there is a non-trivial relationship between the observation space, value function regularization and model-based RL. 
+Testing more involved normalization schemes such as those used by \textcite{bjorck2021towards} and \textcite{zheng2023is} would be a promising direction for more in-depth research.
 
 \begin{figure}[t]
 \begin{center}

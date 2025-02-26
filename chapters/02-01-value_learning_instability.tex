@@ -17,7 +17,7 @@ This is a fairly broad explanation of the phenomenon, leaving room for investiga
 First approaches to tackle the learning failure challenges have been suggested, such as completely resetting networks periodically during the training process and then retraining them using the contents of the replay buffer~\parencite{nikishin2022primacy, doro2023barrier}. 
 Resetting network parameters is a useful technique in that, in some sense, it can circumvent any ongoing optimization failures. 
 Yet it seems likely that a more nuanced treatment of the various optimization challenges in deep RL might lead to more efficient training down the line, and provide more useful insights into how learning in 'ac{drl} evolves more generally. 
-Especially for achieving efficient learning, throwing away all learned parameters and starting from scratch periodically is counter-productive, for instance in scenarios where, keeping all previous experience is infeasible. %for instance when data buffer sizes become limited. 
+Especially for achieving efficient learning, throwing away all learned parameters and starting from scratch periodically is counter-productive, for instance in scenarios where, keeping all previous experience is infeasible. %
 As such, we set out to study the components of early training that impair learning more closely and examine whether high-UTD learning without resetting is possible.
 
 
@@ -26,22 +26,19 @@ data. However, contrary to prior work, we find that it is not \emph{impossible} 
 This sparks hope for our endeavor of smooth learning in high-UTD regimes.
 We show that compensating for the value function divergence allows learning to proceed. 
 This suggests that the failure to learn does not stem from overfitting early data, which would result in correct value function on seen data, but rather from improperly fitting Q-values. 
-% This can be traced to bootstrapping of poorly specified Q-function networks on unseen data. 
 We demonstrate that this divergence is most likely caused by prediction of out-of-distribution (OOD) actions that trigger large gradient updates, which destabilize feature learning.
 Empirically, we find that instead of settling into fixed representations, the norm of the learned representations in the intermediate layers of the critic neural network grows.
-% While there are standard approaches that have been proposed to solve the issue of overestimation, our experiments highlight that these come with unwanted side effects in the high update-to-data ratio setting with limited data. 
 
 The identified behavior, although triggered by OOD action prediction, seems to be more than the well-known overestimation due to statistical bias \parencite{thrun1993issues}. 
 Instead, we hypothesize that the problem is an optimization failure and focus on mitigating the unbounded growth of the feature norm with architectural changes.
 The main evidence for this hypothesis is that standard RL approaches to mitigating bias, such as minimization over two independent critic estimates~\parencite{fujimoto2018addressing}, are insufficient. 
 In addition, using pessimistic updates~\parencite{fujimoto2019bcq, fujimoto2021td3bc} or regularization~\parencite{krogh1991simple, srivastava14dropout} to treat the value divergence can lead to suboptimal learning behavior, which is why architectural improvements are preferable in many cases.
 
-% Combating overestimation is a problem with a long history in both value-based and actor-critic approaches, but our findings suggest that the most common approach (minimization over two independent critic estimates)  is insufficient, especially in the high UTD regime.
 
 We use a simple feature normalization method \parencite{zhang2019root, wang2020striving, bjorck2022is} that projects features onto the unit sphere.
 This decouples learning the scale of the values from the first layers of the network and moves it to the last linear layer.
 Empirically, this approach mitigates diverging Q-values in the priming experiment. 
-Even after a large amount of priming steps, the agent immediately starts to learn. %, rendering resetting unnecessary. 
+Even after a large amount of priming steps, the agent immediately starts to learn. %
 In a set of experiments on the \textsf{dm\_control} MuJoCo benchmarks~\parencite{tunyasuvunakool2020dmcontrol}, we show that accounting for value divergence can achieve significant across-task performance improvements when using high update ratios. 
 Moreover, we achieve non-trivial performance on the challenging dog tasks that are often only tackled using model-based approaches. We demonstrate comparable performance with the recently developed TD-MPC2~\parencite{hansen2024tdmpc}, without using models or advanced policy search methods.
 
@@ -113,7 +110,6 @@ After priming, there exist two cases: 1) either the Q-values need to be unlearne
 \end{minipage}
 \hfill
 \begin{minipage}[b]{.62\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
     \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -135,42 +131,30 @@ After priming, there exist two cases: 1) either the Q-values need to be unlearne
 \end{minipage}
 \end{figure}
 
-% A well-known phenomenon that was already identified in the early stages of reinforcement learning research is that trying to find a value function via function approximation can quickly lead to overestimates of said values~\textcite{thrun1993issues}. This overestimation of the value function remains a challenge even for modern algorithms like SAC, due to the hurdles that emerge with what is often referred to as the \emph{deadly triad}: function approximation, reliance on bootstrap updates and off-policy data in the form of replay buffers. While this would naively suggest that these algorithms cannot work, empirical evidence strongly suggest that these algorithms are not impacted by the deadly triad to such an extent as to prevent good performance. 
 
 We conjecture that Q-value divergence starts with overestimated values of OOD actions. This overestimation could cause the optimizer to continually increase Q-values via its momentum leading to divergence. 
 To test this hypothesis, we add a conservative behavioral cloning~\parencite{pomerleau1988alvinn, atkeson1997robot} loss term to our actor that forces the policy to be close to replay buffer actions. Prior work employed this technique in offline RL to mitigate value overestimation~\parencite{fujimoto2021td3bc}. More formally, our actor update is extended by the loss $
         \mathcal{L}_{c, \psi} = \min_{\psi} \mathbb{E}_{a \sim \mathcal{D}, \hat{a} \sim \pi_{\psi}(\state)}[||a - \hat{a}||_2]$. 
 The results in Figure~\ref{fig:overestimationpriming_causes} indicate that the basis of the conjecture is corroborated as divergence is much smaller---but not mitigated completely---when values are learned on actions similar to seen ones. However, in practice we do not know when divergence sets in, which limits the applicability of this technique in realistic scenarios. Using it throughout all of training, rather than just during priming, impairs the learner's ability to explore. We investigate the effects of the optimizer in more detail and provide preliminary evidence that the second-order term may be at fault in Appendix~\ref{app:priming_opt}. 
-%For now, we focus on common techniques to mitigate concerns like weight or gradient divergence.
-
-% {\bf Optimizer momentum}~~ We use standard stochastic gradient descent (SGD)~\parencite{robbins1951stochastic} with first-order momentum~\parencite{rumelhart1986learning, sutskever2013on} during priming to isolate the effect of the second-order momentum term. After priming, training continues with standard Adam optimization~\parencite{kingma2015adam}. As Figure~\ref{fig:overestimationpriming_causes} shows, without  second-order momentum, divergence does not occur. The learner can solve the task without delay.
 
 
-% \comE{ambiguous as to whether this is a goal of the paper/work, or whether this is future work}
+
 
 \subsection{Applying common regularization techniques} \label{sec:regularization}
-% \comE{It isn't clear how this section follows from what is before}
 
 Regularization is a common way to mitigate gradient explosion and is  often used to address overestimation~\parencite{farebrother2018generalization, chen2021randomized, liu2021regularization, hiraoka2022dropout, li2023efficient}. We investigate the priming experiments under techniques such as using L$^2$ weight decay~\parencite{krogh1991simple} or adding dropout~\parencite{srivastava14dropout} to our networks in Figure~\ref{fig:overestimationpriming_abl}.
 
 Both L$^2$ weight decay as well as dropout can somewhat reduce the divergence during priming, however not to a sufficient degree.
 While L$^2$ regularization fails to attain very high performance, dropout is able to recover a good amount of final return.
-% L$^2$ regularization is hard to tune and can sometimes lead to severe underestimation.
 However, both methods require tuning of a hyperparameter that trades off the regularization term with the main loss.
 This hyperparameter is environment-dependent and tuning it becomes infeasible for large UTD-ratios due to computational resource limitations. 
-% \comE{Rework last three sentences. Awkward writing, somewhat unclear connections between tuning L2 reg and the hyperparameter you allude to. Can you be more specific about the hyperparameter?} 
 Still, the results imply that it is in fact possible to overcome the divergence in priming and continue to learn good policies.
 
-% However, we find that using L$^2$ regularization, the Q-values estimates are significantly lower than they ought to be. The regularization reduces weights across all layers, reflecting a zero-centered prior for prediction. We anticipate this posing a challenge in harder tasks that require more exploration. 
 
-% \paragraph{Entropy} The entropy regularizer in SAC is an additional factor that leads to less Q-value divergence. It is directly correlated to the Q-value magnitude and decreases the divergence effect. This goes in hand with decreasing the rank reduction effect which implies that divergence comes before rank reduction. \mh{only partially correct, needs updating}
 
-% \paragraph{Target networks} \mh{probably remove this} A recent study has found that rank reduction can be produced by target network updates. We find that this is in fact a contributed factor to the large Q-value phenomenon and show that the exponential moving average update in Q-values simply leads to slower rank reduction during initial phases of training. However, we would like to update our target network quickly. Larger UTDs should help fit these networks correctly and them updating them quickly should lead to good learning. Large UTDs and moving average updates are effectively equivalent to lower UTD with large tau if we can fit the network properly.
 
-% \paragraph{Big networks}. If our hypothesis are correct, then as long as we properly regularize and account for lost rank, we should be able to remove target networks. We demonstrate this by using larger Q-networks during high-UTD training and show that we can outperform standard resetting. Note that there is no difference between ema and tau=1 at this point due to the large amount of updates. We show competitive performance on various dm\_control tasks even on dog.
 
 \subsection{Divergence in practice} 
-%\subsection{Practical divergence} 
 \label{sec:real}
 
 
@@ -197,7 +181,6 @@ Regularization techniques such as those in Section~\ref{sec:regularization} can 
 
 \begin{figure}[t]
 \begin{minipage}[t]{.60\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering
@@ -205,7 +188,6 @@ Regularization techniques such as those in Section~\ref{sec:regularization} can 
     \end{subfigure}\\%
     \begin{subfigure}[b]{0.5\textwidth}
         \centering
-        %\setlength{\fboxsep}{0pt}\fbox{
         \includegraphics[width=4.8cm]{figures/dissecting/priming/priming_norm_return.pdf}
         \label{subfig:overestimation:priming_norm_ret}
     \end{subfigure}%
@@ -219,7 +201,6 @@ Regularization techniques such as those in Section~\ref{sec:regularization} can 
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.36\textwidth}
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering
@@ -237,8 +218,6 @@ Regularization techniques such as those in Section~\ref{sec:regularization} can 
 
 As discussed previously, the prediction of an unknown action might trigger the propagation of a large, harmful gradient. Further, the Q-values of our network ought to grow over time as they more closely approximate those of a good policy. If we predict incorrectly on one of these Q-values, a potentially very large loss is propagated. Gradients are magnified by multiplicative backpropagation via ReLU activations~\parencite{glorot2011deep} as well as momentum from Adam~\parencite{kingma2015adam}. Note that all resulting issues arise in the early network layers. 
 We hypothesize that we can address many of these problems by separating the scaling of the Q-values to the appropriate size from the earlier non-linear layers of the network and moving the Q-value scaling to the final linear layer.
-%should decouple learning to differentiate Q-values of different actions from scaling the Q-values to the correct magnitude. 
-%The former, we want to do in earlier non-linear stages of the network while the latter should solely happen via the last linear transformation.
 
 One contender to achieve the value decoupling described in the previous paragraph is layer normalization~\parencite{ba2016layer}, but one would have to disable scaling factors used in common implementations. Still, standard layer normalization would not guarantee small features everywhere. Instead, we use a stronger constraint and project the output features of the critic encoder onto the unit ball using the function
 $f(\mathbf{x}) = \frac{\mathbf{x} }{\|\mathbf{x}\|_2}$~\parencite{zhang2019root}, 
@@ -255,7 +234,7 @@ However, more importantly, as shown in Figure~\ref{fig:overestimationweight_norm
 
 \section{Experimental evaluation}
 
-We evaluate our findings on the commonly used \textsf{dm\_control} suite~\parencite{tunyasuvunakool2020dmcontrol}. All results are averaged over ten random seeds.\footnote{For comparison with TD-MPC2~\parencite{hansen2024tdmpc} we use data provided by their implementation, which only contains three seeds. As the goal is not to rank algorithmic performance but to give intuition about the relative strengths of adapting the network architecture, we believe that this is sufficient in this case.} We report evaluation returns similar to~\textcite{nikishin2022primacy}, which we record every 10,000 environment steps. We compare a standard two-layer MLP with ReLU ~\parencite{nair2010rectified} activations, both with and without resetting, to the same MLP with OFN. %to achieve value clipping. 
+We evaluate our findings on the commonly used \textsf{dm\_control} suite~\parencite{tunyasuvunakool2020dmcontrol}. All results are averaged over ten random seeds.\footnote{For comparison with TD-MPC2~\parencite{hansen2024tdmpc} we use data provided by their implementation, which only contains three seeds. As the goal is not to rank algorithmic performance but to give intuition about the relative strengths of adapting the network architecture, we believe that this is sufficient in this case.} We report evaluation returns similar to~\textcite{nikishin2022primacy}, which we record every 10,000 environment steps. We compare a standard two-layer MLP with ReLU ~\parencite{nair2010rectified} activations, both with and without resetting, to the same MLP with OFN. %
 The architecture is standard in many reference implementations. Architecture and the resetting protocol are taken from \textcite{doro2023barrier} and hyperparameters are kept without new tuning to ensure comparability of the results. More details can be found in Appendix~\ref{app:impl}.
 
 To understand the efficacy of output normalization on real environments under high UTD ratios, we set out to answer multiple questions that will illuminate RL optimization failures:\\
@@ -270,9 +249,7 @@ To understand the efficacy of output normalization on real environments under hi
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering
-        %\setlength{\fboxsep}{0pt}\fbox{
         \includegraphics[width=10.2cm]{figures/dissecting/main_exp/all_aggregate_scores.pdf}
-        %}
     \end{subfigure}%
     \caption{Mean, interquartile mean (IQM), and median with $95\%$ bootstrapped confidence intervals of standard SAC and OFN on the DMC15-500k Suite. OFN can maintain high performance even under large UTD. OFN with $\mathrm{UTD} = 8$ achieves comparable performance to standard resetting with $\mathrm{UTD} = 32$ across metrics.}
     \label{fig:overestimationaggregate}
@@ -282,111 +259,34 @@ To understand the efficacy of output normalization on real environments under hi
 \centering
     \begin{subfigure}[b]{\textwidth}
         \centering
-        %\setlength{\fboxsep}{0pt}\fbox{
         \includegraphics[width=4.25cm]{figures/dissecting/main_exp/hopper_hop_wl.pdf}
-         %}
     \end{subfigure}%
     \caption{Mean return of single-critic OFN, standard OFN and resetting; $\mathrm{UTD}=32$ on hopper-hop. Shaded regions are standard error.}
     \label{fig:overestimationhopper_hop}
 \end{minipage}
 \end{figure}
 
-% \begin{figure}[t!]
-% \begin{minipage}[b]{.52\textwidth}
-% % \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
-% \centering
-%     \begin{subfigure}[b]{\textwidth}
-%         \centering
-%         %\setlength{\fboxsep}{0pt}\fbox{
-%         \includegraphics[width=7.3cm,clip,trim=0.3cm 0 0 1cm]{figures/dissecting/main_exp/aggregate_scores.pdf}
-%         %}
-%     \end{subfigure}%
-%     \caption{Interquartile mean and $95\%$ bootstrapped confidence intervals of high-UTD standard SAC and OFN on the DMC15-500k Suite. OFN can maintain high performance even under large update ratios.}
-%     \label{fig:overestimationaggregate}
-% \end{minipage}
-% \hfill
-% \begin{minipage}[b]{.45\textwidth}
-% % \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
-% \centering
-%     \begin{subfigure}[b]{\textwidth}
-%         \centering
-%         %\setlength{\fboxsep}{0pt}\fbox{
-%         \includegraphics[width=4.6cm,clip,trim=0 0 0 0]{figures/dissecting/main_exp/hopper_hop.pdf}
-%         \includegraphics[height=0.6cm,clip,trim=0cm 0cm 15cm 0cm]{figures/dissecting/main_exp/hopper_hop_legend.pdf}
-%         %}
-%     \end{subfigure}%
-%     \caption{Single-critic OFN versus standard OFN and standard resetting with $\mathrm{UTD}=32$ on the hopper-hop task. With only a single critic, OFN strongly outperforms resetting.}
-%     \label{fig:overestimationhopper_hop}
-% \end{minipage}
-% \end{figure}
 
-% \begin{figure}{r}{0.5\textwidth}
-%     \centering
-%     \includegraphics[width=7.3cm, trim={0.3cm 0.3cm 0.3cm 0}, clip]{figures/dissecting/main_exp/aggregate_scores.pdf} 
-%     \caption{IQM}
-%     \label{fig:overestimationaggregate}
-% \end{figure}
 
 To answer \textbf{Q1}, we compare OFN and SAC with resets on the DMC15-500k benchmark with large update ratios of $8$ and $32$ as proposed by \textcite{nikishin2022primacy} and  \textcite{schwarzer2023bigger}.  We report mean, interquartile mean (IQM) and median as well as $95\%$ bootstrapped confidence intervals aggregated over seeds and tasks,  following~\textcite{agarwal2021deep}. The results are shown in Figure~\ref{fig:overestimationaggregate}.
 
-First, we observe that in both cases, $\mathrm{UTD}=8$ and $\mathrm{UTD}=32$, OFN can significantly improve over the non-resetting MLP baseline across all metrics. The value estimates that diverge seem to have been handeled properly (see Appendix~\ref{app:exp_q}); learning is maintained. We note that our approach with $\mathrm{UTD}=8$ achieves mean and IQM performance comparable to that of standard resetting with $\mathrm{UTD}=32$. In median and quantile performance, all $\mathrm{UTD}=32$ overlap, highlighting that outliers contribute to the performance measurement. Note that the overall performance drops slightly for the OFN-based approach when going from $\mathrm{UTD}=8$ to $\mathrm{UTD}=32$. We conjecture that there are other learning problems such as exploration that have not been treated by alleviating value divergence. However, these do not lead to complete failure to learn but rather slightly slower convergence. % \comE{unclear last sentence}
+First, we observe that in both cases, $\mathrm{UTD}=8$ and $\mathrm{UTD}=32$, OFN can significantly improve over the non-resetting MLP baseline across all metrics. The value estimates that diverge seem to have been handeled properly (see Appendix~\ref{app:exp_q}); learning is maintained. We note that our approach with $\mathrm{UTD}=8$ achieves mean and IQM performance comparable to that of standard resetting with $\mathrm{UTD}=32$. In median and quantile performance, all $\mathrm{UTD}=32$ overlap, highlighting that outliers contribute to the performance measurement. Note that the overall performance drops slightly for the OFN-based approach when going from $\mathrm{UTD}=8$ to $\mathrm{UTD}=32$. We conjecture that there are other learning problems such as exploration that have not been treated by alleviating value divergence. However, these do not lead to complete failure to learn but rather slightly slower convergence. %
 
 \subsection{Other failure modes: Exploration limitations} \label{sec:otherfailure}
 
-% \begin{wrapfigure}{r}{0.36\textwidth}
-%     \centering
-%     \hspace{5pt}
-%     \includegraphics[height=0.7cm]{figures/dissecting/main_exp/hopper_hop_legend.pdf} \\
-%     \includegraphics[width=4.8cm, trim={0.3cm 0cm 0.3cm 0.2cm}, clip]{figures/dissecting/main_exp/hopper_hop.pdf} 
-%     \caption{Comparison of single-critic OFN approach to standard OFN and standard resetting with $\mathrm{UTD}=32$ on the hopper-hop task. With only a single critic, OFN strongly outperforms resetting.}
-%     \label{fig:overestimationhopper}
-% \end{wrapfigure}
 
 To validate the hypothesis of other failures and answer \textbf{Q2}, we run two additional experiments. First, our current focus is on failures of the critic; our proposed mitigation does not address any further failures that might stem from the actor. We defer a more detailed analysis of actor failure cases to future work. Instead, we test the OFN-based architecture again and, for now, simply reset the actor to shed light on the existence of potential additional challenges.
-%\comE{Need to better sell that this is ok, and it doesn't violate the premise of the paper of avoiding resetting. Hold the reader's hand}
 For comparison, we also run a second experiment in which we reset all learned parameters, including the critic.
-% The results are included. \comE{Last sentence is unclear. Included where? Cut, since Figure is mentioned in next sentence?}
 
 The results in Figure~\ref{fig:overestimationaggregate} indicate that actor resetting can account for a meaningful portion of OFN's performance decline when going from $\mathrm{UTD}=8$ to $\mathrm{UTD}=32$. The actor-reset results are within variance of the full-resetting standard MLP baseline. Further, we observe that there is still some additional benefit to resetting the critic as well. 
-%\comE{Again, need to sell that this is ok.} 
 This does not invalidate the premise of our hypothesis, value divergence might not be the \emph{only} cause of problems in the high UTD case. We have provided significant evidence that it is a \emph{major} contributor.
-Resetting both networks of OFN with $\mathrm{UTD}=32$  outperforms all other baselines on mean and IQM comparisons. %We set out to study where the improvements induced by critic resets come from.
+Resetting both networks of OFN with $\mathrm{UTD}=32$  outperforms all other baselines on mean and IQM comparisons. %
 
-% \begin{wrapfigure}{r}{0.35\textwidth}
-% % \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
-%   \begin{minipage}{\linewidth}
-%     \centering\captionsetup[subfigure]{justification=centering}
-%     \includegraphics[width=5.4cm, trim=0.3cm 0cm 0cm 0cm ,clip]{figures/dissecting/main_exp/hopper_hop.pdf}
-%     \caption{Single-critic OFN versus standard OFN and resetting, with $\mathrm{UTD}=32$ on the hopper-hop task. }
-%     \label{fig:overestimationhopper_hop}
-%   \end{minipage}
-% \end{wrapfigure}
 
-% \begin{wrapfigure}{r}{0.35\textwidth}
-%     \begin{minipage}
-%     % \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
-%         % \begin{subfigure}[b]{\textwidth}
-%         %     %\hspace{15pt}
-%         %     \centering
-%         %     %\setlength{\fboxsep}{0pt}\fbox{
-%         %     \includegraphics[height=0.8cm]{figures/dissecting/main_exp/hopper_hop_legend.pdf}
-%         %     %}
-%         % \end{subfigure}
-%         % \\%
-%             \centering
-%             \setlength{\fboxsep}{0pt}\fbox{
-%             \includegraphics[width=4.25cm,clip,trim=0.3cm 0 0 0]{figures/dissecting/main_exp/hopper_hop_wl.pdf}
-%              }
-%         \caption{Single-critic OFN versus standard OFN and resetting, with $\mathrm{UTD}=32$ on the hopper-hop task. }
-%         \label{fig:overestimationhopper_hop}
-%     \end{minipage}
-% \end{wrapfigure}
 
 To explain the remaining efficacy of critic resets, we examine the hopper-hop environment where standard SAC with resets outperforms OFN. 
-%We conjecture that there is an additional exploration benefit inherit to resetting. 
 In RL with function approximation, one might not only encounter over- but also under-estimation~\parencite{wu2020reducing, lan2020maxmin, saglam2021estimation}.
 We believe that hopper  is sensitive to pessimism, and periodically resetting the networks might partially and temporarily counteract the inherent pessimism of the dual critic setup.
-%Suppose the critic's  overestimation has been handled properly but due to, there are unseen regions of the state-action space whose values are being underestimated. When the network is reset, some regions might now temporarily become overestimated regions, even if we train on the exact same data, which restarts the exploration process.
 
 To obtain evidence for this conjecture, we repeated some experiments with a single critic. As OFN handles divergence it might not require a minimization over two critics~\parencite{fujimoto2018addressing}. We compare OFN using a single critic and $32$ updates per environment step to standard SAC and OFN in Figure~\ref{fig:overestimationhopper_hop}. With a single critic, OFN does not get stuck in a local minimum and outperforms full resetting. Note that this is only true in few environments, leading us to believe that the effects of high-update training are MDP-dependent.
 In some environments we observe unstable learning with a single critic, which highlights that the bias countered by the double critic optimization and the overestimation from optimization we study are likely orthogonal phenomena that both need to be addressed.
@@ -395,7 +295,6 @@ Most likely, there is a difficult trade-off between optimization stability and e
 \subsection{Limit-testing feature normalization}
 
 \begin{figure}[t]
-% \captionsetup[subfigure]{font=footnotesize, aboveskip=2pt}
 \centering
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
@@ -403,27 +302,19 @@ Most likely, there is a difficult trade-off between optimization stability and e
     \end{subfigure}\\%
     \begin{subfigure}[t]{0.25\textwidth}
         \centering
-        % \includegraphics[width=4.cm, trim=0.4 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-stand.pdf}
         \label{subfig:overestimation:dog_stand}
-        % \caption{Dog Stand}
     \end{subfigure}%
     \begin{subfigure}[t]{0.25\textwidth}
         \centering
-        % \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-walk.pdf}
         \label{subfig:overestimation:dog_walk}
-        % \caption{Dog Walk}
     \end{subfigure}%
     \begin{subfigure}[t]{0.25\textwidth}
     \centering
-        % \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-trot.pdf}
         \label{subfig:overestimation:dog_trot}
-        % \caption{Dog Trot}
     \end{subfigure}%
     \begin{subfigure}[t]{0.25\textwidth}
         \centering
-        % \includegraphics[width=3.7cm, trim=1.2cm 0 0 0 ,clip]{figures/dissecting/dog_exp/dog-run.pdf}
         \label{subfig:overestimation:dog_run}
-        % \caption{RGRDog Run}
     \end{subfigure}%
     \caption{Mean return on the dog DMC tasks, comparing OFN to SAC with resets and the model-based TD-MPC2. Shaded regions indicate standard error. OFN outperforms SAC with resets, which is unable to learn and OFN with $\mathrm{UTD}=8$ and resetting is competitive with TD-MPC2.}
     \label{fig:overestimationall_dog}
@@ -441,9 +332,7 @@ This also opens up the question why resetting in the humanoid environments in th
 Besides greater divergence due to larger observation spaces in the dog MDPs, we suspect that this might be related to the complexity of exploration.
 The ability of a random policy to obtain non-trivial reward and information about the environment has been shown to be a crucial factor in explaining the success of DRL methods in discrete environments~\parencite{laidlaw2023bridging}, and similar phenomena might be in effect here. 
 
-% \comE{\# seeds/trials?  Might be space to add in caption of Fig 9}
 
-% \mh{tie this back to primacy bias, if resetting fixes the primacy bias, it should work here.} \mh{talk about environment specific study and mention bridging paper here} 
 
 
 \section{Related work}
@@ -458,12 +347,6 @@ To regulate the overestimation-pessimism balance more carefully, several authors
 
 {\bf Combating plasticity loss}~~ Another aspect of the primacy bias is the tendency of neural networks to lose their capacity for learning over time~\parencite{igl2021transient}, sometimes termed \emph{plasticity loss}~\parencite{lyle2022understanding, abbas2023loss}. Recent work mitigates plasticity loss using feature rank maximization~\parencite{kumar2021implicit}, regularization~\parencite{lyle2023understanding}, or learning a second copied network~\parencite{nikishin2024deep}. Some of the loss stems from neurons falling dormant over time~\parencite{sokar2023dormant}. A concurrent, closely related work by~\textcite{lyle2024disentangling} disentangles the causes for plasticity loss further. They use layer normalization to prevent some of these causes, which is closely related to our unit ball normalization. Our work differs in that we focus on the setting of high update ratios and use stronger constraints to mitigate value divergence rather than plasticity loss. 
 
-% \textcite{lyle2022understanding} present an alternative regularization to ours which aims to keep the parameters of the network close to initialization.
-% Similar to $L_2$ regularization, this introduces a difficult to tune hyperparameter and can prevent learning in the worst case.
-% \textcite{nikishin2024deep} show that by learning a second copied network instead of resetting the original network, capacity loss can be prevented.
-% However, this method leads to more and more networks over time, as old ones are frozen and no ones initialized, which is inefficient.
-% Closely related is the idea of the effective rank of the feature matrix, which captures how strongly correlated certain features are across different samples.
-% \textcite{kumar2021implicit} show that this can be regularized explicitly by using an orthogonal loss on the intermediate layers of the network, as this loss requires large correlation matrices, it is much more computationally expensive than simple normalization of the features.
 
 \section{Conclusion}
 

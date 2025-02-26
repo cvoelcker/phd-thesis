@@ -232,7 +232,6 @@ As our Garnet experiments show, many randomly generated transition distributions
 
 \begin{lemma}\label{lemma:cvaml:4}
     If there exists a distribution $q$ with $(\EEX{q}{f(x)} - \EEX{p}{f(x)})^2 < \frac{1}{k} \mathrm{Var}_{p^*}[f(x)]$, and $\mathrm{Var}_{q}[f(x)] = 0$, then $g(q) < g(p^*)$ for all $p^*$ and, by the assumptions on $p$ and $f$, $\EEX{x\sim q}{f(x)} \neq \EEX{x \sim p}{f(x)}$.
-    % $q \in \argmin_{\xi\in \P} q(\xi)$ and $\EEX{x\sim q}{f(x)} \neq \EEX{x \sim p}{f(x)}$.
 \end{lemma}
 \begin{proof}
     Choose any $p^*\in\P^*$. As $\mathrm{Var}_q[f(x)] = 0$, $g(q) = \EEX{x\sim p}{\left(\EEX{y\sim q}{f(y)} - f(x)\right)}$. We can now decompose $g(q)$ as 
