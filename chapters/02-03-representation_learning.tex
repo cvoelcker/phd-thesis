@@ -231,7 +231,7 @@ where we use the fact that $D_\Delta P\Phi^* = P D_\Delta \Phi^* = P \Delta$.
 
 Finally, as $\Phi^*F^* = \Phi^* \mathrm{diag}(\Lambda_i) = P^\pi \Phi^*$, we obtain
 \begin{align*}
- D_\Delta \ddt{t} \Phi |_{\Phi=\Phi^*} =   -\left(\Delta\, \mathrm{diag}(\Lambda_i) + {\Phi^*}\left({\Phi^*}^\top \Phi^*\right)^{-1}{\Phi^*}^\top P \Delta  - P\Delta \right)\mathrm{diag}(\Lambda_i) - \underbrace{\left(\Phi^* F^* - P \Phi^*\right)}_{=0\,\text{as shown}}\left({\Phi^*}^\top P \Delta\right)^\top.
+ D_\Delta \ddt{t} \Phi |_{\Phi=\Phi^*} =   -\left(\Delta\, \mathrm{diag}(\Lambda_i) + {\Phi^*}\left({\Phi^*}^\top \Phi^*\right)^{-1}{\Phi^*}^\top P \Delta  - P\Delta \right)\mathrm{diag}(\Lambda_i) \\- \underbrace{\left(\Phi^* F^* - P \Phi^*\right)}_{=0\,\text{as shown}}\left({\Phi^*}^\top P \Delta\right)^\top.
 \end{align*}
 
 
@@ -321,7 +321,7 @@ We assume that $x$ is a one-hot vector as discussed before and the coverage is s
 It is important to note that for \ac{byol} and \ac{td} this rewriting leads to a linear basis change of $\Phi$ compared to the original loss, as each occurrence of $\gO$ is multiplied by $\Phi$. The only loss for which this is not the case is the reconstruction approach.
 
 \begin{restatable}{proposition}{ReparameterizationInvariance} 
-Assume \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:3} hold. Let $\{\Phi^*_\mathrm{lat/td}\}$ be the set of critical points of $L_\mathrm{lat}$ or $L_\mathrm{td}$ respectively.
+Assume \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:3} hold. Let $\{\Phi^*_\mathrm{lat}\}$ and ${\{\Phi^*_\mathrm{td}\}}$ be the set of critical points of $L_\mathrm{lat}$ or $L_\mathrm{td}$ respectively.
 Then $\gO^{-1}\Phi^*_\mathrm{lat/td}$ are stationary points for the reparameterized losses $L_\mathrm{lat}^\gO$ and $L_\mathrm{td}^\gO$.\footnote{Due to space constraints, we present the full equations in the proof.} Furthermore, if $\Phi^*_\mathrm{lat/td}$ is an asymptotically stable point of $L_\mathrm{lat/td}$ that has a Jacobian with all negative eigenvalues, $\gO^{-1}\Phi^*_\mathrm{lat/td}$ is an asymptotically stable point of $L_\mathrm{lat/td}^\gO$.
 \end{restatable}
 \begin{proof}
@@ -330,7 +330,7 @@ We first write out all losses with the observation matrix $\gO$. The reward func
 \begin{align*}
     L_{\text{rec}}(\Phi,F,\Psi) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \gO \Phi F \Psi - x^\top {P^\pi}\gO}^2} = {\ltwonorm{\gO \Phi F \Psi - {P^\pi}\gO}^2}, \\
     L_{\text{lat}}(\Phi,F) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \gO \Phi F - \left[x^\top {P^\pi} \gO \Phi\right]_{\mathrm{sg}}}^2} = \ltwonorm{\gO \Phi F - \left[{P^\pi} \gO \Phi\right]_{\mathrm{sg}}}^2 \\
-    L_{\text{td}}(\Phi,F) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top\gO\Phi \hat{V} - \left[x^\top \left(r + \gamma P^\pi \gO\Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2} = {\ltwonorm{\gO\Phi \hat{V} - \left[\left(r + \gamma P^\pi \gO\Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2}.
+    L_{\text{td}}(\Phi,F) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top\gO\Phi \hat{V} - \left[x^\top \left(r + \gamma P^\pi \gO\Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2} \\=& {\ltwonorm{\gO\Phi \hat{V} - \left[\left(r + \gamma P^\pi \gO\Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2}.
 \end{align*}
 
 Note that in the cases of $L_{\text{lat}}$ and $L_\text{TD}$, all occurrences of $\gO$ are multiplied by $\Phi$.
@@ -341,8 +341,8 @@ Note that while the stationary points and asymptotic stability conditions of the
 The numerical conditioning of the involved matrices change depending on $\gO$ and so the impact of discretization due to finite step sizes changes the resulting dynamical system.
 
 \begin{restatable}{proposition}{ReparameterizationInvarianceObs} 
- Assume \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:3} hold. Let $(u_1,\dots,u_n)$, $(v_1,\dots,v_n)$ be the left and right singular vectors of $\gO^{-1}P^\pi\gO$. 
-Any stationary point $(\Phi^*, F^*, \Psi^*)$ of $L_\text{rec}^\gO$ satisfies $\mathrm{span}\,(\Phi^*)=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, $\mathrm{span}\,({\Psi^*}^\top)=\mathrm{span}\left(\{v_1,\dots,v_k\}\right)$.
+ Assume \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:3} hold. Let $(u_1,\dots,\allowbreak u_n)$, $(v_1,\dots,v_n)$ be the left and right singular vectors of $\gO^{-1}P^\pi\gO$. 
+Any stationary point $(\Phi^*, F^*, \Psi^*)$ of $L_\text{rec}^\gO$ satisfies $\mathrm{span}\,(\Phi^*)=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, $\mathrm{span}\,({\Psi^*}^\top)=\mathrm{span}(\{v_1,\dots,\allowbreak v_k\})$.
 \end{restatable}
 \begin{proof}
     
@@ -430,7 +430,7 @@ Let us write $w_1,\dots,w_n$ for the eigenvectors of $P^\pi$.
 We will assume that $r^\pi$ has a low-dimensional structure in the following sense: 
 
 \begin{assumption}\label{assumption:understanding:low_rank}
-    $\exists i_1,\dots,i_m \in \{1,\dots,|\mathcal{X}|\}$ such that $r^\pi \in \mathrm{span}(w_{i_1},\dots,w_{i_m})$, and $m\leq k.$ Let furthermore $\{{w_i}_1,\dots,{w_i}_m\}$ be a minimal basis in the sense that ${w_i}_n {{w_i}_n}^\top r^\pi \neq 0$ for all $n$. 
+    There exist $i_1,\dots,i_m \in \{1,\dots,|\mathcal{X}|\}$ such that $r^\pi \in \mathrm{span}(w_{i_1},\dots,w_{i_m})$, and $m\leq k.$ Let furthermore $\{{w_i}_1,\dots,{w_i}_m\}$ be a minimal basis in the sense that ${w_i}_n {{w_i}_n}^\top r^\pi \neq 0$ for all $n$. 
 \end{assumption}
 We now write the summed losses $$L_{\text{rec}+\text{td}}(\Phi,F,\psi,\bar{r})= L_\text{rec}(\Phi, F, \psi)+L_\text{td}(\Phi, \bar r)$$ and $$L_{\text{lat}+\text{td}}(\Phi,F,\bar{r})= L_\text{lat}(\Phi, F)+L_\text{td}(\Phi, \bar r).$$ 
 
@@ -474,7 +474,7 @@ We present the argument here for clarity with all assumptions necessary for our 
     Furthermore, $\Phi^*$ is a critical point of the two-timescale joint loss $L_{\text{td}+\text{lat}}$. Therefore combining $L_\text{TD}$ and $L_\text{Lat}$ does not exclude the existence of a stationary point with $0$ value function approximation error.
 \end{restatable}
 \begin{proof}
-        By \autoref{assumption:understanding:low_rank} there exists a set of $k$ vectors $\phi_1,\dots,\phi_k$ such that $r^\pi \in \text{span}(\phi_1,\dots,\phi_k)$ and $\phi_1,\dots,\phi_k$ span an invariant subspace of $P^\pi$.
+        By \autoref{assumption:understanding:low_rank} there exists a set of $k$ vectors $\phi_1,\allowbreak \dots, \allowbreak \phi_k$ such that $r^\pi \in \text{span}(\phi_1,\allowbreak\dots,\allowbreak\phi_k)$ and $\phi_1,\dots,\phi_k$ span an invariant subspace of $P^\pi$.
         We can choose this set of vectors to orthonormal, e.g. by applying the Gram Schmidt procedure to the eigenvectors $({w_i}_1,\dots{w_i}_m)$. 
         By \autoref{prop:understanding:TangResult2} the matrix $\Phi\in \mathbb{R}^{n\times k}$ whose columns are $\phi_1,\dots,\phi_k$ is a critical point for $L_\text{lat}$ and spans an invariant subspace of $P^\pi$.
         In addition, by \autoref{lem:understanding:spectrum_rew_value}, $\Phi$ forms a complete basis for the value function $V^\pi$.
@@ -487,7 +487,7 @@ We leave the extension of the stability result for TD learning to the joint loss
 Note that without the addition of TD learning, the latent loss would stabilize the top-k eigenspace representation, but we hypothesize that this behavior changes when combining the losses.
 
 \begin{restatable}{proposition}{ReconsCombined}
-    Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:low_rank} hold. If the reward spanning eigenvectors do not lie within the span of the top-k singular vectors, $\mathrm{span}\,(w_{i_1},\dots,w_{i_m}) \not\subseteq \mathrm{span}\,(u_1,\dots,u_k)$, the critical points of the two-timescale joint loss $L_{\text{td}+\text{rec}}$ are guaranteed to not be minimizers of the value function approximation error. 
+    Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:low_rank} hold. If the reward spanning eigenvectors do not lie within the span of the top-k singular vectors, $\mathrm{span}\,(w_{i_1},\allowbreak \dots,\allowbreak w_{i_m}) \not\subseteq \mathrm{span}\,(u_1,\dots,u_k)$, the critical points of the two-timescale joint loss $L_{\text{td}+\text{rec}}$ are guaranteed to not be minimizers of the value function approximation error. 
 \end{restatable}
 \begin{proof}
     Following from \autoref{assumption:understanding:low_rank} and \cref{lem:understanding:spectrum_rew_value}, we have that any critical point $\Phi^*$ of $L_\text{td}$ with perfect value function approximation fulfils $\mathrm{span}(r^\pi)\subseteq \mathrm{span}(\Phi^*)$, as without this condition, $\Phi$ would not have all necessary basis vectors to represent $V^\pi$. Under our low-dimensionality assumption $r^\pi \in \mathrm{span}(w_{i_1},\dots,w_{i_m})$, this condition implies that $\mathrm{span}(w_{i_1},\dots,w_{i_m})\subseteq \mathrm{span}(\Phi^*)$. From \cref{prop:understanding:2} we know that any critical point $\Phi^*$ of $L_\text{rec}$ satisfies $\mathrm{span}\,({\Phi^*})=\mathrm{span}\left(\{u_1,\dots,u_k\}\right)$, where $u_1,\dots,u_k$ are the top $k$ left singular vectors of $P^\pi$. Under the assumption that $\mathrm{span}(w_{i_1},\dots,w_{i_m}) \not\subseteq \mathrm{span}(u_1,\dots,u_k)$ these conditions cannot happen simultaneously, and hence no critical point of the joint loss achieves perfect value function reconstruction.
@@ -533,8 +533,8 @@ Detailed information about the implementation and hyperparameters can be found i
 \textbf{Auxiliary task learning vs general purpose feature learning (\autoref{fig:understanding:aux} and \autoref{fig:understanding:sta}):}
 First, we compare both the auxiliary task and stand-alone feature learning scenarios.
 As expected from prior work \parencite{jaderberg2016reinforcement,schwarzer2021dataefficient,farebrother2023protovalue}, in all cases using an auxiliary loss performs no worse (and often better) than vanilla DQN.
-We find that as expected from \\autoref{insight:understanding:3}, latent self-prediction is a stronger auxiliary loss function than observation reconstruction in three out of five environments.
-However, when using the general-purposes losses alone, we clearly see observation reconstruction performing significantly better than latent self-prediction, which fails to learn any relevant features in several cases. This verifies \\autoref{insight:understanding:1}.
+We find that as expected from \autoref{insight:understanding:3}, latent self-prediction is a stronger auxiliary loss function than observation reconstruction in three out of five environments.
+However, when using the general-purposes losses alone, we clearly see observation reconstruction performing significantly better than latent self-prediction, which fails to learn any relevant features in several cases. This verifies \autoref{insight:understanding:1}.
 
 Curiously, in the case of the Seaquest environment, we find that using observation prediction alone outperforms using it as an auxiliary task strongly, and performs on par with the auxiliary task variant of the latent self prediction loss.
 Seaquest also has the sparsest reward structure in the test suite, which can make it a challenging environment for DQN. In this case, features based purely on the observed transition might allow for better policy learning.

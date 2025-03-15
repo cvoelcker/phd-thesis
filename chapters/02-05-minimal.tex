@@ -198,7 +198,7 @@ While training a TD3 agent \parencite{fujimoto2018addressing}, we save transitio
 At regular intervals we compute the critic loss on this validation set.
 In addition, we reset our simulator to each validation state and sample an action from the target policy.
 We then simulate the ground truth on-policy transition and compute the loss over these.
-This allows us to test how well our value function generalizes to target policy state-action pairs (as depicted in~\autoref{fig:mad:mad:coverage}).
+This allows us to test how well our value function generalizes to target policy state-action pairs (as depicted in~\autoref{fig:mad:coverage}).
 
 The results are presented in \autoref{fig:mad:q_eval} and show a gap both between the train and validation sets, as well as the validation and the on-policy sets.
 While we use the on-policy state-actions to update the Q value, these estimates are not actually consistent with the environment.
@@ -210,7 +210,7 @@ Even though full divergence is not observed as new data is continually added to 
 
 \subsection{Previous attempts to combat misgeneralization and overestimation}
 \label{sec:mad:prior}
-Prior strategies that deal with misgeneralization can be grouped into three major directions: architectural regularization to prevent divergence of the value function, pessimism or ensemble learning to combat overestimation, and networks resets to restart learning.
+Prior strategies that deal with misgeneralization can be grouped into four major directions: architectural regularization to prevent divergence of the value function, pessimism or ensemble learning to combat overestimation, networks resets to restart learning, and synthetic data generation.
 While all of these interventions help to some degree, they each either do not solve the problem in full or cause additional issues.
 
 \textbf{Architectural regularization}~~~Architecture changes \parencite{hussing2024dissecting,nauman2024overestimation,nauman2024bigger,lyle2024disentangling} and auxiliary feature learning losses \parencite{schwarzer2021dataefficient,zhao2023simplified,ni2024bridging,voelcker2024when} are largely reliable interventions, and have shown to provide improvements without much drawbacks in prior work.
@@ -231,6 +231,12 @@ However, in cases where the agent fails to explore any useful parts of the state
 This makes tuning the resetting interval both important and potentially difficult and no tuning recipes have been presented.
 Resetting is also a potentially hazardous strategy in real-world applications, where re-executing a random policy might be costly or infeasible due to safety constraints.
 Finally, it heavily relies on the assumption that all past interaction data can be kept in the replay buffer.
+
+\rebuttal{\textbf{Data generation}~~~\textcite{lu2024synthetic} attempts to combat failures of high UTD learning by supplementing a replay buffer with data generated from a trained diffusion model.
+This idea is inspired by the hypothesis that failure to learn in high-UTD settings is caused by a lack of data~\parencite{nikishin2022primacy}.
+The method, SynthER, improves learning accuracy on simple tasks in the DMC benchmark.
+However, we demonstrate that simply adding more data is insufficient to combat misgeneralization by comparing SynthER to MAD-TD in the next section.}
+
 
 All of these strategies are somewhat able to alleviate the problem of out-of-distribution value estimation, yet none of them directly address the issue at the root.
 In the next chapter, we present an alternate approach that aims to directly regularize the action value estimates under the target policy.
@@ -384,6 +390,22 @@ In addition, we investigate the impact of using model based data on the smoothne
 The results are presented in \autoref{fig:mad:random_action}.
 They highlight that random state-action pairs do not provide the necessary correction and the performance deteriorates to that of the model-free baseline.
 
+\textbf{SynthER comparison}~~~
+Related to the previous experiment, we present a comparison of our method and SynthER on the hard DMC tasks.
+This method is related to MAD-TD as it also creates synthetic data from a generative model, but crucially it is not conditioned to specifically create on-policy corrections.
+Results can be found in \autoref{fig:mad:synther}.
+
+As is evident from the lack of strong performance of SynthER, merely increasing the amount of generated data is insufficient to combat the failure of learning at high UTD.
+We find that the Q values of the SynthER agents quickly diverge on all tasks in which it is unable to learn.
+This strengthens our hypothesis that for hard tasks, off-policy action correction is vital to achieve strong results.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figures/mad-td/hard_fs_1_synther.pdf}
+    \caption{\rebuttal{Performance curves for MAD-TD and SynthER on the hard DMC tasks. SynthER fails to achieve nontrivial results on most tasks, only outperforming a random policy on the humanoid walk and stand tasks. }}
+    \label{fig:mad:synther}
+\end{figure}
+
 \paragraph{Smaller model networks:}To study the effect of the modelling capacity on our method, we ablate the size of the latent model by reducing the network size across the hard suite.
 \begin{figure}[b]
     \centering
@@ -422,11 +444,9 @@ These ideas however can easily be combined by e.g. training a model from an avai
 
 \paragraph{\rebuttal{SynthER}} Another \rebuttal{related} approach to obtain additional data is the diffusion-based method proposed by \textcite{lu2024synthetic}.
 In this work, the replay buffer data is augmented with additional samples obtained from a diffusion model that is trained on the replay buffer.
-\rebuttal{The underlying hypothesis of SynthER is that the failure of high-UTD learning stems mostly from a lack of diverse data in the replay buffer. 
+The underlying hypothesis of SynthER is that the failure of high-UTD learning stems mostly from a lack of diverse data in the replay buffer. 
 They demonstrate on the easier DM Control tasks that simply adding data from a generative model can be beneficial to learning. 
 This is opposed to our hypothesis, which claims that high-UTD learning is difficult specifically due to the lack of off-policy action corrections.
-As SynthER does not provide results on the hard DMC tasks, we reran the original code to compare our claims
-The results and a discussion can be found in \autoref{app:synther}.}
 
 In the online off-policy regime, \textcite{fujimoto2024sale} recently proposed TD7, which incorporates similar architectural choices to MAD-TD.
 They use a self-predictive encoder to learn good state representations, but concatenate them with the state and action representation provided by the environment to limit loss of information.

@@ -1,5 +1,5 @@
-\chapter{Formal proofs and results}
-\label{app:proofs}
+\chapter{Auxiliary Lemmata}
+\label{app:formal}
 
 \section{\autoref{chap:understanding}: Helpful definitions and lemmata}
 
@@ -264,7 +264,7 @@ The following lemma shows that a function that minimizes a quadratic and a varia
 
 \begin{lemma}
 \label{lemma:cvaml:muzero}
-Let $g: \mathcal{X} \rightarrow \mathbb{R}$ be a function that is not constant and let $\mu$ be a non-degenerate probability distribution over $\mathcal{X}$. 
+Let $g: \mathcal{X} \rightarrow \mathbb{R}$ be a function that is not constant and let $\mu$ be a probability distribution over $\mathcal{X}$. 
 Let $\mathcal{L}\roundb{f} = \mathbb{E}_{x\sim\mu}\squareb{\roundb{f(x) - g(x)}^2} + \mathbb{E}_{x\sim\mu}\squareb{f(x) g(x)} - \mathbb{E}_{x\sim\mu}\squareb{f(x)}\mathbb{E}_\mu\squareb{g(x)}$.
 There exists a function space $\mathcal{F}$ with $g \in \mathcal{F}$ so that $g \notin \argmin_{f \in \mathcal{F}} \mathcal{L}(f)$.
 \end{lemma}
@@ -295,7 +295,7 @@ We now can construct the function space $\mathcal{F}$ so that it includes at lea
 
 \end{proof}
 
-\subsection{\autoref{sec:cvaml:theory_2} Propositions from \textcite{bertsekasshreve1978}}
+\subsection{Propositions from Bertsekas \& Shreve}
 \label{sec:cvaml:bertsekas}
 
 For convenience, we quote some results from~\textcite{bertsekasshreve1978}.

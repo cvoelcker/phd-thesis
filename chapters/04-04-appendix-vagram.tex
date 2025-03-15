@@ -1,4 +1,4 @@
-\chapter{Appendix \autoref{chap:vagram}}
+\chapter{Appendix -- Value-gradient Aware Model Learning}
 
 \section{Full VAML for SAC}
 \label{app:vagram:vaml_sac}
@@ -74,21 +74,17 @@ The value-weighing baseline is unable to achieve satisfactory performance even o
 \end{figure}
 
 
-In a previous version of the paper, the following experiments were faulty due to a bug in the experimental code discovered after publication.
-This version includes the revised experiments.
-
 The results of VaGraM and \ac{mbpo} are presented in \autoref{fig:mujoco}.
 We find that VaGraM is able to perform on par with the \ac{mbpo} baseline on two of the remaining tasks, while not performing well on Ant.
 Due to stability issues, the Humanoid-v2 task is excluded, no algorithm achieved satisfactory performance (compare \textcite{pineda2021mbrl} for a discussion). 
 
 On the Ant task, a manual inspection of the gradients of the value function reveals that they vary across different data points very strongly.
 We therefore hypothesize that the VaGraM objective can destabilize if confronted with very sharp value function gradients and requires additional regularization in challenging tasks.
-To test this hypothesis, we adapt the normalization method from \textcite{bjorck2022is}.
+To test this hypothesis, we adapt the normalization method discussed in \autoref{chap:overestimation}.
 The results are visualized in \autoref{fig:norm_mujoco}.
 
 As is apparent from the results, the issue of destabilization on the Ant task is solved using the normalization, but it is not a panacea, as the performance on HalfCheetah suffers heavily. 
 It is likely that the HalfCHeetah environment is now over-regularized which would explain the lack of performance with \ac{mbpo} as well. Overall these additional experiments suggest that there is a non-trivial relationship between the observation space, value function regularization and model-based RL. 
-Testing more involved normalization schemes such as those used by \textcite{bjorck2021towards} and \textcite{zheng2023is} would be a promising direction for more in-depth research.
 
 \begin{figure}[t]
 \begin{center}

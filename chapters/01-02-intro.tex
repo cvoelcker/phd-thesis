@@ -1,17 +1,19 @@
 \chapter{Introduction}
 
 Agents that act autonomously and intelligently in a complex world are in many ways the ultimate goal of AI research.
+As we leave the constraints of well-defined environments and pre-specified behaviors, the ability to learn from trial and error becomes one of the most important challenges for such agents.
 An industrial robot in a highly controlled environment, such as a car assembly line, can be programmed to behave reliably and safely by human engineers.
 However, if we want robots to assist us in the real world outside of such controlled circumstances, we need to endow them with the ability to test out new behaviors and learn from their surroundings.
 This goal has been pursued most comprehensively under the banner of \emph{reinforcement learning} \parencite{suttonbook}, in which an agent learns by sequentially interacting with an environment and receiving a scalar reward.
 
 The core idea behind reinforcement learning is that an agent is able to learn from its own experiences and interactions with the world through receiving a reward which it seeks to optimize.
 The agent acts in the world, obtains (or does not obtain) a reward and then seeks to repeat actions that lead to high reward and avoid actions which do not.
-Over time, through trial and error, this learning scheme leads to reward-maximizing behavioral policies which an agent can execute to complete the task that is specified with the reward.
+Over time, through trial and error, this learning scheme leads to reward-maximizing behavioral policies which an agent can execute to complete the task that is specified by the reward.
 
 The reinforcement learning approach to artificial intelligence is a very general recipe and has received much attention over the years, with breakthrough successes in game playing \parencite{mnih2013playing,silver2016mastering}, robotics \parencite{smith2023demonstrating}, natural language processing and generation \parencite{ouyang2022training,rafailov2023direct,bi2024deepseek}, and technology \parencite{degrave2022magnetic}.
-However, despite its broad applicability, reinforcement learning approaches are also often criticized for being unstable and hard to tune \parencite{irpan2018deep,patterson2024empirical}.
-Many aspects leading to this perceived instability have only recently been put into the focus of research, such as the failure of value functions to properly converge to good solutions \parencite{kumar2021implicit}, lack of generalization and observational overfitting \parencite{song2020observational,kirk2023survey}, and the diminishing ability of agents to learn consistently over many interaction steps \parencite{nikishin2022primacy,hussing2024dissecting}.
+However, despite its broad applicability, reinforcement learning approaches are also often criticized for being unstable and hard to tune \parencite{irpan2018deep,henderson2018deep,patterson2024empirical}.
+Many aspects leading to this oft-discussed instability have only recently been put into focus.
+Recent work has identified culprits such as the failure of value functions to properly converge to good solutions \parencite{kumar2021implicit}, lack of generalization and observational overfitting \parencite{song2020observational,kirk2023survey}, and the diminishing ability of agents to learn consistently over many interaction steps \parencite{nikishin2022primacy,hussing2024dissecting}.
 All of these reasons lead to a world in which, despite promising results, reinforcement learning has not achieved widespread adoption in many domains to which it is ostensibly well suited, such as household robotics.
 
 

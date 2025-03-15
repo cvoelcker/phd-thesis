@@ -1,4 +1,4 @@
-\chapter{Appendix \autoref{chap:understanding}}
+\chapter{Appendix -- Instability of Value Function Learning}
 
 \section{Implementation details and hyperparameters} \label{app:impl}
 
@@ -63,149 +63,6 @@ We employ two commonly used implementations, one for fast iterations on priming 
     }
 \end{table}
 
-\section{Additional priming experiments} \label{app:priming}
-
-\subsection{Activation functions}
-
-\begin{figure}[H]
-\centering
-    \begin{subfigure}[b]{0.8\textwidth}
-        \centering
-        \includegraphics[height=0.4cm]{figures/dissecting/priming/elu_priming_base_return_legend.pdf}
-    \end{subfigure}\\%
-    \begin{subfigure}[b]{0.33\textwidth}
-        \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_base_return.pdf}
-        \label{subfig:elu_priming_base_ret}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.33\textwidth}
-    \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_base_Q.pdf}
-        \label{subfig:priming_base_Q}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.33\textwidth}
-        \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_base_exp_avg_sq.pdf}
-        \label{subfig:elu_priming_base_mom}
-    \end{subfigure}%
-    \vspace{-5pt}
-    \caption{ELU activations. Return, in-distribution Q-values and Adam optimizer moments during priming for different lengths. Dotted lines correspond to end of priming. More priming leads to lower return and larger Q-value and optimizer divergence.}
-    \label{fig:elu_priming_base}
-\end{figure}
-
-During our experiments, we found that the ReLU activation can sometimes lead to destabilization of other parts of the SAC agent during priming. We found that using ELU~\parencite{clevert2016accurate} activations instead remedies some of these issues. We repeat various experiments from Section~\ref{sec:overestimation:investigating} again but with more stable activations. First, we show in Figure~\ref{fig:elu_priming_base} that divergence happens similar to before and that it is correlated with the amount of priming.
-
-Furthermore, we discussed that the divergence is most likely triggered by out of distribution action prediction (see Figure~\ref{fig:overestimation:elu_priming_causes}) and that regularization can help. 
-When using ELUs, the effect of regularization is much more stable and as expected but still not as good as our OFN approach from Section~\ref{sec:overestimation:evalmethod} (compare with Figure~\ref{fig:overestimation:elu_priming_abl}). 
-Dropout leads to significantly worse performance and L$^2$ regularization learns Q-values too small for the obtained return which we suspect correlates with decreased exploration.
-
-\begin{figure}[H]
-\begin{minipage}[b]{.35\textwidth}
-\centering
-    \begin{subfigure}[b]{\textwidth}
-        \centering
-        \includegraphics[height=0.8cm]{figures/dissecting/priming/elu_priming_causes_return_legend.pdf}
-    \end{subfigure}\\%
-    \begin{subfigure}[b]{\textwidth}
-        \centering
-        \includegraphics[width=4.8cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_causes_Q.pdf}
-        \label{subfig:elu_priming_causes_Q}
-    \end{subfigure}%
-    \vspace{-5pt}
-    \caption{ELU activations. Priming with SAC and action regularization during priming. The latter lowers divergence. }
-    \label{fig:elu_priming_causes}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{.62\textwidth}
-    \centering
-    \begin{subfigure}[b]{0.8\textwidth}
-        \centering
-        \includegraphics[height=0.4cm]{figures/dissecting/priming/elu_priming_ablations_return_legend.pdf}
-    \end{subfigure}\\%
-    \begin{subfigure}[b]{0.5\textwidth}
-        \centering
-        \includegraphics[width=4.8cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_ablations_return.pdf}
-        \label{subfig:elu_priming_abl_ret}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-    \centering
-        \includegraphics[width=4.8cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_ablations_Q.pdf}
-        \label{subfig:elu_priming_abl_Q}
-    \end{subfigure}%
-    \vspace{-18pt}
-    \caption{ELU activations. Return and
-    Q-values of priming runs with weight decay and dropout. Results indicate that both regularization strategies mitigate priming more than with ReLUs. }
-    \label{fig:elu_priming_abl}
-\end{minipage}
-    \vspace{-5pt}
-\end{figure}
-
-\subsection{Optimizer divergence} \label{app:priming_opt}
-
-With more stable effects from the ELU activation, we introduce a second intervention to the priming stage. We hypothesize that most of the divergence stems from the second optimizer term that will propel the gradients to increase more and more over time. To test this, we run an additional experiment in which we use standard stochastic gradient descent (SGD)~\parencite{robbins1951stochastic} with first-order momentum~\parencite{rumelhart1986learning, sutskever2013on} during priming to isolate the effect of the second-order momentum term. We compare this against RMSProp which is equivalent to Adam but without the first optimizer term instead. The results are shown in Figure~\ref{app:priming_opt}. As we can see, the divergence is almost completely gone when using SGD with momentum but is even larger in RMSProp. Note that running the same experiment with ReLU activations  leads to divergence in the actor when using SGD only. We suspect this might have to do with divergence in the actor entropy.
-
-\begin{figure}[H]
-\centering
-    \begin{subfigure}[b]{0.8\textwidth}
-        \centering
-        \includegraphics[height=0.8cm]{figures/dissecting/priming/elu_priming_opt_return_legend.pdf}
-    \end{subfigure}\\%
-    \begin{subfigure}[b]{0.33\textwidth}
-        \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_opt_return.pdf}
-        \label{subfig:priming_opt_ret}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.33\textwidth}
-    \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_priming_opt_Q.pdf}
-        \label{subfig:priming_opt_Q}
-    \end{subfigure}%
-    \vspace{-5pt}
-    \caption{Comparing standard SAC priming to priming when using either SGD+momentum or RMSProp during the priming updates. SGD+momentum does not diverge with ELU activations, indicating that the second-order momentum term is the problematic one.}
-    \label{fig:priming_opt}
-\end{figure}
-
-\subsection{Effective dimension} \label{app:priming_dim}
-
-Let $\Phi \in \mathbb{R}^{|\mathcal{S}| |\mathcal{A}| \times d}$ be a feature matrix (in our case produced by $\phi$). The effective dimension of a feature matrix has previously been defined as 
-\begin{equation*}
-    \text{srank}_{\delta} = \min 
-    \left\{ k : \cfrac{\sum_{i=1}^k \sigma_i(\Phi)}{\sum_{i=1}^d \sigma_i(\Phi) \geq 1 - \delta}
-    \right\} \enspace ,
-\end{equation*}
-where $\delta$ is a threshold parameters and $\{\sigma_i(\Phi)\}$ are the singular values of $\Phi$ in decreasing order~\parencite{yang2020harnessing, kumar2021implicit}.
-
-An additional finding of ours is that divergence of Q-values is correlated with this effective rank $\text{srank}_{\delta}$. We plot three different random seeds that have been subjected to 75,000 steps of priming in Figure~\ref{fig:elu_priming_dim}; the effective rank is approximated over a sample 10 times the size of the embedding dimension. We observe, that divergence correlates with a decrease in effective dimension and that when divergence is exceptionally strong, the effective dimension drops so low that the agent has trouble to continue learning. This might explain the failure to learn observed by~\textcite{nikishin2022primacy}. However, as long as the effective dimension does not drop too far, the agent can recover and regain capacity by observing new data. 
-Previous work on effective rank loss has often assumed that it is mostly irreversible, yet we find that this is not always the case.
-We suspect that in complete failure cases, the policy has collapse and rarely any new data is seen.
-
-\begin{figure}[H]
-\centering
-    \begin{subfigure}[b]{0.8\textwidth}
-        \centering
-        \includegraphics[height=0.4cm]{figures/dissecting/priming/elu_dim_return_legend.pdf}
-    \end{subfigure}\\%
-    \begin{subfigure}[b]{0.33\textwidth}
-        \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_dim_return.pdf}
-        \label{subfig:elu_dim_ret}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.33\textwidth}
-    \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_dim_Q.pdf}
-        \label{subfig:priming_dim_Q}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.33\textwidth}
-        \centering
-        \includegraphics[width=4.7cm, trim=1cm 1cm 1cm 1cm ,clip]{figures/dissecting/priming/elu_dim_ed.pdf}
-        \label{subfig:elu_priming_dim_ed}
-    \end{subfigure}%
-    \vspace{-5pt}
-    \caption{Returns, Mean Q-values and effective dimension for $3$ seeds of standard priming for 75,000 steps. When divergence happens, effective dimension is lost. If the effective dimension drops too far, the agent has difficulties to recover.}
-    \label{fig:elu_priming_dim}
-\end{figure}
-
-\newpage
 
 \section{Additional experimental results} \label{app:exp}
 
@@ -221,12 +78,10 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
         \centering
         \includegraphics[width=15cm, trim=0cm 0cm 0cm 0cm ,clip]{figures/dissecting/main_exp/utd_8_return.pdf}
     \end{subfigure}%
-    \vspace{-5pt}
     \caption{UTD8 Returns on Full DMC15-500K.}
     \label{fig:utd8_ret}
 \end{figure}
 
-\newpage
 
 \begin{figure}[H]
 \centering
@@ -238,12 +93,10 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
         \centering
         \includegraphics[width=15cm, trim=0cm 0cm 0cm 0cm ,clip]{figures/dissecting/main_exp/utd_32_return.pdf}
     \end{subfigure}%
-    \vspace{-5pt}
     \caption{UTD32 Returns on Full DMC15-500K.}
     \label{fig:utd32_ret}
 \end{figure}
 
-\newpage
 
 \subsection{Q-values on all environments} \label{app:exp_q}
 
@@ -257,12 +110,10 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
         \centering
         \includegraphics[width=15cm, trim=0cm 0cm 0cm 0cm ,clip]{figures/dissecting/main_exp/utd_8_Q.pdf}
     \end{subfigure}%
-    \vspace{-5pt}
     \caption{UTD8 Q-values on Full DMC15-500K. Resetting often works when Q-values diverge. ONF mitigates divergence.}
     \label{fig:utd8_Q}
 \end{figure}
 
-\newpage
 
 \begin{figure}[H]
 \centering
@@ -274,12 +125,10 @@ We suspect that in complete failure cases, the policy has collapse and rarely an
         \centering
         \includegraphics[width=15cm, trim=0cm 0cm 0cm 0cm ,clip]{figures/dissecting/main_exp/utd_32_Q.pdf}
     \end{subfigure}%
-    \vspace{-5pt}
     \caption{UTD32 Q-values on Full DMC15-500K. Resetting often works when Q-values diverge. ONF mitigates divergence.}
     \label{fig:utd32_Q}
 \end{figure}
 
-\newpage
 
 \section{Unit norm gradient derivation} \label{app:unitnorm}
 
@@ -302,10 +151,10 @@ Note that the second term can grow quite large if the norm of $\mathbf{x}$ is re
 Feature divergence without regularization is an important problem that contributes substantially to the issues facing high-UTD learning
 However, as our experiments show, there are many additional open problems that introducing normalization does not address.
 
-\textbf{Understanding actor issues}~~The resetting experiments in \autoref{fig:aggregate} highlight that a part of the performance impact of high UTD comes from the actor optimization, not the critic optimization, as resetting the actor can boost performance without changing the critic.
+\textbf{Understanding actor issues}~~The resetting experiments in \autoref{fig:overestimation:aggregate} highlight that a part of the performance impact of high UTD comes from the actor optimization, not the critic optimization, as resetting the actor can boost performance without changing the critic.
 Our work does not address this issue, and to the best of our knowledge there are no specific attempts to investigate the actor optimization process in deep actor-critic reinforcement learning.
 
-{\bf RL Optimizer}~~ As the priming experiments show (\autoref{fig:priming_opt}), the update dynamics introduced by momentum terms in modern optimizers can exacerbate existing overestimation problems. 
+{\bf RL Optimizer}~~ The update dynamics introduced by modern optimizers can exacerbate existing overestimation problems. 
 \textcite{dabney2014adaptive} derives adaptive step-sizes for reinforcement learning from a theoretical perspective, but the resulting optimization rules have not been adapted to Deep Reinforcement Learning to the best of our knowledge.
 A recent study by \textcite{asadi2023resetting} shows that resetting the optimizer can have some benefit in the DQN setting, where it can be tied to the hard updates of the target Q network.
 In addition, \textcite{lyle2023understanding} show that optimizers like Adam can lead to reduced plasticity of neural networks.

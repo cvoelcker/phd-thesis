@@ -1,9 +1,9 @@
-\chapter{Appendix \autoref{chap:mad}}
+\chapter{Appendix -- Value Function Learning with Model-Generated Data}
 
 \section{Implementation}
 \label{app:implementation}
 
-\begin{table}
+\begin{table}[t]
 \begin{center}
 \begin{tabular}{c|c|c|c}
      Encoder $\Phi$ & Dense Layer & Mish & in\_size=$|\mathcal{X}|$, out\_size=$512$ \\
@@ -26,7 +26,7 @@
 \label{tab:arch}
 \end{table}
 
-\begin{table}
+\begin{table}[t]
     \begin{tabular}{l|c}
         Parameter & \\\hline 
         Initial steps (Random policy) & $5000$  \\
@@ -86,7 +86,6 @@ Other hyperparameters were left as-is.
 
 \label{app:setup}
 
-\newpage
 
 \section{Further results}
 \label{app:results}
@@ -97,15 +96,14 @@ Other hyperparameters were left as-is.
     \centering
     \includegraphics[width=\linewidth]{figures/mad-td/q_values_utd.pdf}
     \caption{Return curves and Q values with differing UTD values.}
-    \label{fig:q_hard}
+    \label{fig:mad:q_hard}
 \end{figure}
 
 
 We plot the return curves and corresponding Q estimates for different UTD values and with and without model-generated data on the hard suite.
-The results are presented in \autoref{fig:q_hard}.
+The results are presented in \autoref{fig:mad:q_hard}.
 As we see, across all tasks the model free variant strongly overestimates the Q values, especially in the beginning.
 
-\newpage
 
 \subsection{Humanoid results}
 \label{app:results_hum}
@@ -115,20 +113,19 @@ As we see, across all tasks the model free variant strongly overestimates the Q 
     \centering
     \includegraphics[width=0.9\linewidth]{figures/mad-td/humanoid_random_actions.pdf}
     \caption{Return curves for the humanoid tasks when using on-policy (blue), random (green) and no model-generated data (orange). The observed performance impacts are comparable to the dog case.}
-    \label{fig:humanoid_random_actions}
+    \label{fig:mad:humanoid_random_actions}
 \end{figure}
 
 For several experiments, we only showed the dog results from the main suite to avoid cluttering the main body of the paper.
-The corresponding humanoid results are presented in \autoref{fig:q_hard} and \autoref{fig:humanoid_random_actions}, corresponding to \autoref{fig:main_dog} and \autoref{fig:random_action} respectively.
+The corresponding humanoid results are presented in \autoref{fig:mad:q_hard} and \autoref{fig:mad:humanoid_random_actions}, corresponding to \autoref{fig:mad:main_dog} and \autoref{fig:mad:random_action} respectively.
 As the plots highlight, the main insights transfer across the hard tasks.
 
-\newpage
 
 \subsection{Different quantities of model data}
 \label{app:model_data}
 
-We evaluate using more model data to update our value functions and provide the results in \autoref{fig:higher_data}.
-\rebuttal{Aggregated scores are presented in \autoref{fig:higher_data_aggregate}.}
+We evaluate using more model data to update our value functions and provide the results in \autoref{fig:mad:higher_data}.
+\rebuttal{Aggregated scores are presented in \autoref{fig:mad:higher_data_aggregate}.}
 We observe that the majority of gain is obtained when using limited amount of model data, and larger amounts only provided limited gains in some humanoid runs.
 \rebuttal{When using high amounts of model generated data, we observe deteriorating performance, which implies that the agent learns to exploit the model instead of solving the real task.
 This observation is consistent with similar observation about model exploration in prior work \textcite{zhao2023simplified}}.
@@ -137,38 +134,34 @@ This observation is consistent with similar observation about model exploration 
     \centering
     \includegraphics[width=\linewidth]{figures/mad-td/higher_data.pdf}
     \caption{Return curves on the hard suite. We see that using substantially more data than 5\% does not improve performance in a statistically significant way.}
-    \label{fig:higher_data}
+    \label{fig:mad:higher_data}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.4\linewidth]{figures/mad-td/higher_data_aggregate.pdf}
     \caption{Aggregate statistics for differing values of $\alpha$ (amount of model data used) at UTD 8.}
-    \label{fig:higher_data_aggregate}
+    \label{fig:mad:higher_data_aggregate}
 \end{figure}
 
-\newpage
 
-\rebuttal{
 \subsection{SynthER comparison}
 \label{app:synther}
 
 We present a comparison of our method and SynthER on the hard DMC tasks.
-Results can be found in \autoref{fig:synther}.
+Results can be found in \autoref{fig:mad:synther}.
 
 As is evident from the lack of strong performance of SynthER, merely increasing the amount of generated data is insufficient to combat the failure of learning at high UTD.
 We find that the Q values of the SynthER agents quickly diverge on all tasks in which it is unable to learn.
 This strengthens our hypothesis that for hard tasks, off-policy action correction is vital to achieve strong results.
-}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/mad-td/hard_fs_1_synther.pdf}
     \caption{\rebuttal{Performance curves for MAD-TD and SynthER on the hard DMC tasks. SynthER fails to achieve nontrivial results on most tasks, only outperforming a random policy on the humanoid walk and stand tasks. }}
-    \label{fig:synther}
+    \label{fig:mad:synther}
 \end{figure}
 
-\newpage
 
 \rebuttal{
 \subsection{TD-MPC2 ablation}
@@ -176,7 +169,7 @@ This strengthens our hypothesis that for hard tasks, off-policy action correctio
 
 As described in the main paper, we simplify the base model of TD-MPC2 to improve the computational efficiency of the algorithm.
 This is necessary to conduct high UTD experiments.
-Here, we present a direct comparison of the original TD-MPC2 model, and our adapted version (\autoref{fig:tdmpc_ablation}).
+Here, we present a direct comparison of the original TD-MPC2 model, and our adapted version (\autoref{fig:mad:tdmpc_ablation}).
 We compare MAD-TD without any model generated data, at UTD 1, which corresponds to the standard setting of TD-MPC2.
 As pointed out in the main paper, all of our changes to the base model boil down to setting different hyperparameters, such as the rollout length, to achieve faster learning.
 
@@ -187,16 +180,15 @@ We find that this does not significantly change the overall results achieved by 
     \centering
     \includegraphics[width=\linewidth]{figures/mad-td/ablation.pdf}
     \caption{\rebuttal{Performance variation of the base MAD-TD model compared to TD-MPC2. Our changes only very few times lead to lower performance which is acceptable given the large reduction in computational cost.}}
-    \label{fig:tdmpc_ablation}
+    \label{fig:mad:tdmpc_ablation}
 \end{figure}
 
-\newpage
 
 \subsection{MAD-TD, BRO, TD-MPC2 per env on the hard suite}
 \label{app:results_base}
 
 We present the return curves for MAD-TD and the baselines per environment on the hard suite.
-\autoref{fig:hard_all_fs_2} shows the results with action repeat 2 and \autoref{fig:hard_all_fs_1} with action repeat 1. 
+\autoref{fig:mad:hard_all_fs_2} shows the results with action repeat 2 and \autoref{fig:mad:hard_all_fs_1} with action repeat 1. 
 Perhaps surprisingly, the results of the algorithms are not fully consistent across this regime. 
 Partially, this can be explained by the fact that our method and TD-MPC2 were first developed in the regime of action repeat 2, while BRO was only evaluated in the action repeat 1 setting.
 This suggests that the performance of each method depends in a non-trivial fashion on hyperparameter tuning.
@@ -206,21 +198,21 @@ Yet, across both action repeat setting MAD-TD outperforms BRO without resetting 
     \centering
     \includegraphics[width=0.8\linewidth]{figures/mad-td/hard_all_fs_2.pdf}
     \caption{Return curves with action repeat set to 2.}
-    \label{fig:hard_all_fs_2}
+    \label{fig:mad:hard_all_fs_2}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{figures/mad-td/hard_all_fs_1.pdf}
     \caption{Return curves with action repeat set to 1.}
-    \label{fig:hard_all_fs_1}
+    \label{fig:mad:hard_all_fs_1}
 \end{figure}
 
 We conjecture that the remaining gap in performance seems to be most likely attributable to exploration and optimism.
 While we focus on learning accurate value functions, Bro contains several components which are specifically designed to improve exploration.
 Investigating the tension between exploration and accurate value function fitting is an important direction for future work.
 
-Bro and TD-MPC2 are explicitly evaluated without their exploration bonuses in separate evaluation rollouts.
+Bro and TD-MPC2 are explicitly evaluated without their exploration bonuses in separate evaluation roll-outs.
 We however do not conduct such as separate evaluation as we do not add any additional exploration noise to our training.
 When plotting training performance, the gap between MAD-TD and Bro further closes, suggesting an important trade-off between test time and training performance.
 
@@ -233,28 +225,27 @@ We conducted more experiments on all DMC environments which were shown to benefi
     \centering
     \includegraphics[width=0.8\linewidth]{figures/mad-td/model_impact.pdf}
     \caption{Return curves evaluating the impact of model-based data for critic learning and MPC. Overall, MPC and model-based critic learning both stabilize the learning process, as conjectured.}
-    \label{fig:all_model_impact}
+    \label{fig:mad:all_model_impact}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{figures/mad-td/mpc_reset.pdf}
     \caption{Return curves for the impact of resetting on MAD-TD with and without MPC. Without MPC, resetting can still improve the performance, but with MPC, we see no significant benefits from resetting across environments except pendulum. The hopper results highlight the importance (and danger) of the reset interval, as seemingly the reset algorithm is not able to recover ``in time'' to improve performance.}
-    \label{fig:mpc_comp}
+    \label{fig:mad:mpc_comp}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\linewidth]{figures/mad-td/all_baseline_comp_rewards.pdf}
     \caption{Comparison of MAD-TD and TD-MPC2 across more environments of the DMC suite. We observe gains compared to TD-MPC2 in the hard tasks, especially in terms of early learning performance, while TD-MPC2 has advantages on the pendulum\_swingup and acrobot\_swingup tasks. These seem to be exploration and stability issues for which the longer model rollouts of TD-MPC2 seem to help.}
-    \label{fig:all_baseline}
+    \label{fig:mad:all_baseline}
 \end{figure}
 
-\newpage
 \rebuttal{
 \subsection{Metaworld} \label{app:metaworld}
 To broaden the basis of comparison, we compare our method to BRO and TD-MPC2 on 9 selected environments from the metaworld suite.
-Results can be found in \autoref{fig:metaworld}.
+Results can be found in \autoref{fig:mad:metaworld}.
 
 
 Overall, we observe that our method performs strongly on tasks in which the agent has access to a dense reward, such as \emph{lever-pull} and \emph{button press}.
@@ -278,5 +269,5 @@ This is, to the best of our knowledge, not discussed in the literature, and shou
     \centering
     \includegraphics[width=0.8\linewidth]{figures/mad-td/metaworld.pdf}
     \caption{\rebuttal{Performance comparison on Metaworld between MAD-TD, BRO, and TD-MPC2. MAD-TD performs strongly on tasks which provide sufficient reward information to bootstrap the value function quickly, while learning more slowly on sparse reward tasks. This is consistent with the core goal of our algorithm, to stabilize and improve value function learning.}}
-    \label{fig:metaworld}
+    \label{fig:mad:metaworld}
 \end{figure}
