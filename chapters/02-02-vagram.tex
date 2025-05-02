@@ -10,11 +10,11 @@
 \ac{mbrl} is a sample-efficient approach to obtain a policy for a given control problem. 
 It solves the control optimization into two interleaved stages: model learning and policy learning or planning. 
 In the \emph{model learning} stage, an approximate model of the environment is learned which is then utilized in the \emph{planning} stage to generate new experience without having to query the original environment. 
-Often this process is repeated by continuously updating the model with new experience and replanning based on the updated model. 
+Often this process is repeated by continually updating the model with new experience and replanning based on the updated model. 
 \ac{mbrl} is an enticing paradigm for scenarios in which samples of the true environment are difficult or expensive to obtain, such as computationally intensive simulators, real-world robots, or environments involving humans, since the model can be used to generalize the policy to unseen regions of the state space. 
 The approach has received a lot of attention and significant progress has been made in the field \parencite{dyna,deisenroth2011pilco,levine2013guided,hafner2020dream,moerland,schrittwieser2020mastering}.
 
-One of the core problems of model-based policy learning methods, however, is that the accuracy of the model directly influences the quality of the learned policy or plan \parencite{schneider1997exploiting,kearns2002near,ross2012agnostic,talvitie2017self,luo2018algorithmic,mbpo}. 
+One of the core problems of model-based policy learning methods, however, is that the accuracy of the model directly influences the quality of the learned policy or plan \parencite{schneider1997exploiting,kearns2002near,ross2012agnostic,talvitie2017self,luo2018algorithmic,janner2019mbpo}. 
 Model errors tend to accumulate over time, and therefore long-term planning under approximate models can lead to suboptimal policies compared to the performance achievable with model-free approaches.
 This is especially prevalent in settings with complex dynamics, such as robotic environments with discontinuities, which can be hard to model with common function approximation methods.
 These model approximation errors are nearly impossible to avoid with current methods due to limits of function approximation in model and value learning algorithms, which cannot fully capture the full distribution over dynamics functions perfectly, and the use of finite datasets.
@@ -24,7 +24,7 @@ But this objective is not captured in most current \ac{mbrl} methods, which gene
 The misalignment between the \emph{model learning} and \emph{planning} stages of \ac{mbrl} has received renewed interest and is now commonly termed the \textit{objective mismatch} of reinforcement learning~\parencite{lambert202objective}, but the problems has been investigated in earlier works \parencite{joseph2013reinforcement}.
 Several recent papers have investigated the objective mismatch~\parencite{abachi2020policy,zhang2021learning,ayoub2020model,grimm2020value,grimm2021proper,nikishin2021control}, but currently theoretical investigation and understanding of possible approaches do not perform well when applied to complex deep learning based approaches~\parencite{lovatto2020decision} or the proposed approaches rely on heuristics which might not be applicable generally~\parencite{nair2020goal}.
 
-\noindent \textbf{Summary of Contributions}. We present the \textit{Value-Gradient Weighted MOdel Learning}~(VaGraM) which rescales the mean squared error loss function with gradient information from the current value function estimate.
+\noindent \textbf{Summary of Contributions}. We present the \textit{Value-Gradient Weighted Model Learning}~(VaGraM) which rescales the mean squared error loss function with gradient information from the current value function estimate.
 We demonstrate the advantage of the VaGraM loss over previous approaches via the analysis of the optimization behavior of the Value-Aware Model Learning framework \parencite{vaml, itervaml} and form two hypotheses for the lack of empirical performance gain despite theoretical intuition: (a) the theory does not account for the optimization trajectory induced by the loss function and (b) it also does not address how to counter problems that arise when the state-space is yet insufficiently explored in early stages of the model training.
 Our experiments show, qualitatively and quantitatively, that the VaGraM loss impacts the resulting state and value prediction accuracy, and that it solves the optimization problems of previously published approaches.
 Beyond pedagogical domains, we show that VaGraM performs on par with a current state-of-the art \ac{mbrl} algorithms in more complex continuous control domains, while improving robustness to irrelevant dimensions in the state-space and smaller model sizes.
@@ -56,7 +56,7 @@ We expect that the updated model loss forces the model prediction to a new solut
 This is especially prevalent when the previous minimum is situated outside of the empirically covered state space.
 A stable value-aware loss function should therefore have only one minimum in the state space that lies within the empirical state distribution.\footnote{\revised{The full loss function will likely still admit additional local minima due to the non-linear nature of the model itself, but the global optimum should coincide with the true model and the loss function should be convex in the state space.}}}
 
-\subsection{Approximating a value-aware loss with the value function gradient}
+\subsection{Approximating IterVAML with the value function gradient}
 From our insights, we obtain two criteria: a stable loss should not depend on the value function at states not captured in the dataset, and it should not admit local minima beyond an \ac{mle} solution.
 To derive a loss function that fulfils these requirements, we start from the assumption that the difference between the model prediction and the environment next states $\state'$ are small.
 This is implicitly required by many \ac{mbrl} approaches, since an MLE model cannot be used to estimate the next state's value otherwise. 
@@ -83,15 +83,15 @@ We can see that the objective is similar to a mean squared error regression with
 \subsection{Bound between Value-Aware Model Learning and VaGraM}
 \label{app:taylor_bound}
 
-The error in Taylor approximation $\mathcal{R}(V, s', f_\theta(s,a))$ is bounded by $\frac{M}{2}||s' - f_\theta(s,a)||^2$ with M dependent on the Hessian of the value function. Plugging this into the VAML loss and assuming worst case approximation errors, we obtain an upper bound on the VAML error:
+The error in Taylor approximation $\mathcal{R}(V, x', f_\theta(s,a))$ is bounded by $\frac{M}{2}\|x' - f_\theta(x,a)\|^2$ with M dependent on the Hessian of the value function. Plugging this into the VAML loss and assuming worst case approximation errors, we obtain an upper bound on the VAML error:
 
-\begin{align*}
-    &\E_{s',s,a \sim D}\left[\left(V\left(f_\theta(s,a) \right) - V(s_0')\right)^2\right] \\
-    = &\E_{s',s,a \sim D}\left[\left((\nabla_s V(s)|_{s'})^\intercal (f_\theta(s,a) - s') + \mathcal{R}(V, s',f_\theta(s,a))\right)^2\right]\\
-    \leq &\E_{s',s,a \sim D}\left[\left(\left|(\nabla_s V(s)|_{s'})^\intercal (f_\theta(s,a) - s')\right| + \left|\mathcal{R}(V, s_0', f_\theta(s,a))\right|\right)^2\right]\\
-    \leq &\E_{s',s,a \sim D}\left[{\left(\left|(\nabla_s V(s)|_{s'})^\intercal (f_\theta(s,a) - s')\right| + \frac{M}{2}||s' - f_\theta(s,a)||^2\right)^2}\right]\\
-    \leq &2\cdot\E_{s',s,a \sim D}\left[{\left((\nabla_s V(s)|_{s'})^\intercal (f_\theta(s,a) - s')\right)^2}\right] + 2\cdot\E_{s',s,a \sim D}\left[\frac{M^2}{4}||s' - f_\theta(s,a)||^4\right]
-\end{align*}
+\begin{align}
+    &\E_{x',x,a \sim D}\left[\left(V\left(f_\theta(x,a) \right) - V(x_0')\right)^2\right] \\
+    = &\E_{x',x,a \sim D}\left[\left((\nabla_s V(x)|_{x'})^\intercal (f_\theta(x,a) - x') + \mathcal{R}(V, x',f_\theta(x,a))\right)^2\right]\\
+    \leq &\E_{x',x,a \sim D}\left[\left(\left|(\nabla_x V(x)|_{x'})^\intercal (f_\theta(x,a) - x')\right| + \left|\mathcal{R}(V, x_0', f_\theta(x,a))\right|\right)^2\right]\\
+    \leq &\E_{x',x,a \sim D}\left[{\left(\left|(\nabla_x V(x)|_{x'})^\intercal (f_\theta(x,a) - x')\right| + \frac{M}{2}\|x' - f_\theta(x,a)\|^2\right)^2}\right]\\
+    \leq &2\cdot\E_{x',x,a \sim D}\left[{\left((\nabla_x V(x)|_{x'})^\intercal (f_\theta(x,a) - x')\right)^2}\right] + 2\cdot\E_{x',x,a \sim D}\left[\frac{M^2}{4}\|x' - f_\theta(x,a)\|^4\right]
+\end{align}
 
 Our experiments show that if we treat $M$ like a tuneable hyperparameter, optimization difficulties appear.
 We conjecture that in practice, this problem is caused by the difficulty of estimating the spectrum of the Hessian.
@@ -117,9 +117,9 @@ This can be made more clear by looking at the loss for a single datapoint
     =&\min_\theta \left(\sum_{n=0}^{\text{dim}(\states)} (\nabla_\state V(\state)|_{\state'})_n \cdot f_\theta(\state,a)_n\right)^2
 \end{align}
 
-Assuming that $f$ is flexible and can predict any next state $\state'$, the optimal solution is obtained from an undetermined linear system of equations
+Assuming that $f$ is flexible and can predict any next state $\state'$, the optimal solution is obtained from an under-determined linear system of equations
 \begin{align}
-    \sum_{n=0}^{\text{dim}(\states)} (\nabla_s V(s)|_{s'})_n \cdot f_\theta(s,a)_n = 0
+    \sum_{n=0}^{\text{dim}(\states)} (\nabla_s V(s)|_{s'})_n \cdot f_\theta(x,a)_n = 0
 \end{align}
 
 This system admits far more solutions than either the corresponding IterVAML loss or a mean squared error, and many of them will achieve arbitrary large value prediction errors.
@@ -127,16 +127,16 @@ In fact, the equation describes a hyperplane of minimal solutions consisting of 
 Therefore we need to enforce the closeness of the model prediction and the environment sample, since the Taylor approximation is only approximately valid in a close ball around the reference sample.
 
 One way to achieve this closeness is by adding the second order Taylor term, which results in an additional MSE loss term.
-However, we did not achieve good performance when testing out this version, as it is difficult to compute the Hessian in higher-dimensional state spaces 
-Therefore, we approached the solution to this problem as outlined below.
+However, as discussed, this did not lead to good results in practice. 
+Therefore, we approach the solution to this problem as outlined below.
 
 \subsection{Bounding the first-order Taylor loss}
 
 To prevent these suboptimal solutions and achieve our second design goal, we consider an upper bound on the value-gradient loss by applying the Cauchy Schwartz inequality $\left(\sum_{i=1}^n x_i \right) ^2 \leq n \sum x_i^2$ to change the square of the sum with a sum of squares.
 We denote the diagonal matrix with vector $a$ on the diagonal as $\text{diag}(a)$ and refer to the dimensionality of the state space as $\text{dim}(\mathcal{S})$ and rephrase the sum as a vector-matrix multiplication:
 \begin{align}
-    &\sum_{\{s_i,a_i,s'_i\}\in\mathcal{D}} {\left((\nabla_s V(s)|_{s'_i})^\intercal(f_\theta(s_i,a_i) - s'_i) \right)^2}\\
-    \leq {\text{dim}(\mathcal{S})} &\sum_{\{s_i,a_i,s'_i\}\in\mathcal{D}}\left((f_\theta(s_i,a_i) - s'_i)^\intercal\text{diag}(\nabla_s V(s)|_{s'_i})^2(f_\theta(s_i,a_i) - s'_i) \right) \label{eq:vagram:upper_bound}.
+    &\sum_{\{x_i,a_i,x'_i\}\in\mathcal{D}} {\left((\nabla_x V(x)|_{x'_i})^\intercal(f_\theta(x_i,a_i) - x'_i) \right)^2}\\
+    \leq {\text{dim}(\mathcal{S})} &\sum_{\{x_i,a_i,x'_i\}\in\mathcal{D}}\left((f_\theta(x_i,a_i) - x'_i)^\intercal\text{diag}(\nabla_x V(s)|_{x'_i})^2(f_\theta(x_i,a_i) - x'_i) \right) \label{eq:vagram:upper_bound}.
 \end{align}
 
 This reformulation is equivalent to a mean squared error loss function with a per-sample-dimension diagonal scaling matrix.
@@ -148,7 +148,7 @@ The resulting loss curves can be seen in \autoref{fig:vagram:all_losses}.
 The VAML loss has a complicated shape that depends on the exact values of the value function while both MSE and our proposal have a paraboloid shape.
 Compared to MSE, our proposed loss function is rescaled to account for the larger gradient of the value function in the $\theta$ axis.
 
-\section{Experiment: Model learning in low-dimensional problem}
+\section{Experiment: Analyzing model learning}
 \label{sec:vagram:experiments}
 
 \begin{figure}[t]
@@ -161,7 +161,7 @@ Compared to MSE, our proposed loss function is rescaled to account for the large
 
 We compare the performance of VaGraM, with both MSE and VAML on a pedagogical environment with a small state space and smooth dynamics to gain qualitative insight into the loss surfaces. 
 We use the Pendulum environment, a canonical control problem in which an under-actuated pendulum must be swung and stabilized to an upright position.
-We use the implementation provided by \cite{brockman2016openai}.
+We use the implementation provided by \textcite{brockman2016openai}.
 To learn the policy and its value function, we use the SAC algorithm \parencite{sac}.
 The original IterVAML analysis assumed that the value function was obtained using approximate value iteration (AVI) \parencite{gordon1995stable,ernst2005tree,farahmand2010error}. We use SAC instead of a full AVI for stability in large scale experiments and discuss a proper extension of the VAML loss to SAC in \autoref{app:vagram:vaml_sac}. We find that the difference in loss is negligible and therefore use SAC together with VAML throughout our experiments.
 More information on the implementation and hyperparameters of all of our experiments can be found in \autoref{app:vagram:implementation}. 
@@ -205,12 +205,12 @@ The dynamics function of the environment can be approximated sufficiently well w
 
 The underlying theory supporting VAML states that a value-aware loss is preferable to a mean squared error loss in a setting where the capacity of the model is too small to fully approximate the problem or the state space contains dimensions that are irrelevant for the control problem.
 To test whether our loss function is superior to a maximum likelihood approach in these cases, we used the Hopper environment from the OpenAI gym benchmark \parencite{brockman2016openai}. 
-As a deep learning based Dyna algorithm, we chose \ac{mbpo} \parencite{mbpo} and ran all of our experiments using the implementation provided by \cite{pineda2021mbrl}.
+As a deep learning based Dyna algorithm, we chose \ac{mbpo} \parencite{janner2019mbpo} and ran all of our experiments using the implementation provided by \textcite{pineda2021mbrl}.
 We kept the structure of the \ac{mbpo} algorithm and models and replaced the model loss function with VaGraM.
 
 \subsection{Hopper with reduced model capacity}
 In the first experiment, we decreased the network size of the used neural network ensemble.
-\cite{mbpo} use fully connected neural networks with four hidden layers and 200 neurons per layer.
+\textcite{janner2019mbpo} use fully connected neural networks with four hidden layers and 200 neurons per layer.
 To test the performance of the algorithm under smaller models, we ran tests with two and three layer networks and 64 neurons per hidden layer.
 The results are shown in \autoref{fig:vagram:pendulum_small}.
 As before, when using a sufficiently powerful function approximation, we see no difference between the maximum likelihood approach and VaGraM, suggesting that the networks are flexible enough to capture the true environment's dynamics sufficiently close for planning.
@@ -243,14 +243,14 @@ In summary, we find that VaGraM is able to deal with challenging distractions an
 
 Several authors have noted on the problem of learning models that align with the goal of obtaining a good policy. The proposed approaches fall into three broad categories: value-function or policy dependency, representation learning, and data resampling.
 
-Inspired by VAML, \cite{abachi2020policy} present a method that seeks to align the policy gradients under a learned model with the gradients under the true environment. Similar to our proposal, \cite{doro2020gradient} also proposed to reweigh samples in a log likelihood loss, but used policy search as the reinforcement learning approach and did not account for individual state dimensions. \cite{nikishin2021control} show an approach to directly optimizing the policy performance on the real environment by learning a model with implicit differentiation. \cite{asadi2018equivalence} show that the original VAML loss coincides with a Wasserstein distance in the model space under the assumption that the value function is Lipschitz smooth. We find that all of these approaches suffer from similar scaling issues as VAML and have not been shown to lead to strong empirical performance outside of toy settings.
+Inspired by VAML, \textcite{abachi2020policy} present a method that seeks to align the policy gradients under a learned model with the gradients under the true environment. Similar to our proposal, \textcite{doro2020gradient} also proposed to reweigh samples in a log likelihood loss, but used policy search as the reinforcement learning approach and did not account for individual state dimensions. \textcite{nikishin2021control} show an approach to directly optimizing the policy performance on the real environment by learning a model with implicit differentiation. \textcite{asadi2018equivalence} show that the original VAML loss coincides with a Wasserstein distance in the model space under the assumption that the value function is Lipschitz smooth. We find that all of these approaches suffer from similar scaling issues as VAML and have not been shown to lead to strong empirical performance outside of toy settings.
 
-\cite{grimm2020value} characterize the space of possible solutions to the model learning problem under different restrictions given by value functions and policies, and propose to learn models that are value-equivalent, similar to \cite{vaml}. In a follow-up work \cite{grimm2021proper} expand on this idea and show that their principle can be used to improve the MuZero algorithm \parencite{schrittwieser2020mastering}. However, these works do not discuss the optimization challenges in actually finding such value-equivalent models, they mostly characterize the space under different value functions and policies, and present an orthogonal research direction to this chapter.
+\textcite{grimm2020value} characterize the space of possible solutions to the model learning problem under different restrictions given by value functions and policies, and propose to learn models that are value-equivalent, similar to \textcite{vaml}. In a follow-up work \textcite{grimm2021proper} expand on this idea and show that their principle can be used to improve the MuZero algorithm \parencite{schrittwieser2020mastering}. However, these works do not discuss the optimization challenges in actually finding such value-equivalent models, they mostly characterize the space under different value functions and policies, and present an orthogonal research direction to this chapter.
 
-An alternative to characterizing the problem in the state space of the MDP are representation learning approaches, which seek to map the original states to a latent representation that is more amenable to control. Such approaches include Value Prediction Networks \parencite{oh2017value}, Embed-to-Control \parencite{10.5555/2969442.2969546} and related proposals \parencite{levine2020prediction,cui2021controlaware}. \cite{zhang2021learning} build on the idea of bisimulation metrics \parencite{ferns2004metrics,ferns2011bisimulation} which seeks to characterize the difference between MDPs by finding a state mapping that is reward-invariant under policy and value function. 
-In this work, we did not investigate learning state embeddings, but combining our work with representation learning approaches is an exciting direction for future research.
+An alternative to characterizing the problem in the state space of the MDP are representation learning approaches, which seek to map the original states to a latent representation that is more amenable to control. Such approaches include Value Prediction Networks \parencite{oh2017value}, Embed-to-Control \parencite{10.5555/2969442.2969546} and related proposals \parencite{levine2020prediction,cui2021controlaware}. \textcite{zhang2021learning} build on the idea of bisimulation metrics \parencite{ferns2004metrics,ferns2011bisimulation} which seeks to characterize the difference between MDPs by finding a state mapping that is reward-invariant under policy and value function. 
+In the following chapters, we show how to extend IterVAML and related approaches to include state-representation learning.
 
-\cite{lambert202objective} hypothesize that the objective mismatch could be solved by reweighing the training buffer for model learning to prioritize data points with high value. These are more likely to matter for obtaining an optimal policy. A similar proposal was evaluated empirically by \cite{nair2020goal}. Contrary to our work however, this technique cannot account for the differing impact of the state space dimensions and scaling, since the data points are weighted as a whole.
+\textcite{lambert202objective} hypothesize that the objective mismatch could be solved by reweighing the training buffer for model learning to prioritize data points with high value. These are more likely to matter for obtaining an optimal policy. A similar proposal was evaluated empirically by \textcite{nair2020goal}. Contrary to our work however, this technique cannot account for the differing impact of the state space dimensions and scaling, since the data points are weighted as a whole.
 
 
 \section{Conclusion}
@@ -263,8 +263,9 @@ We highlighted how VaGraM counters the issues of pure decision-aware learning an
 On the Mujoco benchmark, VaGraM performs on par with maximum likelihood estimation when using large neural network models.
 However, introducing additional complications to the problem results in drastic performance impacts for MLE based models, which highlights the necessity for value function aware losses in challenging environments and settings in which sufficient model capacity cannot be guaranteed.
 In these cases, value-awareness can greatly increase the performance of Dyna algorithms by focusing the model learning procedure on relevant aspects of the state space.
-In future work we seek to scale our loss function to image-based RL, where relevant state space dimensions can vary over a task due to shifting camera angles. 
-Furthermore, we seek to derive a related value-aware approach for partially observable domains that can take the state inference problem into account.
+% In future work we seek to scale our loss function to image-based RL, where relevant state space dimensions can vary over a task due to shifting camera angles. 
+% Furthermore, we seek to derive a related value-aware approach for partially observable domains that can take the state inference problem into account.
 
 While VaGraM is an important step towards our goal of unifying general purpose and decision-aware learning, it does not take into account the importance of feature learning.
-Therefore we will take a closer look at representations that emerge from latent models in the next chapter.
+As we saw in the previous chapter, latent self-prediction objectives can lead to features which are aligned with the goal of value prediction.
+In the next chapter we will see that these losses can also serve as auxiliary losses to stabilize the problems with IterVAML that we observe in this chapter.

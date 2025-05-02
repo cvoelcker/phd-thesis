@@ -1,24 +1,31 @@
 \documentclass[11pt]{ut-thesis}
 % packages
+\usepackage{acronym}
 \usepackage[colorlinks]{hyperref} % for links
-\usepackage[style=authoryear]{biblatex} % for references
+\usepackage[style=authoryear,
+uniquename=false,
+uniquelist=false,
+mincitenames = 1,
+maxcitenames = 2, 
+maxbibnames = 1000,
+]{biblatex} % for references
 \usepackage{graphicx} % for embedding graphics
 \usepackage{booktabs} % for pretty tables
 \usepackage{lipsum} % for gibberish text
 \usepackage[ruled]{algorithm2e}
+\usepackage[all]{nowidow}
 
-\usepackage{hyperref}
+% \usepackage{hyperref}
 \usepackage{url}
 \usepackage{amssymb}            % Defines common symbols like \mathbb R
 \usepackage{mathtools}          % Extends amsmath, providing common math tools
 \usepackage{mathrsfs}           % Enables \mathscr, which can work in cases that \mathcal does not
-\mathtoolsset{showonlyrefs}     % Only number equations that are referenced (optional)
+% \mathtoolsset{showonlyrefs}     % Only number equations that are referenced (optional)
 \usepackage{caption, subcaption}         % Allows for the use of subfigures and subcaptions
 \usepackage[space]{grffile}     % For spaces in image names
 \usepackage{url}                % For displaying urls
 \usepackage{enumitem}
 \usepackage{float}
-\usepackage{acronym}
 
 \usepackage{wrapfig}
 \usepackage{pbox}
@@ -52,8 +59,27 @@
 
 \usepackage{todonotes}
 
-\input{aux/math_commands.tex}
+\input{aux/math_commands}
 \input{aux/acronyms}
+% \input{aux/floatpage}
+
+% The following fixes a cleverref / acronym bug following
+% https://tex.stackexchange.com/questions/735500/problem-with-amsmath-cleveref-acronym
+\makeatletter
+\AtBeginDocument
+ {
+   \def\ltx@label#1{\cref@label{#1}}%add braces
+   \def\label@in@display@noarg#1{\cref@old@label@in@display{#1}}%remove braces
+\def\label@in@mmeasure@noarg#1{%
+    \begingroup%
+      \measuring@false%
+      \cref@old@label@in@display{#1}%remove braces for multline, see https://tex.stackexchange.com/q/737204/2388
+    \endgroup}%  
+ } %
+\makeatother
+
+\DeclareNameAlias{sortname}{family-given}
+
 
 \renewcommand{\chapterautorefname}{Chapter}
 \renewcommand{\sectionautorefname}{Section}
@@ -118,17 +144,17 @@
   \frontmatter
     \maketitle
     \begin{abstract}
-      \include{chapters/00-00-abstract}
+      \input{chapters/00-00-abstract}
     \end{abstract}
     \begin{dedication}
-      % To those whose love makes everything possible, Mom, Dad, and Heiko 
+      % Dedicated to my family, friends, and my wonderful husband-to-be 
     \end{dedication}
     \begin{acknowledgements}
-       % \input{chapters/00-00-acknowledgements}
+      % \input{chapters/00-00-acknowledgements}
     \end{acknowledgements}
     \tableofcontents
-    % \listoftables
-    % \listoffigures
+    \listoftables
+    \listoffigures
   \mainmatter
     % \include{chapters/outline_doc}
     \include{chapters/01-01-preface}

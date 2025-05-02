@@ -52,7 +52,7 @@ This implementation uses the MuZero loss but is significantly cheaper and faster
 
 We adopt the architecture and model-based MPC search procedure of \textcite{hansen2022temporal} as our baseline model.
 In addition to the $L_2$ based deterministic latent setup, we also use a Gaussian latent model as our stochastic environment model.
-This implementation follows similar ideas used in observation-space models, such as \textcite{pets,mbpo}.
+This implementation follows similar ideas used in observation-space models, such as \textcite{pets,janner2019mbpo}.
 While the stochastic environment models used in Dreamer \parencite{hafner2021mastering} would have been an alternative, it has not shown strong performance in continuous control tasks and is significantly more expensive to run.
 In addition, \textcite{voelcker2024when} shows that observation-space reconstruction can be a suboptimal auxiliary task for aligning a latent space with value function prediction.
 Finally, we adopt the joint model-free and model-based training proposed in \textcite{voelcker2025mad}.

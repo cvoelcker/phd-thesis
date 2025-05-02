@@ -11,7 +11,7 @@ As the previous chapter shows, end-to-end critic training can cause problems wit
 While regularization can alleviate some of the optimization failures, it only addresses issues of divergence, and does not ensure that relevant information is properly represented.
 To achieve this, we now take a look at \emph{auxiliary tasks} which directly ensure that transition information is well represented in learned features.
 
-Since the emergence of deep learning, techniques for deep supervised learning have been successfully incorporated into reinforcement learning (RL) agents \parencite{mnih2013playing,ddpg}.
+Since the emergence of deep learning, techniques for deep supervised learning have been successfully incorporated into reinforcement learning (RL) agents \parencite{dqn,ddpg}.
 However, as we have seen, the RL setting contains additional complications such as non-stationary optimization target and the reliance on bootstrapping.
 These hurdles generally add instability to the RL training process, and as discussed, \emph{the failure to learn good features} is a central problem in deep RL \parencite{kumar2021implicit,lyle2022understanding,nikishin2022primacy,hussing2024dissecting}.
 
@@ -21,7 +21,7 @@ To understand the performance of these approaches, recent literature \parencite{
 One hypothesis in the literature is that observation reconstruction should provide better features than latent self-prediction \parencite{behzadian2019fast,tang2022understanding}. 
 However, this causes a theory-practice gap as empirical work has found that latent self-prediction outperforms observation reconstruction across many benchmarks \parencite{schwarzer2021dataefficient,ni2024bridging}.
 
-To address this gap, we pose two questions: \emph{(a) How do auxiliary losses behave when combined with a TD loss?} \textcite{tang2022understanding,lelan2022generalization,tang2023towards} have studied the learning dynamics of auxiliary tasks alone, evaluating their performance without addressing the interaction between the auxiliary task and the main goal, to learn a (correct) value function. \emph{(b) How can we describe the behavior of auxiliary losses in the presence of distractions (states and transition dynamics irrelevant for the reward) and observation functions (different ways to measure the underlying state)?} MDP structures like distractions have been hypothesized to lead to differing performance between different auxiliary tasks \parencite{ni2024bridging}, but to our knowledge no theoretical study has been established.
+To address this gap, we pose two questions: \emph{(a) How do auxiliary losses behave when combined with a TD loss?} \textcite{tang2022understanding,lelan2022generalization,tang2023towards} have studied the learning dynamics of auxiliary tasks alone, evaluating their performance without addressing the interaction between the auxiliary task and the main goal, to learn a (correct) value function. \emph{(b) How can we describe the behavior of auxiliary losses in the presence of distractions (states and transition dynamics irrelevant for the reward) and observation functions (different ways to measure the underlying state)?} \ac{mdp}  structures like distractions have been hypothesized to lead to differing performance between different auxiliary tasks \parencite{ni2024bridging}, but to our knowledge no theoretical study has been established.
 
 
 In \autoref{sec:understanding:formalism}, we present a formalization of distractions and observation functions. We use the framework of \emph{factored MDPs} \parencite{boutilier2000stochastic} with Kronecker products \parencite{mahadevan2009learning} to represent a common class of distractions. To model observation functions, we use \emph{linear reparametrization} as a tractable way to go beyond one-hot representations. 
@@ -40,7 +40,7 @@ However, as we have an incomplete understanding of the underlying benchmark prob
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{illustrations/understanding/all_in_one_repeat.pdf}
+    \includegraphics[width=\textwidth]{illustrations/thesis_understanding_overview.pdf}
     \caption{Diagram of the discussed loss functions and use cases. In latent self-prediction, we aim to predict the next state's \emph{features}, computed with an embedding function $\phi(x')$ using the state's features $\phi(x)$ and a latent prediction model $F$. In observation reconstruction, the next state's \emph{ground truth observations} $x'$ are matched via the use of a decoder function $\psi(F(\phi(x)))$. In the \emph{auxiliary task setup}, both the gradients from the feature learning loss and value function learning are propagated to the encoder, while in the \emph{stand-alone scenario}, only the gradients from the feature learning loss are used to update $\Phi$.}
     \label{fig:understanding:losses}
 \end{figure}
@@ -50,7 +50,7 @@ In this chapter, we will focus on learning in finite-state action problems.
 However, our approximations will not be tabular, as discussed in \autoref{chap:background}, but two layer linear networks.
 This allows us to discuss the mechanisms underlying representation learning in a tractable setting.
 
-\subsection{Two-layer linear networks as analytical models for training dynamics}
+\subsection{Linear networks as analytical models for training dynamics}
 \label{sec:understanding:background}
 
 Rigorously analyzing the effect of different loss functions on neural networks is challenging due to non-linearities in the networks, shifting data distributions, and policy updates.
@@ -70,19 +70,19 @@ Using this notation, we study four important loss functions for RL: observation 
 Following common notation, $[\cdot]_\mathrm{sg}$ signifies a \emph{stop-gradient} operation; no gradient is taken with regard to terms in the parenthesis.
 
 Formally, these are written as
-\begin{align*}
+\begin{align}
     \text{Reconstruction: }&& L_{\text{rec}}(\Phi,F,\Psi) =& \,\EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \Phi F \Psi - x^\top {P^\pi}}^2},\\
     \text{Latent self-prediction: }&& L_{\text{lat}}(\Phi,F) =& \,\EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \Phi F - \left[x^\top {P^\pi} \Phi\right]_{\mathrm{sg}}}^2}, \\
     \text{TD Learning: }&& L_{\text{td}}(\Phi,\hat{V}) =& \,\EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \Phi \hat{V} - \left[x^\top  \left(r^\pi + \gamma P^\pi \Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2}.
-\end{align*}
+\end{align}
 
 Following the nomenclature of this thesis, we refer the first two losses as \emph{general-purpose}, and TD-learning as \emph{decision-aware} as it depends on information specific to the decision problem.
 To analyze the discrete-time learning dynamics, we study the analogous continuous-time gradient flow, which allows us to use the toolkit of dynamical systems theory.
 Writing $\alpha_\Phi$ and $\alpha_F$ for the representation and model learning rates, i.e., the latent self-prediction dynamics are
-\begin{align*}
+\begin{align}
     \ddt{t} \Phi_t &= -\alpha_\Phi\nabla_{\Phi_t} {L}_{\text{lat}}(\Phi_t, F_t) = -2 \alpha_\Phi (\Phi_t F_t - P^\pi \Phi_t)  F_t^\top,\\
     \ddt{t} F_t  &= -\alpha_F\nabla_{F_t} {L}_{\text{lat}}(\Phi_t, F_t) = -2 \alpha_F \Phi_t^\top(\Phi_t F_t - P^\pi \Phi_t).
-\end{align*}
+\end{align}
 
 We primarily consider the \emph{two-timescale} regime, under the assumption that $\alpha_F\to \infty$ \parencite{tang2022understanding}. Intuitively, this describes a learning setup in which the latent model is learned ``much faster'' than the latent mapping. 
 This results in the following dynamics for self-predictive learning:
@@ -91,49 +91,47 @@ This results in the following dynamics for self-predictive learning:
     F_t^* = \left(\Phi_t^\top\Phi_t\right)^{-1} \Phi_t^\top P^\pi \Phi_t, \quad \frac{d}{dt}\Phi_t = \left(I-\Phi_t\left(\Phi_t^\top \Phi_t\right)^{-1}\Phi_t^\top\right)P^\pi \Phi_t {F_t^*}^\top.
 \end{equation}
 
-\section{Formalizing the impact of distractions and observation functions}
+\section{Formalizing distractions and observation functions}
 \label{sec:understanding:formalism}
 To bridge the theory-practice gap in feature learning, we formalize two structures found in MDPs found in Deep RL benchmarks that have, to the best of our knowledge, not appeared in work analyzing feature learning: observation functions and distractions.
 To allow a close comparison with previous work, our changes to the formalism are minimal on purpose, while still highlighting the important role these changes play in different loss functions.
 
 \subsection{Observation functions}
 Previous literature \parencite{tang2022understanding,tang2023towards,lelan2022generalization} has eschewed the underlying observation of states in their analysis of representation dynamics. 
-The correctness of the dynamical system in \autoref{eq:understanding:BYOLTwoTimescale} hinges on the fact that $\mathbb{E}[xx^\top ] = I$, which implies uncorrelated state representations for each state $x$ and a uniform distribution over states.
-The simplest form of such a representation would be a \emph{one-hot} vector, a representation for the $i$-th state in which all entries are 0, except the $i$-th, which is 1.
+The dynamical system in \autoref{eq:understanding:BYOLTwoTimescale} assumes that $\mathbb{E}[xx^\top ] = I$, which implies uncorrelated state observations for each state $x$ and a uniform distribution over states.
+The simplest form of such an observations would be a \emph{one-hot} vector.
 
-This leads to an assumption that the features for the underlying states can be learnt independently.
+This leads to an (implicit) assumption that the features for the underlying states can be learnt independently.
 With a one-hot representations, the features of $x$ are simply $x^\top \Phi = \Phi[i]$, the $i$-th row of $\Phi$.
-A more realistic setting, which we focus on, is considering observation functions acting on the underlying states. 
+A more realistic setting, which we focus on in \autoref{sec:understanding:observation}, is considering observation functions acting on the underlying states. 
 This allows for representing systems where some states have correlated observations, which may be helpful \emph{or} harmful for the RL problem. 
-An example of the importance of the observation space was discussed in \autoref{chap:background:mdp}.
 
 We briefly state this for reference later.
 \begin{assumption}
     \label{assumption:understanding:2}
-    Let an \emph{observation function} for a finite state space MDP be an invertible matrix $\mathcal{O} \in \mathbb{R}^{n \times n}$.
+    Let an \emph{observation function} for a finite state space \ac{mdp} be an invertible matrix $\mathcal{O} \in \mathbb{R}^{n \times n}$.
 \end{assumption}
 
 \textbf{Formalization:} To introduce an observation function while remaining in the regime of analyzing linear networks and finite state problems, each one of $n$ states is mapped to a unique $n-$dimensional observation vector by an invertible \emph{observation matrix} $\gO \in \vecR{n}{n}$.\footnote{We could also consider projection into higher dimensional spaces $\gO \in \vecR{n}{d}$ with $d > n$, without violating the Markov assumption, but this leads to additional complications (working with pseudo-inverses instead of inverses) which do not contribute meaningfully to the insights in this work.}
-Invertibility is assumed to ensure the Markov property with linear function approximation.
 
-This change from one-hot vectors to arbitrary vectors allows us to account for similarity.
+This change from one-hot vectors to arbitrary vectors allows us to account for similarities between different state observations.
 For example, if two states have almost identical observation vectors, they will be mapped to similar points in the latent representation space unless the features directly counteract this.
 We study the impact of changing the observations with a linear reparameterization in \autoref{sec:understanding:observation} by replacing $x$ with $\bar{x} = \mathcal{O}^T x$.
 
 \subsection{Distracting state dynamics}
 In addition to observation functions, another common problem that many reinforcement learning algorithms face are distractions.
 While distractions have been a focus of empirical work studying the relative efficacy of different auxiliary tasks \parencite{ni2024bridging}, a simple formalism whose effect on learning dynamics can be analyzed has not been presented. 
-We propose to model an MDP with distractions using factored MDPs \parencite{boutilier2000stochastic}.
+We propose to model an \ac{mdp}  with distractions using factored MDPs \parencite{boutilier2000stochastic}.
 
-\begin{definition}[A factored MDP model of a distraction]\label{def:distracting}
+\begin{definition}[A factored \ac{mdp}  model of a distraction]\label{def:distracting}
 Let $M=(\mathcal{M}, P_{M},R_M)$,  $N=(\mathcal{N},P_N,R_N)$ be a pair of Markov decision processes.
-The product process $M \otimes N$ is a MDP with state space $\mathcal{M}\times \mathcal{N}$, transition kernel $P_M\otimes P_N$ (where $\otimes$ signifies the Kronecker product), and reward function $R_M\otimes \vone +\vone \otimes R_N^\top$.
+The product process $M \otimes N$ is a \ac{mdp}  with state space $\mathcal{M}\times \mathcal{N}$, transition kernel $P_M\otimes P_N$ (where $\otimes$ signifies the Kronecker product), and reward function $R_M\otimes \vone +\vone \otimes R_N^\top$.
 
 If $R_N = 0$, we refer to $N$ as a distracting process, as it does not contribute to the reward.
 \end{definition}
 
 This process models a common occurrence: two non-interacting processes unfold simultaneously, with the states being a combination of the two.
-Such a process can model a well-studied form of distraction, the background distractions in \cite{stone2021thedc} or the random observation dimension in \textcite{nikishin2021control,voelcker2022value}.
+Such a process can model some well-studied forms of distraction, such as the background distractions used in \textcite{stone2021thedc} or the random observation dimension used in \textcite{nikishin2021control,voelcker2022value}.
 In this case, the foreground process $M$ is assumed to carry the reward information, while the reward vector of the background process $N$ is 0.
 We review important properties of the Kronecker product in \autoref{app:formal:understanding:linalg}.
 
@@ -150,9 +148,9 @@ These \emph{insights} present the basis for our empirical comparison in \autoref
 \subsection{Case 1: Orthogonal state representations}
 
 
-\cite{tang2022understanding} show that for symmetric MDPs, latent self-prediction converges to subspaces spanned by eigenvectors of $P^\pi$. 
+\textcite{tang2022understanding} show that for symmetric MDPs, latent self-prediction converges to subspaces spanned by eigenvectors of $P^\pi$. 
 We extend this result in the following sense: if $P^\pi$ has positive real eigenvalues, invariant sub-spaces which are not spanned by the top-k eigenvectors are unstable for gradient descent.\footnote{The assumption of real \emph{positive} eigenvalues is both more and less restrictive than the symmetry assumption made by \textcite{tang2022understanding}. An extension of our result to negative eigenvalues is presented below, together with an extended comparison to the results obtained by \textcite{tang2022understanding} and \textcite{lelan2023bootstrapped}.}
-It is interesting to note that the resulting features are identical to those obtained using the multi-reward approach described by \cite{lelan2023bootstrapped} (albeit under slightly different technical conditions), which highlights the close connection between the self-predictive approach and bootstrapped generalized value function learning.
+It is interesting to note that the resulting features are identical to those obtained using the multi-reward approach described by \textcite{lelan2023bootstrapped} (albeit under slightly different technical conditions), which highlights the close connection between the self-predictive approach and bootstrapped generalized value function learning.
 This furthermore suggests that using random rewards as auxiliary objectives \parencite{farebrother2023protovalue} could result in very similar features as using self-prediction, which presents an interesting avenue for further empirical study.
 
 \begin{assumption}
@@ -178,7 +176,7 @@ Furthermore, if $P^\pi$ is real-diagonalizable with positive eigenvalues, all in
 
 This proves the first part of the proposition.
 
-There are additional critical points of the differential equation, as discussed by \cite{tang2022understanding}.
+There are additional critical points of the differential equation, as discussed by \textcite{tang2022understanding}.
 In the analysis of stability, we first show the case of critical points corresponding to the claim in the proposition.
 We then briefly discuss other cases after the proof.
 
@@ -188,9 +186,9 @@ Invariant subspaces correspond to subspaces spanned by right eigenvectors of $P^
 We write $P$ for $P^\pi$ to reduce notational clutter.
 Let $e_1,\dots,e_k$ be the eigenvectors corresponding to the $k$ largest eigenvalues of $P$.
 Let $\Phi^*$ correspond to any set of $k$ eigenvectors of $P$. Then
-\begin{align*}
+\begin{align}
     \ddt{t}\Phi^* = -\left(\Phi^* F^* - P \Phi^*\right) {F^*}^\top = 0.
-\end{align*}
+\end{align}
 
 To show that all non top-$k$ eigenspaces are asymptotically unstable critical points of the differential equation defined by the gradient flow of $\Phi$.
 To show this, we aim to show that there exists an eigenvector of the Jacobian with an eigenvalue larger than $0$.
@@ -198,47 +196,47 @@ For this, we construct the directional derivative at the critical point.
 The directional derivative is the Jacobian vector product, which allows us to circumvent the need to work with higher order tensor derivatives.
 We then proceed to show that there exists a direction which corresponds to the eigenvector of the Jacobian with positive eigenvalue.
 This concludes the proof.
-This technique closely follows the one used by \cite{lelan2023bootstrapped}.
+This technique closely follows the one used by \textcite{lelan2023bootstrapped}.
 
 Assume $\mathrm{span}\{\Phi^*\} \neq \mathrm{span}\{e_1,\dots,e_k\}$. This implies that there exists at least one eigenvector $e_j \in \{e_1,\dots,e_k\}$ and $e_j \notin \mathrm{span}\{\Phi^*\}$, with corresponding eigenvalues $\lambda_j$.
 
 Let $D_\Delta$ be the directional derivative of $\ddt{t} \Phi |_{\Phi=\Phi^*}$ in the direction $\Delta$.
 We construct the directional derivative using the product rule (terms colored for ease of reading),
-\begin{align*}
+\begin{align}
 D_\Delta \ddt{t} \Phi |_{\Phi=\Phi^*} = & -D_\Delta \left(\left(\Phi F^* - P \Phi\right) {F^*}^\top\right)|_{\Phi=\Phi^*}\\
      = & -{\color{uoftred}D_\Delta \left(\Phi F^* - P \Phi\right)|_{\Phi=\Phi^*}} {F^*}^\top - \left(\Phi^* F^* - P \Phi^*\right) {\color{uoftmagenta}D_\Delta {F^*}|_{\Phi=\Phi^*}}^\top.
-\end{align*}
+\end{align}
 
 For the directional derivative, we only consider directions that are orthogonal to $\Phi^*$, so ${\Phi^*}^\top\Delta = 0$. Then $\underbrace{P{\Phi^*} = {\Phi^*} A}_{\text{subspace condition}} \implies \Delta^\top P \Phi^* = 0.$
 For the derivative with regard to $F^*$, we have
-\begin{align*}
+\begin{align}
     {\color{uoftmagenta}D_\Delta F^*|_{\Phi = \Phi^*}} =& D_\Delta \left(\Phi^\top \Phi\right)^{-1}\Phi^\top P \Phi\nonumber\\
     =& \left(D_\Delta \left(\Phi^\top \Phi\right)^{-1} \right) {\Phi^*}^\top P {\Phi^*} + \left({\Phi^*}^\top {\Phi^*}\right)^{-1} \left(D_\Delta \Phi^\top P \Phi  \right)\nonumber\\
     =& -\underbrace{(\Delta^\top \Phi^* + {\Phi^*}^\top \Delta)}_{=0}\left({\Phi^*}^\top {\Phi^*}\right)^{-2}{\Phi^*}^\top P {\Phi^*} + \left({\Phi^*}^\top {\Phi^*}\right)^{-1}\big(\underbrace{\Delta^\top P {\Phi^*}}_{=0} + {\Phi^*}^\top P \Delta\big)\nonumber\\
     =& \left({\Phi^*}^\top {\Phi^*}\right)^{-1}\left({\Phi^*}^\top P \Delta\right). \label{eq2}
-\end{align*}
+\end{align}
 Therefore, the first term in the second line is dropped, as well as the first term of the final summand.
 
 Note that $F^* = \left({\Phi^*}^\top{\Phi^*}\right)^{-1} {\Phi^*}^\top P^\pi {\Phi^*} = \underbrace{\left({\Phi^*}^\top{\Phi^*}\right)^{-1} {\Phi^*}^\top {\Phi^*}}_{=I}\, \mathrm{diag}(\Lambda_i) = \mathrm{diag}(\Lambda_i)$, where $\Lambda_i$ is the set of eigenvalues corresponding to the eigenvectors in $\Phi^*$ and $\mathrm{diag}(\Lambda_i)$ is the diagonal matrix of eigenvalues corresponding to those eigenvectors spanned by $\Phi^*$.
 
 This allows us to compute the remaining derivative,
-\begin{align*}
+\begin{align}
     &{\color{uoftred}D_\Delta \left(\Phi F^* - P \Phi\right)|_{\Phi=\Phi^*}}\, \mathrm{diag}(\Lambda_i)\\
     = & \left(\Delta\, \mathrm{diag}(\Lambda_i) + \Phi^*{\color{uoftmagenta} D_\Delta F^*}  - P\Delta \right)\,\mathrm{diag}(\Lambda_i)\\
     = & \left(\Delta\, \mathrm{diag}(\Lambda_i) + \Phi^*\left({\Phi^*}^\top {\Phi^*}\right)^{-1}{\Phi^*}^\top P \Delta  - P\Delta \right)\,\mathrm{diag}(\Lambda_i),
-\end{align*}
+\end{align}
 where we use the fact that $D_\Delta P\Phi^* = P D_\Delta \Phi^* = P \Delta$.
 
 Finally, as $\Phi^*F^* = \Phi^* \mathrm{diag}(\Lambda_i) = P^\pi \Phi^*$, we obtain
-\begin{align*}
+\begin{align}
  D_\Delta \ddt{t} \Phi |_{\Phi=\Phi^*} =   -\left(\Delta\, \mathrm{diag}(\Lambda_i) + {\Phi^*}\left({\Phi^*}^\top \Phi^*\right)^{-1}{\Phi^*}^\top P \Delta  - P\Delta \right)\mathrm{diag}(\Lambda_i) \\- \underbrace{\left(\Phi^* F^* - P \Phi^*\right)}_{=0\,\text{as shown}}\left({\Phi^*}^\top P \Delta\right)^\top.
-\end{align*}
+\end{align}
 
 
 By the definition of the directional derivative as the Jacobian-vector product, we can now assert
-\begin{align*}
+\begin{align}
     \left(\ddt{\Phi} \ddt{t}\Phi |_{\Phi=\Phi^*}\right) \Delta = - \left(\Delta \mathrm{diag}(\Lambda_i) + \left(\Phi^*\left({\Phi^*}^\top {\Phi^*}\right)^{-1}{\Phi^*}^\top - I\right) P \Delta\right)\mathrm{diag}(\Lambda_i).
-\end{align*}
+\end{align}
 
 What remains to be shown is that there exist a direction which corresponds to a positive eigenvalue of the Jacobian of the dynamics.
 
@@ -248,11 +246,11 @@ Note that $\left(\Phi^*\left({\Phi^*}^\top {\Phi^*}\right)^{-1}{\Phi^*}^\top - I
 
 To simplify notation, we will write $\Lambda_i$ for $\mathrm{diag}(\Lambda_i)$ from now on as there is no risk of confusion.
 
-\begin{align*}
+\begin{align}
     -\left(\Delta \Lambda_i + \left(\Phi^*\left({\Phi^*}^\top \Phi^*\right)^{-1}{\Phi^*}^\top - I\right) P \Delta\right)\Lambda_i = &- \Delta \left(\Lambda_i - \lambda_j I\right) \Lambda_i\\
     = &-\Delta \left(\Lambda_i^2 - \lambda_j \Lambda_i\right) \\
     = &\Delta \left(\lambda_j \Lambda_i - \Lambda_i^2\right).
-\end{align*}
+\end{align}
 
 We can now choose $u$ so that it is any eigenvector of $\left(\lambda_j \Lambda_i - \Lambda_i^2\right)$. As this is a diagonal matrix, it is easy to see that if $\lambda_j > \lambda_i$ for any $\lambda_i$, the matrix will have a positive eigenvalue, meaning there exists a direction in which the critical point is unstable.
 
@@ -260,15 +258,13 @@ We can now choose $u$ so that it is any eigenvector of $\left(\lambda_j \Lambda_
 \textbf{Case 2: Non-invariant subspace cases:} Not all critical points lie in invariant subspaces.
 One such an alternative critical point is the case of $\Phi^\top P \Phi = 0$, and more generally, for each set of column vectors $\phi_i$ in $\Phi$, they needs to either be mapped to an invariant or an orthogonal subspace by $P^\pi$ to be stable.
 In the orthogonal case, the Jacobian at the critical point becomes 0, meaning no conclusion about stability can be drawn from this analysis.
-
-We leave further analysis of non invariant subspace critical points open for future work.
-We do however conjecture that the non invariant subspace critical points are also saddle-points or unstable solutions of the ODE, following the experimental analysis by \cite{tang2022understanding}.
+We do however conjecture that the non-invariant subspace critical points are also saddle-points or unstable solutions of the ODE, following the experimental evidence presented in \textcite{tang2022understanding}.
 
 \textbf{Negative eigenvalues:} In case the matrix has negative eigenvalues, the stability conditions in the final step of the proof change. The matrix $\lambda_j\Lambda_i - \Lambda_i^2$ will not have negative eigenvalues if $\lambda_i$ is negative but $\lambda_j$ is positive. The ranking of stable points follows this slightly un-intuitive ordering: all negative eigenvalues sorted by absolute value followed by all positive eigenvalues sorted by absolute value.
 
 
 
-This implies that even without the assumptions of symmetry of $P^\pi$ required by \textcite{tang2022understanding}, the dynamics of latent self-prediction will tend to converge to invariant subspaces spanned by eigenvectors with large eigenvalues as other invariant subspaces are unstable.
+Our proof implies that even without the assumptions of symmetry of $P^\pi$ required in \textcite{tang2022understanding}, the dynamics of latent self-prediction will tend to converge to invariant subspaces spanned by eigenvectors with large eigenvalues as other invariant subspaces are unstable.
 This is important as we expect these to be more important for representing potential reward functions in the environment \parencite{lelan2023bootstrapped}. 
 
 We can contrast this with the features learned by a reconstruction loss.
@@ -280,11 +276,11 @@ Assume \autoref{assumption:understanding:1} and \autoref{assumption:understandin
 We first show that under the two timescale scenario, $F$ is stationary and therefore does not change the span of the critical points.
 
 Due to the assumption of the two-timescale scenario, we compute $\Psi^*$ by solving the linear regression problem,
-\begin{align*}
+\begin{align}
     &&\ddt{\Psi^*} \lVert \Phi F\Psi^* - P \rVert_F^2 &= F^\top {\Phi}^\top ({\Phi}F\Psi^* - P)\\
     &&0 &=  F^\top {\Phi}^\top ({\Phi}F\Psi^* - P)\\
     \Leftrightarrow && B^* &= \left(F^\top {\Phi}^\top {\Phi}F\right)^{-1} F^\top \Phi^\top P = F^{-1}\left(\Phi^\top \Phi\right)^{-1} \Phi^\top P.
-\end{align*}
+\end{align}
 
 Plugging this solution back into the original equation, 
 \begin{align}
@@ -298,11 +294,11 @@ Therefore, the optimality conditions for $A$ follow from the Eckart-Young theore
 
 Features of this form have been studied extensively and the convergence properties of linear auto-encoders are well understood \parencite{baldi1989neural,pretorius2018learning,bao2020regularized}.
 
-\autoref{prop:understanding:1} and \autoref{prop:understanding:2} together show that there is a subtle but important difference between latent self-prediction and observation reconstruction: the features will converge to eigenspaces in the former case, and to singular space in the latter case.
-Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the eigenspaces coincide and latent self-prediction and reconstruction converge to the same features \parencite{tang2022understanding}.
+\autoref{prop:understanding:1} and \autoref{prop:understanding:2} together show that there is a subtle but important difference between latent self-prediction and observation reconstruction: the features will converge to invariant subspaces in the former case, and to singular space in the latter case.
+Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the invariant subspace spanned by top-k eigenvectors coincide and latent self-prediction and reconstruction converge to the same features \parencite{tang2022understanding}.
 
 \textcite{behzadian2019fast} show that top $k$ singular vectors are optimal low-rank linear features when making no assumptions on the reward, meaning observation reconstruction should lead to the best features when considering every possible bounded (or unknown) reward.
-\textcite{behzadian2019fast} and \textcite{lelan2023bootstrapped} both highlight that if eigenvectors and singular vectors differ, singular vectors often lead to better performing features.
+If eigenvectors and singular vectors differ \textcite{behzadian2019fast} and \textcite{lelan2023bootstrapped} both highlight that singular vectors often lead to better performing features.
 
 \begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]
 \begin{insight}[Optimality of observation prediction] The features learned by observation prediction are in general superior to those of latent self-prediction, when using solely one of these as the loss function.
@@ -314,7 +310,7 @@ Note that if $P^\pi$ is a symmetric matrix, then the singular spaces and the eig
 \label{sec:understanding:observation}
 
 Recall that the gradient dynamics presented in (\ref{eq:understanding:BYOLTwoTimescale}) and analyzed in \autoref{prop:understanding:1} and \autoref{prop:understanding:2} rely on the assumption that $\mathbb{E}[xx^\top] = I$ (see \autoref{assumption:understanding:1}).
-We now introduce the observation matrix $\gO$, which leads to correlations between different features.
+We now use the idea of an observation matrix $\gO$ to account for problems in which the observation space creates similarities between features.
 To do this, we simply replace every occurrence of $x^\top$ in the losses presented in \autoref{sec:understanding:background} with $x^\top \gO$.
 We assume that $x$ is a one-hot vector as discussed before and the coverage is still uniform (\autoref{assumption:understanding:1} still holds), so all correlation between states arise as $\mathbb{E}[\gO^\top x x^\top\gO] = \gO^\top \gO$.
 
@@ -327,14 +323,14 @@ Then $\gO^{-1}\Phi^*_\mathrm{lat/td}$ are stationary points for the reparameteri
 \begin{proof}
 We first write out all losses with the observation matrix $\gO$. The reward function is assumed to not change under the introduction of $\gO$, therefore we do not multiply $\gO$ to $x^\top r$.
 
-\begin{align*}
+\begin{align}
     L_{\text{rec}}(\Phi,F,\Psi) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \gO \Phi F \Psi - x^\top {P^\pi}\gO}^2} = {\ltwonorm{\gO \Phi F \Psi - {P^\pi}\gO}^2}, \\
     L_{\text{lat}}(\Phi,F) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top \gO \Phi F - \left[x^\top {P^\pi} \gO \Phi\right]_{\mathrm{sg}}}^2} = \ltwonorm{\gO \Phi F - \left[{P^\pi} \gO \Phi\right]_{\mathrm{sg}}}^2 \\
     L_{\text{td}}(\Phi,F) =& \EEX{x \sim \mathcal{D}}{\ltwonorm{x^\top\gO\Phi \hat{V} - \left[x^\top \left(r + \gamma P^\pi \gO\Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2} \\=& {\ltwonorm{\gO\Phi \hat{V} - \left[\left(r + \gamma P^\pi \gO\Phi \hat{V}\right)\right]_{\mathrm{sg}}}^2}.
-\end{align*}
+\end{align}
 
 Note that in the cases of $L_{\text{lat}}$ and $L_\text{TD}$, all occurrences of $\gO$ are multiplied by $\Phi$.
-Therefore the corresponding gradient flows are reparameterizations as defined in \autoref{lem:understanding:stability}, and the proof follows directly.
+Therefore the corresponding gradient flows are reparameterizations as defined in \autoref{lem:understanding:stability}, and the proposition follows directly.
 \end{proof}
 
 Note that while the stationary points and asymptotic stability conditions of the gradient flow might be unaffected by the introduction of observation distortions, the same might not be true for the dynamics of descent with finite step sizes.
@@ -349,18 +345,18 @@ Any stationary point $(\Phi^*, F^*, \Psi^*)$ of $L_\text{rec}^\gO$ satisfies $\m
 As before, note that $L_\mathrm{rec}^\gO$ is of the form $\lVert \gO AXB - P\gO \rVert_F^2$, with $A \in \vecR{n}{k}$, $X \in \vecR{k}{k}$, and $B \in \vecR{k}{n}$.
 
 Due to the assumption of the two-timescale scenario, we compute $\Psi^*$ by solving the linear regression problem,
-\begin{align*}
+\begin{align}
     &&\ddt{\psi} \lVert \gO \Phi F \Psi - P \gO \rVert_F^2 &= F^\top \Phi^\top \gO^\top (\gO \Phi F \Psi - P)\\
     &&0 &=  F^\top \Phi^\top \gO^\top (\gO \Phi F \Psi^* - P) = 0 \\
     \Leftrightarrow &&
     \Psi^* &= \left(F^\top \Phi^\top \gO^\top \gO \Phi F\right)^{-1} F^\top \Phi^\top \gO^\top P.
-\end{align*}
+\end{align}
 
 Substituting into $L_\mathrm{rec}^\gO$, we obtain
-\begin{align*}
+\begin{align}
     \lVert \gO \Phi F \Psi- P \gO \rVert_F^2 & = \lVert \gO \Phi F \left(F^\top \Phi^\top \gO^\top \gO \Phi F\right)^{-1} F^\top \Phi^\top \gO^\top P - P\gO \rVert_F^2 \\
     & = \lVert \gO \Phi \left( \Phi^\top \gO^\top \gO \Phi\right)^{-1} \Phi^\top \gO^\top P - P\gO \rVert_F^2,
-\end{align*}
+\end{align}
 which again implies that $F$ is stationary.
 
 We note that $\lVert \gO \Phi\Psi - P\gO\rVert^2_F$ is the reduced rank regression problem solved in \autoref{lem:understanding:rrr} which solution is given by the top-k left and right singular vectors of $\gO^{-1} P \gO$.
@@ -372,7 +368,7 @@ However this does not mean that different observation functions will always harm
 Consider for example an observation transformation that maps states directly to value and reward function.
 This would clearly be an example of a helpful observation transformation.
 However, in general we conjecture that arbitrarily changing the observation function will harm the reconstruction loss approach.
-A more detailed analysis involving the reward function of the problem being solved and its connections to the observation model are an exciting avenue for future work.
+% A more detailed analysis involving the reward function of the problem being solved and its connections to the observation model are an exciting avenue for future work.
 
 \begin{tcolorbox}[boxrule=0.2mm,colback=white,colframe=uoftblue,boxsep=0pt,top=3pt,bottom=5pt]
 \begin{insight}[Observation dependence of autoencoder models] 
@@ -385,19 +381,18 @@ Due to the invariance properties of latent self-prediction, we expect the perfor
 \section{Understanding the effects on value function learning}
 \label{sec:understanding:auxilliary_tasks}
 
-The optimality of a representation for value estimation depends non-trivially on the structure of the reward structure of the MDP. Previous works \parencite{behzadian2019fast, bellemare2019geometric, lelan2022generalization} attempted to reason about the optimality of representations without relying on the reward structure, by arguing that certain subspaces (such as the span of top-$k$ eigenvectors or top-$k$ singular vectors) are optimal without considering specific rewards.
+The optimality of a representation for value estimation depends non-trivially on the structure of the reward structure of the MDP. Previous works \parencite{behzadian2019fast, bellemare2019geometric, lelan2022generalization} attempted to reason about the optimality of representations without relying on the reward structure, by arguing that certain subspaces (such as the span of top-$k$ eigenvectors or top-$k$ singular vectors) are optimal assuming unknown rewards.
 
-Now we take a differing approach by taking the value function structure into account. Furthermore, we argue that the top-$k$ eigenspaces (resp. singular spaces) are not always optimal.
-To provide an example of such a case, we will formally introduce a model of \emph{distractions} in the \ac{mdp}.
+Instead, here we take the value function structure into account. Furthermore, we argue that the top-$k$ eigenspaces (resp. singular spaces) are not always optimal if the agent is optimizing a particular reward.
 
-\subsection{A formal model of distractions}
+\subsection{Value functions in MDPs with distractions}
 \label{app:distraction_motivation}
 
 The optimality of features can be measured in how close the projection of the true value function onto their span is to the ground truth, i.e. in the $L_2$ norm.
 This raises the question under what conditions the top $k$ eigenvectors or singular vectors would not span the value function well.
-For this, we turn to our notion of an MDP with distractions.
+For this, we turn to our notion of an \ac{mdp} with distractions.
 
-\begin{restatable}[Suboptimality of top $k$ eigenspaces with distractions]{proposition}{topkDistracted} \label{prop:SubptimalTopKProduct} Assume an MDP with distraction composed of two independent processes $\gM$ and $\gN$ according to \cref{def:distracting}.
+\begin{restatable}[Suboptimality of top $k$ eigenspaces with distractions]{proposition}{topkDistracted} \label{prop:SubptimalTopKProduct} Assume an \ac{mdp}  with distraction composed of two independent processes $\gM$ and $\gN$ according to \cref{def:distracting}.
 Let $v_1,\dots,v_n$ and $u_1,\dots,u_m$ be the eigenvectors of $\gM$ and $\gN$ respectively, with associated real eigenvalues $\lambda_j$ and $\mu_i$ ordered.
 Assume $\forall i < k: \mu_i > \lambda_2$ and $r_\gN = 0$.
 Let $U_k$ be an orthonormal basis for the top-k eigenspace of $\gM \otimes \gN$.
@@ -407,12 +402,12 @@ Then $\mathrm{span}(U_k) = \mathrm{span}(\{\vone \otimes v_i|\forall i \leq k\})
 We first note that $\mathrm{span}(V_k) = \mathrm{span}(\{v_i\otimes u_1|\forall i \leq k\})$ follows directly from \autoref{lem:understanding:spectrum_kronecker} and \autoref{lem:understanding:orth_kronecker}. The eigenvector $u_1 = \vone$ as $M$ is a stochastic matrix.
 
 As $V_k$ is an orthogonal basis, write the projection operation as 
-\begin{align*}
+\begin{align}
 V_k V_k^\top \left(r_\gM \otimes \vone\right) &= \frac{1}{m}\left(\vone \otimes \mathrm{orth}(V)\right)\left(\vone \otimes \mathrm{orth}(V)^\top \right)\left(r_\gM \otimes \vone\right) \\
 &= \frac{1}{m}\left((\vone \otimes \vone) \otimes (\mathrm{orth}(V)\,\mathrm{orth}(V)^\top)\right) (r_\gM \otimes \vone)\\
 &= \frac{1}{m}(\vone \otimes \vone) r_\gM \otimes (\mathrm{orth}(V)\,\mathrm{orth}(V)^\top) \vone \\
 &= \sum_{i=1}^m \frac{r_i}{m}\vone.
-\end{align*}
+\end{align}
 
 \end{proof}
 
@@ -444,27 +439,27 @@ Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:3}, 
     By \autoref{prop:understanding:gosh1}, \autoref{prop:understanding:gosh2}, and \autoref{prop:understanding:gosh3} and the stated assumptions the weights $\hat{V}$ converge. Therefore, we can analyze the induced dynamical system with $\hat{V}*$.
 
     Find $\hat{V}^*$ as the stationary point of $\nabla_{\hat{V}} L_\text{TD}$
-    \begin{align*}
+    \begin{align}
         & \nabla_{\hat{V}} \ltwonorm{\Phi^* \hat{V} - \left[r^\pi + \gamma P\Phi^* \hat{V}\right]_\text{sg}}^2\bigg|_{\hat{V} = \hat{V}^*} = {\Phi^*}^\top\left(\Phi^* \hat{V}^* - \left[r^\pi + \gamma P\Phi^* \hat{V}^*\right]\right) = 0 \\
         \Leftrightarrow \quad & {\Phi^*}^\top \Phi^* \hat{V}^* - {\Phi^*}^T r^\pi - \gamma {\Phi^*}^\top  \Phi^* B \hat{V}^* = ({\Phi^*}^\top \Phi^* - \gamma {\Phi^*}^\top P^\pi \Phi^*) \hat{V}^* - {\Phi^*}^\top r^\pi = 0\\
         \Leftrightarrow \quad & \hat{V}^* = ({\Phi^*}^\top \Phi^* - \gamma {\Phi^*}^\top P^\pi \Phi^*)^{-1} {\Phi^*}^\top r^\pi = (I - \gamma {\Phi^*}^\top P^\pi \Phi^*)^{-1} {\Phi^*}^\top r^\pi
-    \end{align*}
+    \end{align}
     The invertibility of $(I - \gamma \Phi^\top P^\pi \Phi) = \Phi^T D (I - \gamma P^\pi) \Phi = A_\Phi$ is guaranteed as all eigenvectors are nonzero.
 
     We now show that $\Phi^*$ is a stationary point by showing that $$\nabla_\Phi L_\text{TD}|_{\Phi = \Phi^*} = 0.$$ We note that as $\Phi^*$ spans an invariant subspace of $P^\pi$ there exists an invertible matrix $B$ so that $P^\pi \Phi^*  \Phi^* B$. Therefore $(I - \gamma {\Phi^*}^\top P^\pi \Phi^*) = (I - \gamma B)$.
 
-    \begin{align*}
+    \begin{align}
         \nabla_\Phi L_\text{TD}|_{\Phi = \Phi^*} & =  \nabla_{\Phi} \ltwonorm{\Phi \hat{V}^* - \left[r^\pi + \gamma P\Phi \hat{V}^*\right]_\text{sg}}^2\Bigg|_{\Phi = \Phi^*}\\
         & = \left(\Phi \hat{V}^* - r^\pi - \gamma P\Phi {\hat{V}}^*\right) (\hat{V}^*)^\top\Bigg|_{\Phi = \Phi^*} \\
         & = \left(\Phi^* (I - \gamma B) {\hat{V}}^* - r^\pi \right)(\hat{V}^*)^\top \quad\quad \text{(substitute first occurrence of)~$\hat{V}^*$}\\
         & = \left(\Phi^* {\Phi^*}^\top r^\pi - r^\pi \right)({\hat{V}}^*)^\top\\
         & = \underbrace{\left(r^\pi - r^\pi \right)}_{=0}({\hat{V}}^*)^\top = 0
-    \end{align*}
+    \end{align}
     The final line is due to the fact that the columns of $\Phi^*$ are orthonormal, which means that $\Phi^*{\Phi^*}^\top$ is an orthogonal projection onto the span of $\Phi^*$. To verify, note that $$\left(\Phi^*{\Phi^*}^\top\right)^2 = \left(\Phi^* \underbrace{{\Phi^*}^\top \Phi^*}_{=I}{\Phi^*}^\top\right) = \left(\Phi^*{\Phi^*}^\top\right).$$ Furthermore, by \autoref{assumption:understanding:low_rank}, $r^\pi \in \text{span}(\Phi^*)$, which means $\Phi^*{\Phi^*}^\top r^\pi = r^\pi$ for an orthogonal projection $\Phi^*{\Phi^*}^\top$.
     Moreover, by \autoref{lem:understanding:lossless_approx}, $\Phi^* \hat{V}^* = V$, which concludes the proof.
 \end{proof}
 
-This proof closely follows related statements by \cite{ghosh2020representations}, \cite{tang2022understanding}, and \cite{lelan2022generalization}. 
+This proof closely follows related statements by \textcite{ghosh2020representations}, \textcite{tang2022understanding}, and \textcite{lelan2022generalization}. 
 We present the argument here for clarity with all assumptions necessary for our work.
 
 
@@ -483,8 +478,9 @@ We present the argument here for clarity with all assumptions necessary for our 
 \end{proof}
 
 
-We leave the extension of the stability result for TD learning to the joint loss case open for future work.
-Note that without the addition of TD learning, the latent loss would stabilize the top-k eigenspace representation, but we hypothesize that this behavior changes when combining the losses.
+% We leave the extension of the stability result for TD learning to the joint loss case open for future work.
+% Note that without the addition of TD learning, the latent loss would stabilize the top-k eigenspace representation, but we hypothesize that this behavior changes when combining the losses.
+We can now contrast this with the reconstruction case.
 
 \begin{restatable}{proposition}{ReconsCombined}
     Let \autoref{assumption:understanding:1}, \autoref{assumption:understanding:2}, and \autoref{assumption:understanding:low_rank} hold. If the reward spanning eigenvectors do not lie within the span of the top-k singular vectors, $\mathrm{span}\,(w_{i_1},\allowbreak \dots,\allowbreak w_{i_m}) \not\subseteq \mathrm{span}\,(u_1,\dots,u_k)$, the critical points of the two-timescale joint loss $L_{\text{td}+\text{rec}}$ are guaranteed to not be minimizers of the value function approximation error. 
@@ -504,14 +500,14 @@ For good performance across a wide variety of tasks, latent self-prediction need
 \end{insight}
 \end{tcolorbox}
 
-\section{Empirical study of theoretical results in deep learning based settings}
+\section{Empirical study}
 \label{sec:understanding:empirical}
 
 We aim to empirically verify the statements marked as \emph{``Insights''} throughout this chapter: superiority of observation prediction as a standalone feature learning loss (\autoref{insight:understanding:1}), impact of the observation function on the different loss functions (\autoref{insight:understanding:2}), and the relative strength of latent-self prediction as an auxiliary loss compared to reconstruction (\autoref{insight:understanding:3}). 
 As our theory addresses the simplified setting of policy evaluation with linear models, we seek to test if the insights transfer to the more common setting of control with neural networks.
 Across all experiments, we report mean performance over 30 seeds and shaded $95$ bootstrapped confidence interval.
 
-To test these hypotheses, we use the MinAtar suite of five Atari inspired video games \parencite{young19minatar} and the DMC 15 suite  \parencite{tunyasuvunakool2020}.\footnote{DMC experiments are presented in the appendix due to space constraints.}
+To test these hypotheses, we use the MinAtar suite of five Atari inspired video games \parencite{young19minatar} and the DMC 15 suite  \parencite{tunyasuvunakool2020dmcontrol}.\footnote{DMC experiments are presented in the appendix due to space constraints.}
 Both are small enough to perform thorough investigations, while providing non-trivial observation spaces and dynamics.
 Detailed information about the implementation and hyperparameters can be found in \autoref{app:understanding:empirical}.
 
@@ -613,8 +609,8 @@ This further highlights the necessity of studying the structure of MDPs and to d
 
 Overall, we can conclude that model-based methods can be very helpful to structure latent representations in a way that complements the task of value function learning.
 However, we have so far only used the model learning to stabilize the feature space.
-Instead, we can also use the learned model itself to improve value function learning by generating additional data from the model in a DYNA style algorithm.
+Instead, we can also use the learned model itself to improve value function learning by generating additional data from the model in a Dyna style algorithm.
 
 In the next chapter we will take a look at such model-based methods.
-We will begin by reviewing decision-aware and general-purpose model learning without shared features.
-Then in the final chapters of the thesis we will unify the insights from our feature learning and model-based work, and look at latent value-aware model learning.
+We will first investigate the idea of decision-aware learning in observation space models.
+In the following chapter, we will show that combining latent self-prediction with decision-aware model learning greatly improves the stability of the IterVAML paradigm.

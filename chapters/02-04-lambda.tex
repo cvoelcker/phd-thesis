@@ -49,7 +49,7 @@ We also define $[\mathcal{T}_{\P^\pi}^0 V](x) = V(x).$
 
 \textbf{Model-based RL:} In this chapter, we focus on value learning with model data, which is commonly referred to as Dyna~\parencite{dyna}.
 We use $\hat{p}$ to refer to a stochastic model, and $\hat{f}$ for deterministic models.
-When a model is used to predict the observation $x'$ from $x,a$ (such as the model used in \ac{mbpo} \parencite{mbpo}) we call it an \emph{observation-space models}.
+When a model is used to predict the observation $x'$ from $x,a$ (such as the model used in \ac{mbpo} \parencite{janner2019mbpo}) we call it an \emph{observation-space models}.
 Alternatively, \emph{latent-space models} of the form $\hat{p}(z'|z, a)$ are used, where $z\in\mathcal{Z}$ is a representation of a state $x\in\mathcal{X}$ given by $\phi: \mathcal{X} \rightarrow \mathcal{Z}$.
 Observation-space models predict next states in the representation of the environment, while latent-space models reconstruct learned features of these states.
 
@@ -65,11 +65,11 @@ We will use $\hat{x}^{(n)}$ to refer to samples from the $n$-th step model predi
         \includegraphics[width=\linewidth]{figures/lambda/mb_loss.drawio.pdf}
     \end{minipage}
     \begin{minipage}{0.36\linewidth}
-    \begin{align*}
+    \begin{align}
         &\hat{\mathcal{L}}^{\P^\pi}_{m,b}\left(\hat{p},\hat{V}|x\right)\\
         = &\biggl|{\color{newgreendeal}\underbrace{\hat{V}\roundb{\hat{x}}}_\mathrm{model}} - 
         \biggl[ {\color{newbluedeal} \underbrace{[\mathcal{T}_{\P^\pi}^b \hat{V}]\roundb{x^{(m)}} }_\mathrm{environment} } \biggr]_\mathrm{sg}\biggr|^2
-    \end{align*}
+    \end{align}
     \end{minipage}
     \caption{Sketch of $(m,b)$-VAML. The loss is computed from an {\color{newgreendeal}$m$-step model} and a {\color{newbluedeal} $(m+b)$-step environment trajectory}. It is the difference between the estimated value of the {\color{newgreendeal}$m$-th model state}, and the $b$-step Bellman operator starting from the {\color{newbluedeal} $m$-th environment state}.}
     \label{fig:cvaml:loss_graphic}
@@ -99,7 +99,7 @@ To reduce notational complexity, we drop the action dependence in all following 
 The expectation-based version of the IterVAML loss has an important relationship to the error of computing the model's Bellman operator compared to the true environments Bellman operator.
 
 \begin{restatable}{proposition}{IterVAMLEqual}{\textcite{itervaml}}\label{prop:cvaml:1_1}
-    Let $\P^\pi$ be the policy-conditioned transition kernel of an MDP and let $V: \mathcal{X} \rightarrow \mathbb{R}$ be a function.
+    Let $\P^\pi$ be the policy-conditioned transition kernel of an \ac{mdp}   and let $V: \mathcal{X} \rightarrow \mathbb{R}$ be a function.
     Let $\hat{p}(\cdot|x)$ be a model so that ${\mathcal{L}}^{\P^\pi}_{\mathrm{IterVAML}, 1}\left(\hat{p},V|x\right) = 0$.
     Then $\squareb{\mathcal{T}_{\P^\pi} V }(x) = \squareb{\mathcal{T}_{\hat{p}} V }(x)$.
 \end{restatable}
@@ -111,7 +111,7 @@ The expectation-based version of the IterVAML loss has an important relationship
 \end{proof}
 
 Intuitively, a model achieving $0$ loss can be used instead of the ground truth environment when computing the Bellman operator.
-The set of models that achieve $0$ IterVAML error is equal to the set of proper value-equivalent models for the value estimate $\hat{V}$ \cite{grimm2021proper}.
+The set of models that achieve $0$ IterVAML error is equal to the set of proper value-equivalent models for the value estimate $\hat{V}$ \parencite{grimm2021proper}.
 
 \subsection{The (m,b)-VAML Family}
 The MuZero loss~\parencite{schrittwieser2020mastering} was introduced to unify the value function and model learning components of an \ac{mbrl} algorithm.
@@ -122,7 +122,7 @@ We refer to this unified family of losses as $(m,b)$-Value Aware Model Losses (V
     & \hat{\mathcal{L}}^{\P^\pi}_{m,b}\left(\hat{p},\hat{V}|V_\mathrm{tar},x, x^{(m)}\right) = \biggl|\hat{V}\roundb{\hat{x}^{(m)}} - 
     \squareb{[\mathcal{T}_{\P^\pi}^b V_\mathrm{tar}]\roundb{x^{(m)}}}_\mathrm{sg}\biggr|^2, \label{eq:cvaml:dal_loss}
 \end{align}
-where $V_\mathrm{tar}$ is a target network \parencite{mnih2013playing}.
+where $V_\mathrm{tar}$ is a target network \parencite{dqn}.
 We denote the stop-gradient operation with $\squareb{\cdot}_\mathrm{sg}$.
 Note that samples from the real environment are used to approximate $[\mathcal{T}_{\P^\pi}^j \hat{V}]$.
 The loss function and the relation of the model and environments rollout are visualized in \autoref{fig:cvaml:loss_graphic}.
@@ -134,7 +134,7 @@ When using only a single sample $k=1$, the sample-based IterVAML loss is equal t
 Finally, regular model-free TD learning corresponds to $m=0,b\geq1$.
 
 
-\section{Analysis of decision-aware losses in stochastic environments}
+\section{Decision-aware losses in stochastic environments}
 \label{sec:cvaml:theory_1}
 The goal of learning in \ac{mbrl} is to recover an (approximately) optimal model and to learn a correct value function.
 As we have shown, minimizing the IterVAML loss perfectly results in a model that leads to a correct Bellman Operator.
@@ -152,30 +152,32 @@ Intuitively, a calibrated surrogate loss does not select a suboptimal function f
     Let $\hat{\mathcal{L}}_\mathrm{sur}$ be a surrogate function for the loss.
     Let $\mathcal{F}^*$ be a set of minima of $\mathcal{L}_\mathrm{tar}$ with $\mathcal{L}_\mathrm{tar}(f^*,x,x^{(m)}) = 0$ for all $f^* \in \mathcal{F}^*.$
     Let $\mathcal{F}$ be a function class with $\mathcal{F}^* \subseteq \mathcal{F}$.
-    A surrogate function is $F$-\emph{uncalibrated} for the target loss if there exists an MDP and a state $x$ so that 
+    A surrogate function is $F$-\emph{uncalibrated} for the target loss if there exists an \ac{mdp}   and a state $x$ so that 
     $$\argmin_{f \in \mathcal{F}} \mathbb{E}_{x^{(m)}\sim\P^\pi(\cdot|x)}\left[\mathcal{L}_\mathrm{sur}(f,x,x^{(m)})\right] \not\subseteq \mathcal{F}^*.$$
 \end{definition}
-A prominent example of an $\mathcal{F}$-uncalibrated loss is Bellman Residual Minimization (BRM), which results in the \emph{double sampling issue}.
+A prominent example of an $\mathcal{F}$-uncalibrated loss is \ac{brm}, which results in the \emph{double sampling issue}.
 We reviewed this issue and a proof in \autoref{chap:background:rl} and will see how related issues arise here.
-Recall that while in BRM the target loss is minimized by the ground-truth value function, BRM actually chooses a function that minimizes an additional variance term.
+Recall that while in \ac{brm} the target loss is minimized by the ground-truth value function, \ac{brm} actually chooses a function that minimizes an additional variance term.
 
 We will show that some issues introduced by naively using $(m,b)$-VAML can be fixed with a tractable modification to the loss.
 We call such cases \emph{resolvable}.
 
 
 \begin{table*}
-{\footnotesize
-\centering
-    \begin{tabular}{l l|c|c|c}
-        && IterVAML &  MuZero &  Model-free TD \\
-        \multicolumn{2}{l|}{$(m\geq1,b=0)$} &  $(m\geq1,b\geq1)$& $(m=0,b\geq1)$\\\hline
-        Det. model,& det. env & {\color{newbluedeal} calibrated} & {\color{newbluedeal} calibrated} & {\color{newbluedeal} calibrated} \\
-        Stoch. model,& det. env & {\color{newgreendeal} uncalibrated (resolvable)} & {\color{uoftred} uncalibrated (for VF)} & {\color{newbluedeal} calibrated}\\
-        Det. model,& stoch. env & {\color{newbluedeal} calibrated} & {\color{newbluedeal} calibrated}  & {\color{newbluedeal} calibrated} \\
-        Stoch. model,& stoch. env & {\color{newgreendeal} uncalibrated (resolvable)} & {\color{uoftred} uncalibrated (for VF)} & {\color{newbluedeal} calibrated} \\\hline
-        \multicolumn{2}{l|}{Can update model} & {\color{newbluedeal} $\checkmark$} & {\color{newbluedeal} $\checkmark$}& \color{uoftred} X \\
-        \multicolumn{2}{l|}{Can update VF}   & \color{uoftred} X & {\color{newgreendeal} $\checkmark$ (for det. model)}  & {\color{newbluedeal} $\checkmark$}
-    \end{tabular}}
+    {\footnotesize
+    \begin{center}
+        \begin{tabular}{l l|c|c|c}
+            && IterVAML &  MuZero &  Model-free TD \\
+            && {$(m\geq1,b=0)$} &  $(m\geq1,b\geq1)$& $(m=0,b\geq1)$\\\hline
+            Det. model,& det. env & {\color{newbluedeal} calibrated} & {\color{newbluedeal} calibrated} & {\color{newbluedeal} calibrated} \\
+            Stoch. model,& det. env & {\color{newgreendeal} uncalibrated (resolvable)} & {\color{uoftred} uncalibrated (for VF)} & {\color{newbluedeal} calibrated}\\
+            Det. model,& stoch. env & {\color{newbluedeal} calibrated} & {\color{newbluedeal} calibrated}  & {\color{newbluedeal} calibrated} \\
+            Stoch. model,& stoch. env & {\color{newgreendeal} uncalibrated (resolvable)} & {\color{uoftred} uncalibrated (for VF)} & {\color{newbluedeal} calibrated} \\\hline
+            \multicolumn{2}{l|}{Can update model} & {\color{newbluedeal} $\checkmark$} & {\color{newbluedeal} $\checkmark$}& \color{uoftred} X \\
+            \multicolumn{2}{l|}{Can update VF}   & \color{uoftred} X & {\color{newgreendeal} $\checkmark$ (for det. model)}  & {\color{newbluedeal} $\checkmark$}
+        \end{tabular}
+    \end{center}
+    }
     \caption{Comparison of the major design choices in the $(m,b)$-VAML framework. IterVAML and MuZero can be used to update the model, while MuZero and Model-free TD learning can be used to update the value function. All model-based losses are uncalibrated when applied to stochastic model classes. In addition, MuZero suffers a bias when used for value function prediction which cannot be surmounted with an easy modification to the loss function.}
     \label{tab:cvaml:bias_overview}
 \end{table*}
@@ -191,7 +193,7 @@ For simplicity we assume that $V_\mathrm{tar} = \hat{V}$.
 \begin{restatable}{proposition}{IterVAMLUncal}\label{prop:cvaml:2_1}
     Let $\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}(\hat{p},V|x,x^{(m)})$ be a surrogate loss for $\mathcal{L}_{\mathrm{IterVAML}, m}^{\P^\pi}(\hat{p}, V|x, x^{(m)})$.
     Let $\P^*$ be the set of all distributions $p$ for which $\EEX{p}{V(\hat{x}^{(m)})} = \EEX{\P^\pi}{V(x^{(m)})}.$
-    There exist an MDP and a class of distributions $\mathbb{P}$ with $\P^\pi \in \P^* \subseteq \mathbb{P}$ so that $$\Argmin_{\hat{p} \in \mathbb{P}} \mathbb{E}_{\hat{p}}\left[\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}(\hat{p},V|x,x^{(m)})\right] \not\subseteq \P^*.$$
+    There exist an \ac{mdp}   and a class of distributions $\mathbb{P}$ with $\P^\pi \in \P^* \subseteq \mathbb{P}$ so that $$\Argmin_{\hat{p} \in \mathbb{P}} \mathbb{E}_{\hat{p}}\left[\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}(\hat{p},V|x,x^{(m)})\right] \not\subseteq \P^*.$$
     Therefore $\hat{\mathcal{L}}_\mathrm{model}$ is $\P$-\emph{uncalibrated}.
 \end{restatable}
 \begin{proof}
@@ -203,7 +205,8 @@ Expanding the empirical IterVAML loss with $k$ samples, obtain
    \quad & =  \EEX{\hat{p},\P^\pi}{\left(\muV{m} - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2} + \\ 
    \quad &  \quad \quad  2 \underbrace{\EEX{\hat{p},\P^\pi}{\roundb{\muV{m} - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}}\Biggl(\EEX{\hat{p},\P^\pi}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\Biggr)}}_{=0} + \label{eq:tower_again}\\
    \quad &  \quad \quad  \EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\right)^2}\\
-   \quad & =  \underbrace{\EEX{\hat{p},\P^\pi}{\left(V\left(\hat{x}^{(m)}\right) - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2}}_{= \mathrm{Var}} + \underbrace{\EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\right)^2}}_{(2)}
+   \quad & =  \underbrace{\EEX{\hat{p},\P^\pi}{\left(V\left(\hat{x}^{(m)}\right) - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2}}_{= \mathrm{Var}} \\
+   \quad & \quad + \underbrace{\EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\right)^2}}_{(2)}
 \end{align}
 \autoref{eq:tower_again} is $0$ since $\EEX{\hat{p},\P^\pi}{\muV{m} - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}} = 0,$ and samples from $\hat{p}$ and $\P^\pi$ are independent.
 
@@ -230,7 +233,8 @@ Then there exists a $\hat{p}$ with \\$\hat{\mathcal{L}}^{\P^\pi}_{m\geq1,0}\left
 If we use the $k$ sample version of the empirical IterVAML loss instead, we obtain the following decomposition
 \begin{align}
     &\EEX{\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{i\geq1,0}\left(\hat{p},V|x,x^{(m)}\right)} \\
-    &\quad = \underbrace{\frac{1}{k}\EEX{\hat{p},\P^\pi}{\left(V\left(\hat{x}^{(m)}\right) - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2}}_{=\frac{1}{k} \mathrm{Var}} + \underbrace{\EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\right)^2}}_{\mathrm{IterVAML}}.
+    &\quad = \underbrace{\frac{1}{k}\EEX{\hat{p},\P^\pi}{\left(V\left(\hat{x}^{(m)}\right) - \EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)}\right)^2}}_{=\frac{1}{k} \mathrm{Var}} \\
+    &\quad \quad + \underbrace{\EEX{\hat{p},\P^\pi}{\left(\EEX{\hat{p}}{V\left(\hat{x}^{(m)}\right)} - V\left(x^{(m)}\right)\right)^2}}_{\mathrm{IterVAML}}.
 \end{align}
 The only difference when using more samples is that the variance term is scaled by the factor $\frac{1}{k}$, as the variance of the mean estimator $\sum_{i=1}^k V\left(x^{(m)}_i\right)$ decreases.
 Consequently, for larger values of $k$, the condition in \autoref{lemma:cvaml:4} for $g$ becomes stricter.
@@ -292,13 +296,14 @@ To formalize the issue, we compare the solution found with $(m,b)$-VAML with the
 \end{restatable}
 \begin{proof}
 
-By assumption, let $\hat{p}$ in the MuZero loss be the true transition kernel $p$. Expand the MuZero loss by $\target{m}$ and take its expectation:
+By assumption, let $\hat{p}$ in the MuZero loss be the true transition kernel $p$. Expand the MuZero loss by $\target{m}$ as before and take its expectation:
 \begin{align}
     &\EEX{\P^\pi}{\hat{\mathcal{L}}^{\P^\pi}_{m,b}(\P^\pi, V| V_{\mathrm{tar}}, x, x^{(m)})}\\ 
     &\quad = \EEX{\hat{p},\P^\pi}{\squareb{ \hat{V}\roundb{\mx{m}} - \TrV{m}}^2}\\
-    &\quad = \EEX{\hat{p},\P^\pi}{\squareb{ \hat{V}\roundb{\mx{m}} - \target{m} + \target{m} - \TrV{m}  }^2}\\
+    % &\quad = \EEX{\hat{p},\P^\pi}{\squareb{ \hat{V}\roundb{\mx{m}} - \target{m} + \target{m} - \TrV{m}  }^2}\\
     &\quad = \EEX{\hat{p},\P^\pi}{ \roundb{\hat{V}\roundb{\mx{m}} - \target{m}}^2}  +\label{eq:first}\\
-    &\quad \quad \quad 2~\EEX{\hat{p},\P^\pi}{\roundb{\hat{V}\roundb{\mx{m}} - \target{m}}\roundb{\target{m} - \TrV{m}}} + \label{eq:second}\\
+    &\quad \quad \quad 2~\mathbb{E}_{\hat{p},\P^\pi}\bigg[\roundb{\hat{V}\roundb{\mx{m}} - \target{m}} \cdot \label{eq:second_1}\\
+    &\quad \quad \quad \roundb{\target{m} - \TrV{m}}\bigg] + \label{eq:second_2}\\
     &\quad \quad \quad \EEX{\hat{p},\P^\pi}{\roundb{\target{m} - \TrV{m}}^2}\label{eq:third}
 \end{align}
 
@@ -306,7 +311,7 @@ We aim to study the minimizer of this term.
 The first term (\autoref{eq:first}) is the regular bootstrapped Bellman residual with a target $V_\mathrm{tar}$.
 The third term (\autoref{eq:third}) is independent of $\hat{V}$, so we can drop it when analyzing the minimization problem.
 
-The second term (\autoref{eq:second}) simplifies to
+The second term (\autoref{eq:second_1} and \autoref{eq:second_2}) simplifies to
 \begin{align}
     \EEX{\hat{p},\P^\pi}{\hat{V}\roundb{\mx{m}}\roundb{\target{m} - \TrV{m}}}
 \end{align}
@@ -376,7 +381,7 @@ Varying the temperature $\tau$ we can interpolate between a deterministic transi
 The models are parameterized with two learnable matrices $\phi \in \mathbb{R}^{n\times k}$ and $\psi \in \mathbb{R}^{n\times k}$ so that $\hat{p}_k(x_i| x_j)  = \mathrm{softmax}(\hat{\omega}_{i,j}) = \mathrm{softmax}(\phi_i^\top \psi_j)$.
 By varying $k$ we create a low-rank constraint.
 As \textcite{vaml} shows, $(m,b)$-VAML should be used when the model has insufficient capacity to represent the environment.
-As a baseline, we use the model $\hat{p}_{\mathrm{KL}, k}\in \argmin_{\hat{p}} \mathrm{KL}(p||\hat{p})$.
+As a baseline, we use the model $\hat{p}_{\mathrm{KL}, k}\in \argmin_{\hat{p}} \mathrm{KL}(p\|\hat{p})$.
 
 We focus solely on value estimation in the Garnet MDPs with a fixed policy to simplify the experimental setup.
 We also use the ground truth reward function.
@@ -400,21 +405,23 @@ This suggests that a $(m\geq1,0)$-CVAML loss is preferable with stochastic envir
 Prior literature \parencite{lovatto2020decision}, and indeed our own discussion in \autoref{chap:vagram} have found the IterVAML loss to be unstable.
 However, we have shown that IterVAML and MuZero are closely related within the $(m,b)$-VAML family, and while the former has been criticized for instability, the later does not have this reputation.
 The main difference between prior empirical investigations of IterVAML and MuZero indeed has less to do with the inherent (dis)advantages of the loss functions, and can instead be explained by architectural choices.
-In practice, most implementations of MuZero-based models use deterministic latent model structures \cite{schrittwieser2020mastering,ye2021mastering,hansen2022temporal,antonoglou2022planning}, while IterVAML has mostly been investigated with observation-space models.
+In practice, most implementations of MuZero-based models use deterministic latent model structures \parencite{schrittwieser2020mastering,ye2021mastering,hansen2022temporal,antonoglou2022planning}, while IterVAML has mostly been investigated with observation-space models.
 
-This raises two important question: (a) Can the previously discussed empirical performance difference be understood (mostly) in light of this architectural choice and (b) is the use of \emph{deterministic} models sufficient for modelling, especially in the case of stochastic environments?
-We will first address the second question since this can be answered with a formal, mathematical analysis. 
+This raises two important question: (b) Is the use of \emph{deterministic} models sufficient for modelling transitions for \ac{rl}, especially in the case of stochastic environments, and (b) can the empirical performance differences between different $(m,b)$-VAML losses be understood (mostly) in light of this architectural choice?
+We will first address the former question since this can be answered with a formal, mathematical analysis. 
+
+\subsection{Deterministic models for stochastic environments}
+\label{sec:cvaml:theory_2}
 
 In general, deterministic function approximations cannot capture the full transition distribution in stochastic environments.
 However, it is an open question whether a deterministic \emph{latent} model can be sufficient for learning a value-equivalent model, as conjectured by \textcite{oh2017value}.
 
-\subsection{Deterministic models for stochastic environments}
-
+We can now answer this question in the affirmative, albeit with some technical caveats: there exist a measurable deterministic model for stochastic environments that perfectly minimizes the $(1,0)$-VAML loss.
 Showing the existence of a deterministic value-aware model relies on the continuity of the transition kernel and involved functions $\phi$ and $V$.
 These are standard assumptions that are necessary to prove the convergence of many algorithms \parencite{bertsekasshreve1978}. 
 
 
-The first proposition relies on the existence of a deterministic mapping, which we prove here as a lemma.
+The proposition relies on the existence of a deterministic mapping, which we prove here as a lemma.
 
 
 \begin{lemma}[Deterministic Representation Lemma]
@@ -482,8 +489,8 @@ First, expand the equation to obtain:
 \end{align}
 After expanding the square, we obtain three terms:
 \begin{align}
-     \EEX{\hat{p},\P^\pi}{\hat{\mathcal{L}}_{\text{IterVAML}, 1}(f, V | V_\mathcal{X} x, x' } =
-      &\EEX{\hat{p},\P^\pi}{\left|{V\roundb{f\roundb{\phi(x)}} - \EEX{\P^\pi}{V_\mathcal{X}(x')}}\right|^2} \\
+    & \EEX{\hat{p},\P^\pi}{\hat{\mathcal{L}}_{\text{IterVAML}, 1}(f, V | V_\mathcal{X} x, x') } \\
+    = &\EEX{\hat{p},\P^\pi}{\left|{V\roundb{f\roundb{\phi(x)}} - \EEX{\P^\pi}{V_\mathcal{X}(x')}}\right|^2} \\
     &\quad + 2 \EEX{\P^\pi}{\squareb{V\roundb{f\roundb{\phi(x)}} - \EEX{\P^\pi}{V_\mathcal{X}(x')}}\squareb{\EEX{\P^\pi}{V_\mathcal{X}(x')} - V_\mathcal{X}(x') }}\\
     &\quad + \EEX{\P^\pi}{\left|{\EEX{\P^\pi}{V_\mathcal{X}(x')} - V_\mathcal{X}(x') }\right|^2}
 \end{align}
@@ -506,43 +513,24 @@ Therefore $f^*$ minimizes the final loss term and, due to that, the IterVAML los
 
 \end{proof}
 
-
-
 We can conclude that given a sufficiently flexible function class $\mathcal{F}$, $(m,b)$-VAML can recover an optimal deterministic model for value function prediction.
 Note that our conditions solely ensure the \emph{existence} of a measurable function; the learning problem might still be very challenging.
 
-\subsection{Auxiliary losses for latent-space models}
+\subsection{Auxiliary losses}
 
 While the original MuZero algorithm only uses the MuZero loss to update the latent embedding, dynamics model, and value function estimation, several more recent works add auxiliary stabilizing losses \parencite{ye2021mastering,hafner2021mastering,hansen2024tdmpc,voelcker2025mad}.
 These allow the model to learn meaningful transitions even before the value function is properly approximated, which helps e.g. in sparse-reward environments.
 
 Most prior works use some form of \ac{byol} \parencite{grill2020bootstrap} loss, which minimizes the difference between the next states encoding $\phi(x^{(m)})$ and the model prediction $f^m(x^{(0)})$.
-In the case of linear features, models, and value functions, recent works, discussed in \autoref{chap:understanding}, have shown that such a loss can greatly aid in learning meaningful features for value function prediction \parencite{lyle2022understanding,tang2022understanding,ni2024bridging,voelcker2024when}.
+We saw in the previous chapter that such losses can greatly aid in stabilizing value learning.
+In addition, latent-self prediction losses like BYOL show a strong synergy with value function learning.
+Therefore it stands to reason that using them in an $(m,b)$-VAML setup can also yield strong benefits.
 
-When the difference is computed with an $L_2$, the model loss is
+As a reminder, when the difference between next state embedding and model prediction is measured by the $L_2$ norm, the model loss is
 \begin{align}
     & \hat{\mathcal{L}}^{\P^\pi}_{\mathrm{model}, m}\left(\hat{f},
-\phi, \hat{V}|x\right) \nonumber\\
-    & ~ = \underbrace{\hat{\mathcal{L}}^{\P^\pi}_{m,b}\left(\hat{f},\phi, \hat{V}|x\right)}_{m,b\mathrm{-VAML}} + \underbrace{\biggl| \hat{f}^m(\phi(x)) - \bigl[\phi(x^{(m)}) \bigr] \biggr|^2}_\mathrm{auxiliary}.
+\phi, \hat{V}|x\right) = \underbrace{\hat{\mathcal{L}}^{\P^\pi}_{m,b}\left(\hat{f},\phi, \hat{V}|x\right)}_{m,b\mathrm{-VAML}} + \underbrace{\biggl| \hat{f}^m(\phi(x)) - \bigl[\phi(x^{(m)}) \bigr] \biggr|^2}_\mathrm{auxiliary}.
 \end{align}
-
-
-\subsection{Experiments with latent model architectures}
-\label{sec:cvaml:latent_experiments}
-
-We are now faced with several empirical questions, which we will answer with experiments on a subset of DMC environments \cite{tunyasuvunakool2020dmcontrol} encompassing various tasks within the \textit{humanoid} and \textit{dog} domains.
-These two domains are the most challenging in the DMC suite, and the standard comparison for current methods \cite{voelcker2025mad,nauman2024bigger}.
-
-\paragraph{Do IterVAML and MuZero perform equivalently when used with the same deterministic latent model archittecture?}
-
-\paragraph{How do $(m,b)$-VAML algorithms perform with auxiliary losses?}
-
-\paragraph{Do we see benefits from using value-aware losses in environments with distracting dimensions?}
-
-\paragraph{Do we observe differences between stochastic and deterministic latent models on stochastic and deterministic environments?}
-
-\section{Stochasticity and auxiliary models}
-\label{sec:cvaml:theory_2}
 
 The introduction of a stabilizing loss poses a challenge for the result in \autoref{prop:cvaml:3_1}.
 For example, a pre-trained LLM backbone might be used, which is naturally stochastic due to the sampling strategies used to query it.
@@ -553,64 +541,150 @@ However, $f^*_\mathrm{aux}$ only coincides with the optimal model under the VAML
 \begin{align}
     \EEX{\P^\pi}{\hat{V}(\phi(x^{(1)}))} = \hat{V}\biggl(\EEX{\P^\pi}{\phi(x^{(1)})}\biggr).
 \end{align}
-This is the case if and only if the value function is linear in the embedding features $\phi$, which is also referred to as a linear expectation model \cite{wan2019planning}.
+This is the case if and only if the value function is linear in the embedding features $\phi$, which is also referred to as a linear expectation model \parencite{wan2019planning}.
 However,  learning an embedding in which the value function is linear can be difficult and may not lead to stable model predictions in complex, high-dimensional environments.
-
-\begin{figure*}[t]
-\centering
-   \includegraphics[width=0.5\textwidth]{figures/lambda/plts/agg_dog.pdf} 
-   \includegraphics[width=0.33\textwidth]{figures/lambda/plts/agg_hum.pdf} 
-   \caption{Results for the latent-space model experiments. We show the aggregate metrics of the final performance on dog (left) and humanoid (right) environments, following \cite{agarwal2021deep}. Calibrating $(1,1)$-VAML leads to a clear improvement in performance in the dog environment, while for $(1,0)$-(C)VAML the difference is less noticeable. This is consistent with our theoretical findings as learning a smaller variance model can be sufficient, but wrong value functions will be learned with a stochastic model when $b\geq1$.}
-   \label{fig:cvaml:agg_results}
-\end{figure*}
 
 An exception to the use of deterministic models is the architecture proposed by \textcite{antonoglou2022planning}.
 However, their model and auxiliary loss rely on a biased straight-through gradient estimation.
 This introduces complications for finding the optima of the loss function and model class.
 
-\section{Calibration experiments with latent-space models}
-\label{sec:cvaml:empirical2}
+\section{Experimental evaluation}
+\label{sec:cvaml:latent_experiments}
 
-We present a comparison between $(m,b)$-CVAML and $(m,b)$-VAML families of losses using stochastic latent models on the same environments used in \autoref{sec:cvaml:latent_experiments}.
-The forward models are multivariate Gaussian distributions in the latent space parameterized by MLPs \cite{pets,mbpo,paster2021blast}. 
+% \subsection{$(m,b)$-VAML and auxiliary losses}
+
+
+To summarize our theoretical results, we can state the following
+\begin{itemize}
+    \item $(m,b)$-VAML losses are uncalibrated, but we can adapt the losses to calibrate them.
+    \item If latent model architectures are used, a perfect, deterministic $(1,0)$-VAML model exists, but might not be easily learnable.
+    \item Auxiliary losses can be used to stable learning $(m,b)$-VAML models in practice, but might lead to issues when used with deterministic models and stochastic environments.
+\end{itemize}
+
+However, it is unclear how large the impact of all these theoretical results is in realistic environments.
+Therefore, we are now faced with several empirical questions, which we will answer with experiments on a subset of DMC environments \parencite{tunyasuvunakool2020dmcontrol} encompassing various tasks within the \textit{humanoid} and \textit{dog} domains.
+These two domains are the most challenging in the DMC suite, and the standard comparison for current methods \parencite{voelcker2025mad,nauman2024bigger}.
+
+\begin{enumerate}
+    \item Do IterVAML and MuZero perform equivalently when used with the same deterministic latent model architecture?
+    \item Do $(m,b)$-VAML algorithms improve when combined with auxiliary losses?
+    \item Can we observe the effects of calibration on deterministic environments?
+    \item Can we observe the effects of calibration in stochastic environments?
+\end{enumerate}
+
+\subsection{Experimental setup}
+
+To conduct our experiments we use a variety of neural network based models.
+
+All experiments are conducted with latent model architectures composed of an encoder, a latent dynamics model, and a value and policy function head.
+All networks are simple fully collected feed-forward networks whose architectures are identical to those used in the DMC experiments in \autoref{chap:understanding}.
+For hyperparameters and further architectural details, see \autoref{app:cvaml:model_design}.
+
+We compare both stochastic and deterministic latent models.
+For the stochastic case, the latent models are multivariate, diagonal Gaussian distributions where mean and variance are parameterized by the latent network \cite{pets,janner2019mbpo,paster2021blast}.
+In the deterministic case we simply use a feed-forward network.
  
 Model roll-outs are produced by sequentially sampling latent states from the model conditional on the initial state and an action sequence using the reparametrization trick. 
 \begin{align}
 &\hat{p}(\hat{z}'|z,a)=\hat{\mu}(z,a) + \hat{\sigma}(z,a)\cdot\varepsilon,\; \varepsilon \sim \mathcal{N}(0,I)
+%    &\hat{p}^{m+1}(\hat{z}^{(m+1)}|z,a^{(:m)})\nonumber\\
+% &\quad=\mathcal{N}\left(\hat{\mu}(\hat{z}^{(m)},a^{(m)}),\hat{\sigma}(\hat{z}^{(m)},a^{(m)})\right)
 \end{align}
 
 The auxiliary loss for stochastic models is computed as a negative log-likelihood of the next states' latent representations under the current dynamics model.
 \begin{align}
-    &\mathcal{L}_{\mathrm{aux},m}\left(\hat{p},\phi\Big|x,a^{(0:m-1)},x^{(m)}\right) \nonumber\\
-    &\quad =-\log \hat{p}^m\left(\phi(x^{(m)})\Big|\phi(x),a^{(0:m-1)}\right),
+    &\mathcal{L}_{\mathrm{aux},m}\left(\hat{p},\varphi\Big|x,a^{(0:m-1)},x^{(m)}\right) \nonumber\\
+    &\quad =-\log \hat{p}^m\left(\varphi(x^{(m)})\Big|\varphi(x),a^{(0:m-1)}\right),
 \end{align}
 where $a^{(0:m-1)}$ is a sequence of actions of length $m$ starting from state $x^{(0)}$.
 
-The actor and the critic are trained with the TD3 algorithm \cite{fujimoto2018addressing}, while the executed policy is obtained from the actor and environment model using MPC \cite{hansen2022temporal}: initialized at the action produced by the actor for the current state this algorithm iteratively refines the action to maximize the expected return.
+In the case of deterministic models, we use the MSE between the next states' representations and the model's predictions:
+\begin{align}
+    &\mathcal{L}_{\mathrm{aux},m}\left(\hat{p},\varphi\Big|x,a^{(0:m-1)},x^{(m)}\right) \nonumber\\
+    &\quad =\left|\left|\hat{p}^m\left(\cdot\Big|\varphi(x),a^{(0:m-1)}\right)-\varphi(x^{(m)}\right|\right|^2
+\end{align}
+
+For training the policy and value function, we follow a data-mixing protocol.
+We use both model-generated on-policy, and real environment data from the replay buffer to train a value and policy head using the $(m,b)$-VAML loss with a twinned critic parametrization similar to TD3  \cite{fujimoto2018addressing}.
+This means the model influences the value function both through the encoder and through on-policy model-generated data.
+The impact of the data-mixing strategy will be discussed in further detail in the next chapter, \autoref{chap:mad}.
+
+The actions for environment interactions are obtained from the actor and the environment model using MPC \cite{hansen2022temporal}: initialized at the action produced by the actor for the current state, this algorithm iteratively refines the action to maximize the expected return.
+In total our setup uses the model for training the shared encoder, generating data for value and policy improvement, and for online model-based search.
 
 For $(m,b)$-CVAML, the calibration term is computed by sampling multiple trajectories from the model and calculating the means and variances of next-state values produced by the critic across the different samples.
-Additional implementation details are provided in \autoref{app:cvaml:model_design}.
 
-\textbf{Results:} We show results across both domains in \autoref{fig:cvaml:agg_results}.
-We plot aggregated final performance over 20 random seeds per environment-loss pair with 95\% CI,  estimated with stratified percentile bootstrap \cite{agarwal2021deep}.
-\autoref{fig:cvaml:dmc_reward} shows aggregated learning curves with bootstrapping.
+We plot aggregated final performance over 20 random seeds per environment-loss pair with 95\% CI,  estimated with stratified percentile bootstrap \parencite{patterson2024empirical}.
+Aggregations of final performance over several environments are visualized using the RLiable library \parencite{agarwal2021deep}.
+
+\subsection{Architecture design and $(m,b)$-VAML stability}
+
+We first study the impact of the latent design and auxiliary loss across all tasks.
+In \autoref{fig:cvaml:mf_baseline} we compare the $(1,0)$-CVAML (with auxiliary self-prediction loss) with both a model-free TD3 baseline, and with general-purpose models using only the self-prediction loss.
+The TD3 baseline is regularized with layer norms to counterbalance the effects described in \autoref{chap:overestimation}.
+We found the layer norms recommended by \textcite{hansen2024tdmpc} to be slightly more performant with deep models at low UTD than OFN.
+
+While the dog tasks show small improvements when removing the CVAML loss for deterministic environments, all other models and tasks show a strong drop in performance.
+In several cases, using a self-prediction loss even underperforms the model-free baseline.
+
+\label{sec:cvaml:empirical_arch}
+\begin{figure}[t]
+\centering
+    \includegraphics[width=\textwidth]{figures/lambda/plts/ablated_reward1.pdf}
+    \caption{Baseline comparison of the CVAML model with a purely general-puprose (only self prediction loss) and model-free baseline. Across all tasks we see a strong performance benefit of the VAML-based model over the model-free and stochastic general-purpose baseline. On some dog tasks, a deterministic self-prediction model performs slightly better than the CVAML variant. However, on the humanoid tasks, performance of the CVAML loss is significantly better than any baseline. In aggregate, CVAML (with an auxiliary task) is a consistenly strong loss.}
+    \label{fig:cvaml:mf_baseline}
+\end{figure}
+
+In \autoref{fig:cvaml:ablation_itervaml} and \autoref{fig:cvaml:ablation_muzero} we show the results of training $(1,0)$-CVAML and $(1,1)$-CVAML respectively without auxiliary losses.
+Comparing the results to the discussion in \autoref{chap:vagram}, we see that the combination of regularized architecture and latent model structure by itself, even without auxiliary self-prediction, leads to stable and performant models.
+However, across almost all tasks and model variants, we see increased or identical performance from adding auxiliary latent self-prediction.
+The only exception is the humanoid\_ walk task, in which the combined losses perform slightly worse over the course of training.
+However, as we will discuss in the next section, this can partially be explained by the lower performance of stochastic architectures on the humanoid tasks.
+
+\begin{figure}[t]
+\centering
+    \includegraphics[width=\textwidth]{figures/lambda/plts/ablated_reward2.pdf}
+    \caption{Comparison of CVAML with purely decision-aware $(1,0)$-CVAML models (no auxiliary self-prediction loss). With the exception of humanoid\_walk, we see a small but consistent benefit from using an auxiliary loss.}
+   \label{fig:cvaml:ablation_itervaml}
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+    \includegraphics[width=\textwidth]{figures/lambda/plts/ablated_reward3.pdf}
+    \caption{Comparison of CVAML with purely decision-aware $(1,1)$-CVAML models (no auxiliary self-prediction loss). With the exception of humanoid\_walk, we see a small but consistent benefit from using an auxiliary loss. In addition, the $(1,0)$ variants outperform the $(1,1)$ variants by a small margin across almost all tasks.}
+   \label{fig:cvaml:ablation_muzero}
+\end{figure}
+
+\subsection{Calibration experiments with latent-space models}
+\label{sec:cvaml:empirical2}
+
+\begin{figure}[t]
+\centering
+   \includegraphics[width=0.5\textwidth]{figures/lambda/plts/agg_dog.pdf} 
+   \includegraphics[width=0.33\textwidth]{figures/lambda/plts/agg_hum.pdf} 
+   \caption{Results for the latent-space model experiments. We show the aggregate metrics of the final performance on dog (left) and humanoid (right) environments, following \textcite{agarwal2021deep}. Calibrating $(1,1)$-VAML leads to a clear improvement in performance in the dog environment, while for $(1,0)$-(C)VAML the difference is less noticeable. This is consistent with our theoretical findings as learning a smaller variance model can be sufficient, but wrong value functions will be learned with a stochastic model when $b\geq1$.}
+   \label{fig:cvaml:agg_results}
+\end{figure}
+
+We show aggregated final performance across both DMC domains, dog and humanoid, in \autoref{fig:cvaml:agg_results}.
+\autoref{fig:cvaml:dmc_reward} shows aggregated learning curves for each domain.
 
 The difference in performance is most noticeable between the $(1,1)$-VAML and -CVAML, as the uncalibrated loss impacts both model and value function learning in this case. 
 This effect is less prominent but still present with $(1,0)$-CVAML, where only the model learning is affected.
 
-In the dog domain, we observe a performance improvement when using the calibration with the MuZero-style loss.
-The humanoid domain exhibits a larger variance in performance across random seeds, making the analysis less conclusive.
-This is mostly due to the fact that some runs fail to achieve any meaningful performance.
-For these, more advanced architectures such as TD-MPC2 \parencite{hansen2024tdmpc} might be necessary.
+In the humanoid domain, we observe a performance improvement when using the calibration with the MuZero-style loss.
+In the dog domain, confidence intervals overlap although there is a small trend in the mean.
 However, most current algorithms on the dog domain use categorical value representations \parencite{farebrother2024stop}, for which further theoretical analysis is necessary before calibration can be addressed.
 
 In addition to the calibration effect, we observe that probabilistic models outperform deterministic ones in the dog domain, even though the simulator is deterministic.
-This is in line with previous work \parencite{pets,mbpo}, as stochastic models can reduce the tendency of the critic to exploit model errors.
+This is in line with the claims in some prior work \parencite{pets,janner2019mbpo}, as stochastic models can reduce the tendency of the critic to exploit model errors.
 However, this advantage seems to be domain-specific and is not replicated in the humanoid suite.
 
-Finally, we observe an advantage of $(0,1)$-updates over the $(1,1)$-updates.
-While previous work has found IterVAML to be unstable \parencite{lovatto2020decision,voelcker2022value}, comparisons were not made with current model architectures, latent models, and auxiliary tasks.
-A wider empirical investigation into the merits of both IterVAML and MuZero style learning is an important direction for future work.
+Finally, we observe a consistent advantage of $(0,1)$-updates over the $(1,1)$-updates.
+\autoref{fig:cvaml:total_agg} shows that averaged across all environments we obtain a clear gap between all variants of the $(1,0)$-VAML loss over the $(1,1)$-VAML loss. 
+In combination with the results from the previous section, we can therefore conclude that $(1,0)$-VAML losses can indeed lead to strong performance.
+% A wider empirical investigation into the merits of both IterVAML and MuZero style learning is an important direction for future work.
 
 \begin{boxinsight}[Remarks for practitioners]
 While deterministic models are theoretically sufficient for learning value-equivalent models, we observe benefits in some benchmarks from the use of stochastic models.
@@ -623,6 +697,13 @@ Using calibrated losses is empirically especially important for MuZero-style mod
     \caption{Sample efficiency curve for both dog (left) and humanoid (right). Per-task normalized return is aggregated over 20 seeds per environment and 3 environments, with 95\% bootstrapped confidence intervals shaded. 
     In addition to a higher final return, we observe significantly earlier learning for the $(0,1)$-(C)VAML on the dog task.}
    \label{fig:cvaml:dmc_reward}
+\end{figure*}
+
+\begin{figure*}[b]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/lambda/plts/agg_total.pdf} 
+    \caption{Final performance aggregated across all tasks. We observe that we see a consistent improvement in performance when using $(1,0)$ losses instead of $(1,1)$ losses.}
+   \label{fig:cvaml:total_agg}
 \end{figure*}
 
 \section{Related work}
@@ -645,7 +726,7 @@ To achieve the same goal, \textcite{eysenbach2022mismatched} and \textcite{ghuga
 \textcite{ayoub2020model} presents an algorithm based on selecting models based on their ability to predict value function estimates and provide regret bounds with this algorithm.
 
 \textbf{Learning with suboptimal models:}~ Several works have focused on the broader goal of using models with errors without addressing the loss functions of the model.
-Among these, some attempt to correct models using information obtained during exploration~\parencite{joseph2013reinforcement,talvitie2017self,modi2020sample,rakhsha2022operator,rakhsha2024maximum}, or to limit interaction with wrong models~\parencite{buckman2018sample,mbpo,pmlr-v119-abbas20a}.
+Among these, some attempt to correct models using information obtained during exploration~\parencite{joseph2013reinforcement,talvitie2017self,modi2020sample,rakhsha2022operator,rakhsha2024maximum}, or to limit interaction with wrong models~\parencite{buckman2018sample,janner2019mbpo,pmlr-v119-abbas20a}.
 Several of these techniques can be applied together with corrected $(m,b)$-VAML to improve the model and value function learning further.
 Finally, we do not focus on exploration, but \textcite{guo2022byolexplore} show how auxiliary losses can be used not only to stabilize learning but also to improve exploration.
 
@@ -660,3 +741,5 @@ Our experiments further show that the calibration of the $(m,b)$-VAML losses is 
 In addition, while previous works showed that IterVAML losses can be unstable in practice \parencite{lovatto2020decision,voelcker2022value}, we find that this can be overcome by adapting the latent model architecture used in \textcite{schrittwieser2020mastering} and the auxiliary losses established by \textcite{li2023efficient,hansen2022temporal}.
 When combined with a suitable value learning procedure, IterVAML performs on par or better with MuZero in continuous control tasks.
 Finally, while $(m,b)$-VAML losses have mostly been used with deterministic environments, our work enables the community to use stochastic models with a calibrated loss and shows the potential merits of this approach in a number of environments.
+
+In the final chapter, we will take a more detailed look at how combining real and model-generated data stabilizes learning.

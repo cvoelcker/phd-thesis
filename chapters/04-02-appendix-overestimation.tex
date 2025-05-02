@@ -137,12 +137,12 @@ Here, we take a look at the gradient of the unit norm projection.
 Let $i \in {1, ..., N}$, for all $\mathbf{x} = (x_1, ..., x_n) \in \mathbb{R}^n \setminus \{0\}$. Suppose $f(\mathbf{x}) = \cfrac{\mathbf{x}}{\| \mathbf{x} \|}$. 
 
 Then, 
-\begin{align*}
+\begin{align}
     \partial_i f(\mathbf{x}) 
     &= \cfrac{\| \mathbf{x} \| e_i - \mathbf{x} \partial_i \| \cdot \| (\mathbf{x}) }{\|\mathbf{x} \|^2} \\
     &= \cfrac{\| \mathbf{x} \| e_i - \cfrac{x_i}{\|\mathbf{x} \|} \mathbf{x}}{\|\mathbf{x} \|^2} \\
     &= \cfrac{1}{\|\mathbf{x} \|} e_i - \cfrac{x_i}{\|\mathbf{x} \|^3} \mathbf{x}
-\end{align*}
+\end{align}
 
 Note that the second term can grow quite large if the norm of $\mathbf{x}$ is relatively small. Despite this fact, we are able to remedy the exploding gradients using unit norm projection, likely because gradients are small when the norm is small.
 
@@ -168,7 +168,7 @@ These changes could be combined with the mitigation strategies for the feature l
 As our work shows, some of the previous problems with overestimation might not emerge from the bias introduced by off-policy actions, but from the learning dynamics of neural network updates.
 This suggests that more work on the exact causes of overestimation might allow us to move beyond the overly pessimistic twinned network minimization trick without needing costly solutions like ensemble methods.
 
-{\bf Tau}~~ The rate of the target network updates is an important hyperparameter in online RL, either through periodic hard copies \parencite{mnih2013playing} or the use of a Polyak averaging scheme \parencite{lillicrap2016ddpg}.
+{\bf Tau}~~ The rate of the target network updates is an important hyperparameter in online RL, either through periodic hard copies \parencite{dqn} or the use of a Polyak averaging scheme \parencite{ddpg}.
 Updating the network too fast can exacerbate the impact of value divergence, while updating too slowly can delay learning. Preliminary experiments show a relationship between value divergence and target update speed that requires further investigation.
 
 There have also been attempts to accelerate optimization not via the neural network optimization, but through adapting the updates of the target networks \parencite{vieillard2020momentum,farahmand2021pid}.

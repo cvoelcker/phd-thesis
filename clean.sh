@@ -1,2 +1,2 @@
 latexmk -C
-latexmk -c
+rm -rf chapters/*.aux

@@ -11,11 +11,11 @@
 
 \section{Introduction}
 
-Instead of solely relying on data gathered by a target policy, \emph{off-policy} reinforcement learning (RL) aims to leverage experience gathered by past policies \parencite{sutton2018introduction} to fit a value function for the target policy. 
+Instead of solely relying on data gathered by a target policy, \emph{off-policy} reinforcement learning (RL) aims to leverage experience gathered by past policies \parencite{suttonbook} to fit a value function for the target policy. 
 Ideally, training over many iterations should help extract important information from past data.
 However, recent work has shown that simply increasing the number of gradient update steps, the \emph{replay ratio} or \emph{update-to-data (UTD) ratio}, can lead to highly unstable learning~\parencite{nikishin2022primacy,doro2023barrier,hussing2024dissecting,nauman2024bigger}.
 
-Prior work has stabilized the learning by using double Q minimization to reduce overestimation \parencite{fujimoto2018addressing}, training ensemble methods to improve value estimation \parencite{chen2020randomized,hiraoka2022dropout}, introducing architectural regularization \parencite{hussing2024dissecting,nauman2024bigger}, or resetting networks periodically throughout the learning process \parencite{doro2023barrier,schwarzer2023bigger,nauman2024bigger}.
+Prior work has stabilized the learning by using double Q minimization to reduce overestimation \parencite{fujimoto2018addressing}, training ensemble methods to improve value estimation \parencite{chen2021randomized,hiraoka2022dropout}, introducing architectural regularization \parencite{hussing2024dissecting,nauman2024bigger}, or resetting networks periodically throughout the learning process \parencite{doro2023barrier,schwarzer2023bigger,nauman2024bigger}.
 However, while useful, pessimistic underestimation and architectural regularization are insufficient by themselves  to combat the problem \parencite{hussing2024dissecting}, and so most methods resort to either network resets or ensembles.
 Critic ensembles can be expensive to train, and resetting has several important limitations: in real systems, re-executing a random policy can be expensive or unsafe, the resetting interval needs to be carefully tuned \parencite{hussing2024dissecting}, and when storing a full reset buffer is infeasible, resetting loses important information.
 
@@ -64,7 +64,7 @@ We provide a visualization of this issue in~\autoref{fig:mad:coverage}.
 
 \begin{figure}[t]
 \begin{minipage}{0.6\textwidth}
-    \includegraphics[width=\textwidth]{illustrations/mad-td/rl_sequences.drawio.pdf}
+    \includegraphics[width=\textwidth]{illustrations/thesis_mad_overview.pdf}
 \end{minipage}
 ~
 \begin{minipage}{0.39\textwidth}
@@ -75,7 +75,7 @@ We provide a visualization of this issue in~\autoref{fig:mad:coverage}.
     
 
 Minimizing \autoref{eq:mad:off_policy_q_update} finds the policy Q function over a replay buffer with sufficient coverage of all states and actions that this policy visits.
-However, in most continuous control RL algorithms~\parencite{ddpg,haarnoja2018sac, fujimoto2018addressing}, this update is interleaved with policy update steps .
+However, in most continuous control RL algorithms~\parencite{ddpg,sac, fujimoto2018addressing}, this update is interleaved with policy update steps .
 The data in $\mathcal{D}$ then necessarily becomes \emph{off-policy} as training progresses. 
 
 This means that the number of actor and critic optimization steps needs to be balanced with gathering new data.
@@ -90,8 +90,8 @@ Our experiments in \autoref{sec:mad:off-policy-eval-exp} show that generalizatio
 
 \subsection{Action distribution shift can cause off-policy Q value divergence}
 \label{sec:mad:theory}
-To highlight the role that on-policy actions play in stabilizing Q value learning, we show an analysis the stability of Q learning with linear features.
-The core ideas follow \textcite{sutton2016emphatic} and are also explored by \textcite{tsitsiklis1996analysis,sutton1988learning}.
+To highlight the role that on-policy actions play in stabilizing of Q value learning, we show an analysis the stability of Q learning with linear features.
+The core ideas follow \textcite{sutton2016emphatic} and are also explored in \textcite{tsitsiklis1996analysis,sutton1988learning}.
 We assume that the Q function is parameterized with fixed features and weights as $Q(x,a) = \phi(x,a)^\top \theta$.
 Let $X$ and $A$ be the sizes of the state and action space respectively. Let $P \in \mathbb{R}^{X\cdot A \times X}$ be the matrix of transition probabilities from state-action pairs to states.
 A policy can then be expressed as a mapping $\Pi \in \mathbb{R}^{X\times X\cdot A}$ from states to the likelihood of taking each action.
@@ -116,20 +116,6 @@ Using the equation for the gradient flow $\dot{\theta} = - \frac{\eta}{2} \nabla
 \end{align}
 
 This gradient flow is guaranteed to be stables (meaning it will not diverge around the stationary point $\theta^*$) if the key matrix $\sum_{i=1}^n D^{\pi_i} \left(I - \gamma P \Pi \right)$ is positive definite \textcite{sutton1988learning}. 
-
-We can decompose our key matrix into the on-policy key matrix and a remainder easily
-\begin{align}
-    &\sum_{i=1}^n D^{\pi_i} \left(I - \gamma P\Pi \right) \\
-    =& \sum_{i=1}^n D^{\pi_i} \left(I - \gamma P\Pi + \gamma P\Pi_i - \gamma P\Pi_i \right) \\
-    =& \blue{\sum_{i=1}^n D^{\pi_i} \left(I - \gamma P\Pi_i \right)} + \gamma \red{\sum_{i=1} D^{\pi_i}P (\Pi_i - \Pi)} \enspace .
-\end{align}
-
-The \blue{first} group of summands are all positive definite, following \autoref{prop:aux}.
-As the sum of positive definite matrices is positive definite, the claim stands.
-
-However, the \red{second} group has no such guarantees.
-This highlights the role that the target policy action selection plays in the stability of Q learning.
-
 
 While the proof by \textcite{sutton1988learning}, which we use as a reference, discusses the stationary distribution of the Markov chain $P^\pi$, we define our loss in terms of a discounted state-action occupancy. 
 We therefore briefly prove an auxiliary result to extend the analysis to the case of discounted state occupancy probabilities.
@@ -190,8 +176,8 @@ In the next section we investigate this for a non-trivial task from the DMC suit
 \end{figure}
 
 In environments with large state-action space, ensuring coverage is difficult.
-To investigate whether learning is stable nonetheless, we train a model-free TD3 agent on the \emph{dog walk} environment \parencite{tunyasuvunakool2020}.
-The architecture is presented in \autoref{sec:mad:method}, and is regularized to prevent catastrophic divergence \parencite{hussing2024dissecting,nauman2024overestimation} and uses clipped double Q learning \parencite{fujimoto2018addressing}.
+To investigate whether learning is stable nonetheless, we train a model-free TD3 agent on the \emph{dog walk} environment \parencite{tunyasuvunakool2020dmcontrol}.
+The architecture is presented in detail in \autoref{sec:mad:method}, and is regularized to prevent catastrophic divergence (compare \autoref{chap:overestimation}), uses latent self-prediction to stabilize feature learning (compare \autoref{chap:understanding}), and uses clipped double Q learning \parencite{fujimoto2018addressing}.
 This means it uses the most common techniques which are designed to prevent misgeneralization and overestimation.
 
 While training a TD3 agent \parencite{fujimoto2018addressing}, we save transitions in a validation buffer with a 5\% probability.
@@ -203,12 +189,12 @@ This allows us to test how well our value function generalizes to target policy 
 The results are presented in \autoref{fig:mad:q_eval} and show a gap both between the train and validation sets, as well as the validation and the on-policy sets.
 While we use the on-policy state-actions to update the Q value, these estimates are not actually consistent with the environment.
 Furthermore, the Q value overestimation grows with increasing UTDs.
-This phenomenon was previously discussed in the context of over-training on limited data \parencite{hussing2024dissecting} .
+This phenomenon was previously discussed in the context of over-training on limited data \parencite{hussing2024dissecting}.
 
 The experiments show that the problem outlined in \autoref{sec:mad:theory} is not merely a mathematical curiosity, but that Q value generalization to out-of-replay-distribution actions is difficult in practice, and becomes more difficult with increasing update ratios.
 Even though full divergence is not observed as new data is continually added to the replay buffer, it takes a long time for the effects of severe early overestimation to dissipate.
 
-\subsection{Previous attempts to combat misgeneralization and overestimation}
+\subsection{Prior attempts to combat misgeneralization and overestimation}
 \label{sec:mad:prior}
 Prior strategies that deal with misgeneralization can be grouped into four major directions: architectural regularization to prevent divergence of the value function, pessimism or ensemble learning to combat overestimation, networks resets to restart learning, and synthetic data generation.
 While all of these interventions help to some degree, they each either do not solve the problem in full or cause additional issues.
@@ -222,7 +208,7 @@ If the error of the two critic estimators is assumed to be independent noise on 
 then using the minimum over both estimates is guaranteed to underestimate the true critic value in expectation.
 However, in complex settings this assumption on the the error of the critic estimates may not hold. 
 
-Ensembles \parencite{lan2020maxmin,chen2020randomized,hiraoka2022dropout,farebrother2023protovalue} or online tuning of the rate of pessimism \parencite{moskovitz2021tactical} have been proposed to obtain tighter lower bounds on the Q value.
+Ensembles \parencite{lan2020maxmin,chen2021randomized,hiraoka2022dropout,farebrother2023protovalue} or online tuning of the rate of pessimism \parencite{moskovitz2021tactical} have been proposed to obtain tighter lower bounds on the Q value.
 However, these strategies can be expensive as redundant models or hyperparameter tuning are needed.
 As a simpler strategy, recent works have also employed clipping to obtain an upper bound of the Q function to prevent divergence \parencite{fujimoto2024sale}.
 
@@ -248,7 +234,7 @@ However, model-based RL can also cause problems such as compounding world model 
 By using both real and model-generated data, we can trade-off these issues: on-policy data improves the value function and limits the impact of off-policy distribution shifts, while using only a limited number of model-generated samples prevents model errors from deteriorating the value estimates. 
 
 Our approach builds on the TD3 algorithm \parencite{fujimoto2018addressing} and uses an update ratio of 8 by default. 
-Our critic is updated with both model-based and real data following the DYNA framework \parencite{dyna}.
+Our critic is updated with both model-based and real data following the Dyna framework \parencite{dyna}.
 More precisely, we replace a small fraction $\alpha$ of samples $\{x,a,r,x'\}$ in each batch with samples from a learned model $\hat{p}$ starting from the same state $\{x, \pi(x), \hat{r} ,\hat{x}'\}$ with $\hat{r}, \hat{x}' \sim \hat{p}(\cdot|x, \pi(x))$. In our experiments, $\alpha$ is set to merely $5\%$.
 We term this approach Model-Augmented Data for TD learning ~(MAD-TD).%
 
@@ -272,6 +258,7 @@ We aim to reduce the complexity of TD-MPC2 to the minimal necessary components t
 \textbf{Encoder:}~~~~Like TD-MPC2, we parameterize the state with a learned encoder $\phi: \mathcal{X} \rightarrow \mathcal{Z}$ with a SimNorm nonlinearity \parencite{lavoie2023simplicial}. 
 This transformation groups a latent vector into groups of $k$ entries and applies a softmax transformation over each group.
 This bounds the norm of the features, which has been shown aid with stable training \parencite{hussing2024dissecting,nauman2024overestimation}.
+Note that while we observed benefits from using a stochastic network on some tasks in \autoref{chap:cvaml}, we chose deterministic encoders here for consistency with the baseline.
 
 \textbf{Critic representation and loss:}~~~We use the HL-Gauss transformation to represent the Q function \parencite{farebrother2024stop}. The critic loss is the cross-entropy between the estimated Q function's categorical representation and the bootstrapped TD estimate.
 To stabilize learning, we initialize the critic network towards predicting $0$ for all states.
@@ -320,11 +307,11 @@ This provides evidence that we are indeed able to overcome the unseen action cha
 \begin{wrapfigure}{r}{0.5\textwidth}
     \centering
     \includegraphics[width=0.5\textwidth]{figures/mad-td/critic_loss_dog_walk_model_based_separate.pdf}
-    \caption{Average loss values with and without the model generated data (compare \autoref{fig:mad:q_eval}) at UTD 1.}
+    \caption{Average loss values with and without model-generated data (compare \autoref{fig:mad:q_eval}) at UTD 1.}
     \label{fig:mad:exp_repeat}    
 \end{wrapfigure}
 \textbf{Performance with and without model data at varying UTD ratios:}~~~
-\begin{figure}[b]
+\begin{figure}[t]
     \centering
     \includegraphics[width=1.\linewidth]{figures/mad-td/hard_rliable_comp.pdf}
     \caption{Performance comparison on the hard tasks for \sbcblue{MAD-TD}, \sbcorange{BRO}, and \sbcgreen{TD-MPC}, with varying number of steps and action repeat settings. MAD-TD is on par with all baselines, has higher mean and IQM when trained for 2 million time steps and action repeat 2, and strongly outperforms TD-MPC2 and BRO at 1 million time steps with action repeat 2.}
@@ -333,7 +320,7 @@ This provides evidence that we are indeed able to overcome the unseen action cha
 In \autoref{fig:mad:main_dog} we present the impact of using model-based data across different UTD ratios.
 Humanoid results are found in \autoref{app:results_hum}.
 As is directly evident, across the dog tasks, we observe stagnating or deteriorating performance when increasing the update ratio, consistent with reports in prior work.
-However, when using a small fixed amount of model generated data, this trend is reversed across all tested environments, with performance improving or at least remaining consistent.
+However, when using a small fixed amount of model-generated data, this trend is reversed across all tested environments, with performance improving or at least remaining consistent.
 We find that with model-based data, training is stable across a range of UTDs, even beyond those tested in recent high UTD work \parencite{nauman2024bigger}.
 We also note that we observe only limited benefits from increasing the UTD ratio when properly mitigating \emph{misgeneralization}, except for the highly challenging dog run task, all other tasks perform on par with each other.
 
@@ -361,13 +348,14 @@ However, the BRO algorithm is not able to achieve reliable performance without r
 Overall, these results highlight that our model substantially improves the problems related to incorrect generalization of the value function, and that these are likely a major cause of the failure of high UTD learning in the DMC tasks.
 Conjectured problems like the primacy bias effect~\parencite{nikishin2022primacy} need to be carefully investigated as we do not find evidence that a primacy bias impacts MAD-TD's performance in the DMC environments. 
 Our work of course does not preclude the existence of phenomena such as loss of stability in different environments, architectures, or training setups.
+
 \begin{wrapfigure}{r}{0.26\textwidth}
     \centering
     \includegraphics[width=0.26\textwidth]{figures/mad-td/average_regret_all_envs.pdf}
     \caption{Average regret ($\downarrow$), mean over the hard suite. Lower regret corresponds to faster, more stable training. \sbcblue{MAD-TD} outperforms \sbcorange{BRO}.}
     \label{fig:mad:regret}    
+    \vspace{1em}
 \end{wrapfigure}
-
 \textbf{Continued training:}~~~To highlight the pitfalls of resets, we employ a common RL theory metric the per timestep average regret
 \begin{equation*}
     \overline{\text{Reg}}(T) = \frac{1}{T} \sum\nolimits_{t=0}^{T-1} \left(\mathcal{R}^* - \mathcal{R}_t\right) \enspace,
@@ -514,4 +502,4 @@ Our work opens up exciting avenues for future work.
 The issue of poor generalization in off-policy learning can likely be tackled with other approaches such as diffusion models \parencite{lu2024synthetic} or better pretrained foundation models, and our presented experiments provide an important baseline for such work.
 Furthermore, while we have purposefully kept our approach as simple as possible to validate our hypothesis, many ideas from the model-based RL community such as uncertainty quantification \parencite{pets,talvitie2024bounding}, multi-step corrections \parencite{buckman2018sample,hafner2020dream}, or policy gradient estimation \parencite{amos2021model} can be combined with our approach.
 Our insight that surprisingly little data is necessary to achieve strong correction can likely be leveraged in these other approaches as well to trade-off model errors and value function errors more carefully.
-Finally, while we chose the data to roll out in our models at random, our insights can likely be combined with ideas from the area of DYNA search control \parencite{pan2019hill,pan2020frequency} to select data points on which the correction has the most impact.
+Finally, while we chose the data to roll out in our models at random, our insights can likely be combined with ideas from the area of Dyna search control \parencite{pan2019hill,pan2020frequency} to select data points on which the correction has the most impact.

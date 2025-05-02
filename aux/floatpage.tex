@@ -1,0 +1,116 @@
+\usepackage{wrapfig}
+\usepackage{environ}
+\usepackage{xparse}
+\usepackage{varwidth}
+\usepackage{afterpage}
+
+\usepackage{lipsum}% MWE only
+\usepackage{showframe}
+
+\makeatletter
+\newsavebox{\wp@image}
+
+\NewDocumentEnvironment{wrappage}{O{0} m O{0} m}{\par
+% #1 (optional) is the number of lines until the end of the page
+% #2 is r (right) or l (left)
+% #3 (optional) is the number of lines for the image.
+% #4 width (or 0pt to compute).
+  \xdef\wp@page{#1}%
+  \ifnum\wp@page=0\relax
+    \dimen0=\dimexpr \pagegoal-\pagetotal-0.5\baselineskip\relax
+    \xdef\wp@page{\the\numexpr \dimen0/\baselineskip}%
+  \fi
+  \xdef\wp@side{#2}%
+  \xdef\wp@lines{#3}%
+  \xdef\wp@width{#4}%
+  \def\@captype{figure}%
+  \wp@environ}% body here
+{\endwp@environ
+  \ifnum\wp@lines=0\relax
+    \dimen0=\dimexpr \ht\wp@image+\dp\wp@image+\intextsep\relax
+    \xdef\wp@lines{\the\numexpr \dimen0/\baselineskip}%
+  \fi
+  \ifdim \wp@page\baselineskip>\dimexpr\wp@lines\baselineskip+\intextsep\relax% put figure on this page
+    \AddToHookNext{para/before}{\begin{wrapfigure}[\wp@lines]{\wp@side}{\wp@width}
+      \box\wp@image
+    \end{wrapfigure}}
+  \else
+    \if r\wp@side\relax
+      \wp@right% put image on right side
+    \else
+      \if l\wp@side\relax
+        \wp@left% put image on left side
+      \else
+        \errmessage{Bad wrappage argument: \textbf{\wp@side} must be \texbf{r} or \textbf{l}.}%
+      \fi
+    \fi
+  \fi
+}
+    
+\def\wp@right{% handle right side wrapfig
+  \afterpage{\xdef\wp@extra{\the\dimexpr \wp@lines\baselineskip-\ht\AP@partial-\dp\AP@partial}%
+    \rlap{\hspace{\dimexpr \textwidth-\wp@width}% stay in v;mode
+    \raisebox{\dimexpr \topskip-\height}[0pt][0pt]{\box\wp@image}}%
+    \vskip-\baselineskip
+    \unvbox\AP@partial
+    \AddToHookNext{para/after}{\leavevmode\vspace{-\baselineskip}%
+    \ifdim\wp@extra>0pt\relax
+      \begin{wrapfigure}{r}{\wp@width}
+        \vskip-\intextsep
+        \rule{0pt}{\wp@extra}
+        \vskip-\intextsep
+      \end{wrapfigure}\vskip-\baselineskip\indent
+    \fi}}%
+  \wp@make@parshape{\wp@page}{\wp@lines}%
+    {0pt}{\the\dimexpr \textwidth-\wp@width-\columnsep}%
+  \AddToHookNext{para/before}{\parshape=\wp@parshape}
+}
+
+\def\wp@left{% handle left side wrapfig
+  \afterpage{\xdef\wp@extra{\the\dimexpr \wp@lines\baselineskip-\ht\AP@partial-\dp\AP@partial}%
+    \noindent\raisebox{\dimexpr \topskip-\height}[0pt][0pt]{\box\wp@image}% stay in vmode
+    \vskip-\baselineskip
+    \unvbox\AP@partial
+    \AddToHookNext{para/after}{\leavevmode\vspace{-\baselineskip}%
+    \ifdim\wp@extra>0pt\relax
+      \begin{wrapfigure}{l}{\wp@width}
+        \vskip-\intextsep
+        \rule{0pt}{\wp@extra}
+        \vskip-\intextsep
+      \end{wrapfigure}\vskip-\baselineskip\indent
+    \fi}}%
+  \wp@make@parshape{\wp@page}{\wp@lines}%
+    {\the\dimexpr \wp@width+\columnsep}{\the\dimexpr \textwidth-\wp@width}%
+  \AddToHookNext{para/before}{\parshape=\wp@parshape}
+}
+
+\newcommand{\wp@make@parshape}[4]{%
+% #1 = number lines delay
+% #2 = number lines wrapped
+% #3 = left side wrapped
+% #4 = right side wrapped
+  \xdef\wp@parshape{\the\numexpr #1+#2+1}%
+  \count1=#1\relax
+  \loop\ifnum \count1>0
+    \advance\count1 by -1
+    \xdef\wp@parshape{\wp@parshape\space 0pt \the\textwidth}% delay
+  \repeat
+  \count1=#2\relax
+  \loop\ifnum \count1>0
+    \advance\count1 by -1
+    \xdef\wp@parshape{\wp@parshape\space #3 #4}% wrap
+  \repeat
+  \xdef\wp@parshape{\wp@parshape\space 0pt \the\textwidth}% back to normal
+}
+
+\NewEnviron{wp@environ}{% put \BODY into \wp@image
+  \ifdim\wp@width=0pt
+    \savebox\wp@image{\varwidth{\textwidth}
+      \renewcommand{\caption}[2][\empty]{\par}% dummy caption
+      \BODY
+    \endvarwidth}%
+    \xdef\wp@width{\the\wd\wp@image}%
+  \fi
+  \global\setbox\wp@image=\hbox{\parbox{\wp@width}{\BODY}}%
+}
+\makeatother

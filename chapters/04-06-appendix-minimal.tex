@@ -145,24 +145,6 @@ This observation is consistent with similar observation about model exploration 
 \end{figure}
 
 
-\subsection{SynthER comparison}
-\label{app:synther}
-
-We present a comparison of our method and SynthER on the hard DMC tasks.
-Results can be found in \autoref{fig:mad:synther}.
-
-As is evident from the lack of strong performance of SynthER, merely increasing the amount of generated data is insufficient to combat the failure of learning at high UTD.
-We find that the Q values of the SynthER agents quickly diverge on all tasks in which it is unable to learn.
-This strengthens our hypothesis that for hard tasks, off-policy action correction is vital to achieve strong results.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth]{figures/mad-td/hard_fs_1_synther.pdf}
-    \caption{\rebuttal{Performance curves for MAD-TD and SynthER on the hard DMC tasks. SynthER fails to achieve nontrivial results on most tasks, only outperforming a random policy on the humanoid walk and stand tasks. }}
-    \label{fig:mad:synther}
-\end{figure}
-
-
 \rebuttal{
 \subsection{TD-MPC2 ablation}
 \label{app:ablation}

@@ -14,14 +14,14 @@ Using the tractable surrogate model of a linear two-layer network, we were able 
 The learned features are compatible with those learned by temporal-difference based learning, which means the auxiliary loss is able to stabilize and improve the feature space without interfering with the core task of value representation.
 In addition to mathematically proving this relationship in the surrogate model, we also looked at empirical evidence that these insights transfer beyond tabular environments, and to more complex neural network architectures.
 
-We then took a look at \ac{mbrl} and found a similar issue with decision-aware learning in the iterVAMl framework as we previously discussed in the representation learning case.
-The lack of a good value function approximation early in training prevents a model based on the iterVAML loss from learning useful predictions.
+We then took a look at \ac{mbrl} and found a similar issue with decision-aware learning to that of value overestimation.
+The lack of a good value function approximation early in training prevents a model based on the IterVAML loss from learning useful predictions.
 This in turn prevents the agent from improving its policy, and so learning is stuck as no new information is gathered that can improve either model or value function.
 To break this cycle, we looked at using value function information to shape a simple mean squared loss.
 The value-gradient aware model learning loss uses the gradient of the estimated value function as a measure of sensitivity to penalize model errors based on their estimated impact on value prediction in each dimension.
 
 In the next chapter, we started combining the insights into model learning and representation learning.
-We first discussed the family of IterVAML-style losses that encompasses both MuZero and IterVAML.
+We first discussed the family of $(m,b)$-VAML losses that encompasses both MuZero and IterVAML.
 We showed that these losses lead to wrong model and value estimates when used with stochastic environment models.
 Finally, we highlighted how combining the latent self-prediction losses discussed in \autoref{chap:understanding} and value-aware model learning leads to reliable and useful model learning architecture.
 
@@ -31,31 +31,60 @@ This algorithm is a strong example of the benefits of combining decision-aware a
 
 \section{Future work}
 
-\epigraph{For these are other stories and they will be told another time}{adapted from \cite{ende1993neverending}}
+% \epigraph{For these are other stories and they will be told another time}{adapted from \textcite{ende1993neverending}}
 
-As discussed in the very beginning of the thesis, value function learning, as a central problem in \ac{rl}, cannot simply be solved in one thesis.
-Therefore we will conclude with a review of the many enticing open questions that this thesis leaves behind for future work.
+As discussed in the very beginning of the thesis, stable reinforcement learning, and especially value function learning as a central problem in \ac{rl}, will remain a challenging task even after we introduced many new insights and techniques that mitigate existing problems.
+Therefore we will now briefly survey some enticing open questions that this thesis leaves for future work.
 
-\subsection{Further combination of decision-aware and general purpose learning}
+\subsection{Decision-aware and general purpose learning}
 
 While this thesis looks mostly at value functions, self-supervised representation learning, and value-aware model learning, there are many other paradigms in \ac{rl} and planning that can be treated in a similar manner.
-For example, \textcite{abachi2020policy} present PAML, a policy-gradient aware model learning algorithm.
-It is an exciting question whether similar techniques to those presented in this thesis could be considered for stabilizing PAML.
-Other ideas in the spac
+Other ideas in the space of decision-aware model learning have also been considered in the literature
+For example, \textcite{abachi2020policy} present \ac{paml}, a policy-gradient aware model learning algorithm.
+However, similar to VAML and IterVAML, \ac{paml} has so far not been extensively used in the context of Deep Reinforcement Learning.
+It is an exciting question whether similar techniques to those presented in this thesis could be considered for stabilizing \ac{paml}.
+
+Beyond already published techniques for decision-aware learning, another important question is whether the underlying idea can be extended to other model-based algorithms.
+One promising candidate is Stochastic Value Gradient (SVG) \parencite{heess2015learning,amos2021model}, a technique that uses the end-to-end differentiability of modern neural network architectures to obtain first-order policy gradients.
+This technique has been used to obtain good policies for example as part of the Dreamer architecture and algorithm \parencite{hafner2020dream}.
+The difference between a zeroth-order and simulator-based first order policy gradient estimation has been receiving increased attention over the last years \parencite{xu2022accelerated,suh2022differentiable,antonova2022rethinking,georgiev2024adaptive}, with some works investigating learned models \parencite{ma2024transformer,georgiev2024adaptive}.
+Extending gradient-aware model learning to account for first-order gradient estimation is an important field for future work.
+
+\subsection{Explicit and implicit uses of model learning}
+
+In our work, we have shown explicit uses of world models to improve value function learning \parencite{voelcker2022value}, implicit uses of model-based losses to stabilize representation learning \parencite{voelcker2024when}, and combinations of both \parencite{voelcker2025calibrated,voelcker2025mad}.
+While we conclude in \autoref{chap:mad} that explicitly using world models provides an important stabilization for value function learning, other recent works obtain strong results without using learned models explicitly \parencite{fujimoto2025towards}.
+As we discuss in \autoref{chap:mad}, using a world model to improve value learning directly effectively trades off the generalization capabilities of the learned model with those of the value and policy.
+Therefore, an important avenue for future work is to build adaptive algorithms which can actively monitor this trade-off and uses the model and value function dynamically based on their relative performance.
+
 
 \subsection{Environment understanding}
 
 When discussing representing the information an agent gathers, a central question is what kind of task an agent is attempting to learn in the first place.
 Even though reinforcement learning should ostensibly be able to learn any task in any environment, practical necessity forces us to make many explicit choices in terms of architecture, loss, observation representation, and even rewards.
-As the theory and experiments in \autoref{chap:understanding} show, the structure of the environment is not irrelevant for choosing proper representation learning methods, and the same is true for any other choice as well.
+As the theory and experiments in \autoref{chap:understanding} show, the structure of the environment is not irrelevant for choosing proper representation learning methods, and the same is true for any other algorithmic design decisions as well.
 While this thesis and other works partially formalize and use concepts such as distracting dimensions, sparse rewards, and observation representations, much more work on studying the intersection between \ac{rl} algorithm design and environment structure is necessary.
-A preliminary proposal for environment-centered research was outlined in \textcite{voelcker2024can}, where we discuss the necessity of studying environemnts, and centering formalizeable and 
+A preliminary proposal for environment-centered research was outlined in \textcite{voelcker2024can}, where we discuss the necessity of studying environments.
+We propose to bring decision-making environments themselves into the focus of the reinforcement learning literature as an equal topic to the algorithms which are traditionally centered in the community.
+Our proposal is to structure this research around the goal of identifying formalizeable, testable, and impactful characteristics of environments.
+This will allow researchers, especially those focused on empirical methodologies, to test their algorithmic ideas more carefully, and give practitioners actionable guidelines for choosing algorithms based on the properties of their intended application.
 
-\subsection{Exploration}
-
-While this thesis has focused on representing information, another vital task in reinforcement learning is gathering information.
-
+Concretely, preliminary work conducted following up on \textcite{voelcker2024can} has shown that the instability of all methods presented in this thesis on the Hopper environment can largely be attributed to a complex, multi-modal start state distribution in this specific environment.
+This is an additional challenge for algorithms beyond those discussed in this thesis, as the problem is tied to the general problem of \emph{exploration}.
 
 \subsection{Multi-task learning}
 
-All techniques discussed in this 
+All techniques discussed in this thesis focus on a single-task setting in which the agent is solely aiming to optimize its cumulative reward from a single reward function.
+While this is the most common formalization of reinforcement learning, other ideas such as goal-conditioned reinforcement learning exist \parencite{kaelbling1993learning,schaul2015universal}.
+Goal-con\-ditioned reinforcement learning has recently incorporated many ideas from representation learning, such as learning features and value functions via contrastive objectives from offline datasets \parencite{eysenbach2022contrastive}.
+These ideas provide an alternative to the model-based approaches presented in this thesis, or could also be combined with them.
+Goal-conditioned learning provides another way to bridge the gap between general-purpose and task-driven learning, as practitioners can provide distributions over relevant goals or tasks naturally.
+
+\section{Final remarks}
+
+% \epigraph{Truth is found neither in the thesis nor the antithesis, but in an emergent synthesis which reconciles the two.}{Georg Wilhelm Friedrich Hegel}
+
+Beyond specific algorithms and approaches, which will likely soon be overtaken by better ones, the more important contribution of a thesis is an overarching idea.
+I hope this thesis will leave readers with the following: that pitting general-purpose against decision-driven learning creates a false dichotomy.
+A more promising, fruitful, and perhaps also challenging direction forward is to instead see both as two sides of a spectrum and ask what algorithms are able to synthesize the best of both worlds.
+Recognizing this as an important direction for algorithm design will allow us to move closer and closer to the overarching dream of truly intelligent and autonomous agents acting in the messy complexity of the real world.

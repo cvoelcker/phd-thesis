@@ -69,7 +69,7 @@ The value-weighing baseline is unable to achieve satisfactory performance even o
     \includegraphics[width=\textwidth]{figures/vagram/cheetah_nonorm.pdf}
 \end{minipage}
 \end{center}
-    \caption{\revised{Comparison of VaGraM and \ac{mbpo} on the Mujoco tasks presented in \textcite{mbpo}. Lines mark average performance over 8 seeds and shaded areas mark the standard error of the mean. We see that VaGraM is able to perform on par with the \ac{mbpo} implementation on the HalfCheetah and Walker tasks. It is unstable on the Ant task however.}}
+    \caption{\revised{Comparison of VaGraM and \ac{mbpo} on the Mujoco tasks presented in \textcite{janner2019mbpo}. Lines mark average performance over 8 seeds and shaded areas mark the standard error of the mean. We see that VaGraM is able to perform on par with the \ac{mbpo} implementation on the HalfCheetah and Walker tasks. It is unstable on the Ant task however.}}
     \label{fig:mujoco}
 \end{figure}
 
@@ -104,7 +104,7 @@ It is likely that the HalfCHeetah environment is now over-regularized which woul
     \includegraphics[width=\textwidth]{figures/vagram/cheetah.pdf}
 \end{minipage}
 \end{center}
-    \caption{Comparison of VaGraM and \ac{mbpo} on the Mujoco tasks presented in \textcite{mbpo} using normalization \parencite{bjorck2022is}. The instability on the Ant task is solved using the normalization, but the performance on HalfCheetah and Walker2d suffers.}
+    \caption{Comparison of VaGraM and \ac{mbpo} on the Mujoco tasks presented in \textcite{janner2019mbpo} using normalization \parencite{bjorck2022is}. The instability on the Ant task is solved using the normalization, but the performance on HalfCheetah and Walker2d suffers.}
     \label{fig:norm_mujoco}
 \end{figure}
 
@@ -138,7 +138,7 @@ The used non-linearity is ReLU.
 All experiments were implemented in PyTorch \parencite{pytorch} and were not specified, the standard initialization of the library were kept.
 The exact versions of all used libraries are documented in the provided source code.
 
-To assure a fair comparison we used the hyperparameters provided by \textcite{mbpo} for all experiments with our approach and the NLL loss function used for the baseline.
+To assure a fair comparison we used the hyperparameters provided by \textcite{janner2019mbpo} for all experiments with our approach and the NLL loss function used for the baseline.
 All models used were fully connected neural networks with SiLU non-linearities and standard initialization.
 For all experiments with full model size we followed \ac{mbpo} and used seven ensemble members with four layers and 200 neurons per layer.
 
@@ -216,7 +216,7 @@ If other approximation schemes are used, this property needs to be checked and p
     \label{fig:deterministic_experiment}
 \end{figure}
 
-In our experiments in the Hopper domain, we used probabilistic models following \textcite{mbpo}. 
+In our experiments in the Hopper domain, we used probabilistic models following \textcite{janner2019mbpo}. 
 To verify that the improvement in performance did not result from using a deterministic model instead of a probabilistic model, we repeated the experiment showing the impact of smaller model sizes, and replaced the probabilistic Gaussian ensemble with an ensemble of deterministic functions trained with the mean squared error loss between sample and state prediction.
 All other implementation details, architecture and hyperparameters were kept fixed. The results are shown in \autoref{fig:deterministic_experiment}.
 In this ablation, we do indeed see that a mean squared trained model capture the dynamics information better than a model that is trained using negative log likelihood.

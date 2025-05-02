@@ -1,1 +1,32 @@
-\todo[inline]{To write}
+Reinforcement learning (RL) is one of the most promising pathway towards building decision-making systems that can learn from their own successes and mistakes.
+However, despite their potential, RL agents often struggle to learn complex tasks, proving too inefficient and unstable to be used in practice.
+To enable RL-based agents to live up to their potential, we need to address these limitation.
+Addressing this challenge is the focus of this thesis.
+
+% This thesis posits that the inefficiency of RL systems is directly linked to the premise of learning from scalar rewards.
+% Traditional model-free reinforcement learning agents learn solely from a delayed scalar reward function, which is a challenging undertaking.
+% All information about the environment, the impact of actions, and the structure of transitions is compressed into a single, potentially even sparse, variable.
+% As a result, such algorithms tend to be sample inefficient and unstable, as they need to extract a lot of information from a compressed signal.
+% However other signals from an agent's environment are available, and agents need to exploit these for efficient learning.
+% 
+% Autonomous agents can be trained to predict other information about their environments beyond reward.
+% For example, autonomous vehicles can learn to model traffic in a self-supervised fashion before driving.
+% Such {models} can be used to improve the agent, for example by planing novel strategies before acting.
+% However, modeling the whole world is also inefficient, as many details in observations are irrelevant.
+% For example, a self-driving car should not be influenced be the movement of clouds in its camera feed.
+% When trained solely to predict the world, agents are inefficient in their use of computational resources.
+% 
+% These observations lead to the foundational question of this thesis: How can an autonomous agent efficiently use all available information to perform its task, without wasting resources on modeling irrelevant details of its environment?
+
+To address these problems, this thesis begins with investigating the mechanisms that lead to unstable and inefficient value function learning.
+We find that learned value functions tend to overestimate real returns during training, and that this overestimation is linked to unstable learning in the feature representation layers of neural networks.
+To counteract this, we discuss the need for proper normalization and regularization of learned value approximations.
+Building on this insight, we then investigate model-based auxiliary tasks to stabilize feature learning further.
+We find that model-based self-prediction leads to superior features when combined with value learning objectives.
+
+Moving beyond feature learning, we next investigate the paradigm of decision-aware model learning.
+We find that, similar to the issues encountered in representation learning, tying model updates to the value function can lead to unstable and even diverging model learning.
+We first discuss how to mitigate this problem in observation-space models by using the value function gradient to measure its sensitivity with regard to model errors.
+We then move on to combine our insights into representation learning and model learning.
+We discuss the family of value-aware model learning algorithms and show how to extend its losses to account for learning with stochastic models.
+Finally, we show that combining all previous insights in a unified architecture can lead to stable and efficient value function learning.
