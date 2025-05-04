@@ -78,7 +78,7 @@ maxbibnames = 1000,
  } %
 \makeatother
 
-\DeclareNameAlias{sortname}{family-given}
+% \DeclareNameAlias{sortname}{family-given}
 
 
 \renewcommand{\chapterautorefname}{Chapter}
@@ -98,6 +98,18 @@ maxbibnames = 1000,
 \newtheorem{insight}{Insight}
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
+
+\numberwithin{theorem}{subsection}
+\numberwithin{assumption}{subsection}
+\numberwithin{proposition}{subsection}
+\numberwithin{inftheorem}{subsection}
+\numberwithin{lemma}{subsection}
+\numberwithin{corollary}{subsection}
+\numberwithin{conjecture}{subsection}
+\numberwithin{claim}{subsection}
+\numberwithin{insight}{subsection}
+\numberwithin{definition}{subsection}
+\numberwithin{remark}{subsection}
 
 
 \definecolor{sb1}{HTML}{1f77b4}

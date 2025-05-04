@@ -176,8 +176,8 @@ Given the scope of this thesis, we will focus solely on value driven methods tha
 When the state and action sets are finite, all relevant components of the \ac{mdp} problem can be represented by vectors and matrices.
 If the MDP has $n = |X|$ distinct states, the policy-conditioned transition kernel $\P^\pi$ becomes a matrix of shape $n \times n$, and the reward and state value function a vector of shape $n$.
 
-Following standard Markov chain notation, any distribution over states is written as a row vector $\state = [p(\state_1),\dots, p(\state_n)]$ and the transition probability is given as $$\left[\sum_{i=1}^n \P(\state_0|\state_i), \dots, \sum_{i=1}^n \P(\state_n|\state_i)\right] = \state \P^\pi.$$
-The expected reward over a state distribution is also easily expressed as an inner product $\langle \state,r\rangle.$
+Following standard Markov chain notation, any distribution over states is written as a row vector $\mathbf{\state} = [p(\state_1),\dots, p(\state_n)]$ and the transition probability is given as $$\left[\sum_{i=1}^n \P(\state_0|\state_i), \dots, \sum_{i=1}^n \P(\state_n|\state_i)\right] = \mathbf{\state} \P^\pi.$$
+The expected reward over a state distribution is also easily expressed as an inner product $\langle \mathbf{\state},r\rangle.$
 We will frequently make use of the fact that $V^\pi = \sum_{i=0}^\infty \gamma^i \P^i r = (I - \gamma \P^\pi)^{-1}r$.
 This again assumes that the infinite sum converges, as discussed previously.
 Beyond the results presented here which are foundational for all chapters, we present some additional results and lemmas, mostly taken from the literature in \autoref{app:formal}.
@@ -198,7 +198,7 @@ The corresponding value function then becomes
 $$V^{\pi_\mathrm{new}}(\state) = \max_a \left[r(\state,a) + \gamma \mathbb{E}_{\state'\sim\mathcal{P}(\cdot|\state,a)}\left[V^\pi\left(\state'\right)\right]\right] \geq V^\pi(\state).$$
 
 By greedily picking the best action under the one step reward and the \emph{current} policy's value function, the agent is guaranteed to receive at least the same future reward in each state as previously.
-This lays the foundation for a whole class of methods that all follow the same loop: pick a policy, compute its value function, improve the policy based on the value function, and repeat.
+This lays the foundation for a whole class of methods that all follow the same recipe: pick a policy, compute its value function, improve the policy based on the value function, and repeat.
 The standard examples of such algorithms are \ac{pi} and \ac{vi}, which require full knowledge of the transition kernel and reward.
 
 \paragraph{Policy Iteration}
@@ -242,41 +242,53 @@ Therefore, it is generally useful to leverage approximations which are efficient
 In this thesis, we are foremost interested in parametric approximations.
 
 \begin{definition}[Parametric approximation]
-    A parametric approximation of a value function is defined by a $k$-dimensional \emph{weight vector} $\omega \in \mathbb{R}^k$ a function $V: \states \times \mathbb{R}^k \rightarrow \mathbb{R}$.
+    A parametric approximation of a value function is defined by a $k$-dimensional vector $\omega \in \mathbb{R}^k$ and a function $V: \states \times \mathbb{R}^k \rightarrow \mathbb{R}$.
 \end{definition}
 
-In this thesis, we will mostly use linear function approximations (in \autoref{chap:understanding})
+In this thesis, we will mostly consider neural networks and use linear function approximations in \autoref{chap:understanding} to develop a theoretical model of representation learning.
 
 Once we have parameterized function, we cannot simply apply the Bellman operators in closed form as we did to obtain \ac{vi} and \ac{pi} in the tabular domain.
 To obtain the optimal weights of a parametric value function, we require a learning algorithm.
-While there is a huge variety of such algorithms, many currently popular ones revolve around the same core concept, approximate value iteration.
+While there is a huge variety of such algorithms, many currently popular ones revolve around the same core concept, approximate value or policy iteration.
+Approximate value iteration seeks a function in each iteration that is as close to $[\mathcal{T}V]$ as possible.
+To understand how to achieve this, we will quickly review some core concepts in machine learning and \ac{erm}.
 
-\subsubsection{Loss functions for Value Learning}
+\subsubsection{Empirical Risk Minimization}
 
 In machine learning, the most common way to find the optimal parameters of a function is by minimizing a loss function.
-Given a parametric function $f_\theta(x): \states \rightarrow \mathcal{Y}$, and prediction targets $y$, the loss function $l: \mathcal{Y} \times \mathcal{Y} \rightarrow \mathbb{R}$ is computed to measure the error between the prediction and the target.
-Often, these loss functions are distance functions such as the squared $L_2$ distance $l(y, f_\theta(x)) = \|y - f_\theta(x)\|^2$.
+Given a parametric function $f_\theta(x): \states \rightarrow \mathcal{Y}$ from some function class $\mathcal{F}_\theta$, and prediction targets $y$, the loss function $l: \mathcal{Y} \times \mathcal{Y} \rightarrow \mathbb{R}$ is computed to measure the error between the prediction and the target.
+Often, these loss functions are distance functions such as the squared $L_2$ distance $l(y, f_\theta(x)) = \|y - f_\theta(x)\|^2.$
 
-Let $D = \{(x_1, y_1) \dots, (x_N, y_N)\}$ be some dataset and $\mathcal{L}(f_\theta,D) = \frac{1}{|D|} \sum_{i=1}^N l(y_i, f(x_i))$.
-Then the optimal function $f^*$ from some function class $\mathcal{F}$ is $$f^* = \argmin_{f \in \mathcal{F}} \mathcal{L}(f_\theta,D).$$
-To obtain an approximately optimal function, most modern machine learning relies on \ac{gd}, although \ac{gd} can only be proven to converge to local minima.
-The value function $V^\pi$ could in principle be obtained from targets obtained with the current policy trajectories from the environment, so that $$\mathcal{L}(\hat{V}, \{\state, \tau_{\state}\}_N) = \frac{1}{N} \sum_{i=1}^N \left(J(\tau_{\state_i}) - \hat{V}(\state_i)\right)^2.$$
+The goal of \ac{erm} is minimize the expected loss of our function estimation under some distribution $P$ over data points $x$ and targets $y$.
+Formally, we aim to find $$f^* = \argmin_{f_\theta\in\mathcal{F}_\theta} \int l(y, f_\theta(x)) \mathrm{d} P(x,y).$$
+However, we generally do not have access to the distribution $\mu$ in a way that allows us to freely sample unlimited data points $(x,y)$.
+Therefore, we instead assume access to a fixed dataset $D = \{(x_1, y_1) \dots, (x_N, y_N)\}$ which is distributed according to $P$ and define $\mathcal{L}(f_\theta,D) = \frac{1}{|D|} \sum_{i=1}^N l(y_i, f(x_i))$.
+Then the optimal function $f^*$ according to the empirical measure defined via $D$ is $$\hat{f}^* = \argmin_{f_\theta \in \mathcal{F}_\theta} \mathcal{L}(f_\theta,D).$$
+We will generally use the notation $\mathbb{E}_D$ interchangeably with $\mathbb{E}_P$ throughout this thesis to signify an expectation taken across every possible dataset taken from $P$.
+
+The study of when and how quickly the empirically optimal function $\hat{f}^*$ approaches the function that minimizes the expected loss over the underlying distribution $f^*$ is an important area of research in machine learning.
+In this thesis, we will focus on examples of loss functions which are mis-calibrated, which means that $\hat{f}^*$ does not converge to $f^*$ as we increase the size of the dataset.
+In the next section, we will review the well-known case of the double sampling problem, and we will encounter this problem again in \autoref{chap:cvaml} in the context of decision-aware model losses.
+We will also introduce the notion of mis-calibration formally there.
+
+\subsubsection{Loss functions for Value Learning}
+The value function $V^\pi$ could in principle be obtained from trajectories of the current policy, by computing $$\mathcal{L}(\hat{V}, \{\state, \tau_{\state}\}_N) = \frac{1}{N} \sum_{i=1}^N \left(J(\tau_{\state_i}) - \hat{V}(\state_i)\right)^2.$$
 Such an approach is called a Monte Carlo approach, as it relies on a Monte Carlo or sample-based approximation of the value function.
-
-\paragraph{Bellman Residual Minimization and the Double Sampling Problem}
 However, the Monte Carlo approach does not take advantage of the Bellman decomposition of the value function.
+
 If we use this structure, we can greatly improve the sample efficiency of our approach, as we do not need to collect full trajectories for each state we want to estimate the value function on.
 To do this, we need to define a loss function that depends on the value estimate in the target as well.
+
+\paragraph{Bellman Residual Minimization and the Double Sampling Problem}
 Naively, we might want to try and minimize a loss function of the form
 $$\mathcal{L}_\mathrm{res}\left(\hat{V}, \{\state, r, \state'\}_{N}\right) = \frac{1}{N} \sum_{i=1}^N \left(\hat{V}(\state_i) - r_n - \gamma \hat{V}(\state'_i)\right)^2.$$
-
 This is called \emph{Bellman Residual Minimization}, and we can show that it does not lead to a correct value function estimate.
 This result is well known in the reinforcement learning literature, see e.g. \textcite[p. 299]{suttonbook}.
 We will briefly review the proof here as similar techniques will be relevant to show issues with similar loss functions in \autoref{chap:cvaml}.
 
 
 \begin{proposition}[The Double Sampling Problem]
-    Let $D$ be a dataset of $(\state_i,r_i,\state'_i)$ tuples sampled from the stationary distribution of some \ac{mdp}  $M$ with transition kernel $\P$ and fixed policy $\pi$.
+    Let $D$ be a dataset of $(\state_i,r_i,\state'_i)$ tuples sampled from the stationary distribution of some \ac{mdp}  $\mathcal{M}$ with transition kernel $\P$ and fixed policy $\pi$.
     There exist function classes $\mathcal{V}$ that include $V^\pi$, the ground truth value function for $\P^\pi$, but for which 
     \[V^\pi \notin \argmin_{\hat{V} \in \mathcal{V}} \mathbb{E}_{x,r,x' \sim \mu} \left[\mathcal{L}_\mathrm{res}(\hat{V}, \{\state, r, \state'\})\right].\]
 \end{proposition}
@@ -298,7 +310,7 @@ However, we are left with a variance like term
     \mathbb{E}_{D} \left[\mathcal{L}_\mathrm{res}(V^\pi, \{x, r, x'\}_N)\right] &= \mathbb{E}_{D} \left[\frac{1}{N} \sum_{n=1}^N \left(V^\pi(x_n) - r_n - \gamma V^\pi(x'_n)\right)^2\right] \\
     &=\mathbb{E}_{D} \left[\left(\underbrace{V^\pi(x) - V^\pi(x)}_{=0}\right)^2\right] + \mathbb{E}_{D}\left[\left( V^\pi(x) - r - \gamma V^\pi(x')\right)^2\right] \\
     &\quad - \mathbb{E}_{D}\left[\underbrace{\left(\hat{V}(x) - V^\pi(x)\right)}_{=0}\left( V^\pi(x) - r - \gamma \hat{V}(x')\right)\right]\\
-    &=\mathbb{E}_{D}\left[\left( V^\pi(x) - r - \gamma V^\pi(x')\right)^2\right] \neq 0.
+    &=\mathbb{E}_{D}\left[\left( V^\pi(x) - r - \gamma V^\pi(x')\right)^2\right] > 0.
 \end{align}
 
 Our formal statement requires a function that minimizes this loss better than the ground truth value function in our function class.
@@ -327,6 +339,12 @@ The later mimics the structure of the Bellman fixed-point iteration, but as it c
 On the other hand, updating the target at every step can prove to be very unstable in practice.
 Instead of these extremes, most common algorithms either use a fixed, but large, update period, e.g. 1000 steps, \parencite{dqn} or use a Polyak average of the parameters $\theta_\mathrm{target} \leftarrow (1 - \alpha) \theta_\mathrm{target} + \alpha \theta$ with a small value for $\alpha$ \parencite{td3}.
 
+The introduction of a bootstrapped target that depends on the value estimate itself lies at the heart of (almost) all problems discussed in this thesis.
+With this design choice, we have introduced non-stationarity in the targets of our optimization problems which leads to unstable optimization.
+However, it is crucial to understand that we do not make this decision lightly.
+Relying on the Bellman backup instead of Monte-Carlo estimates makes many of our algorithms vastly more efficient.
+As our goals are stable \emph{and efficient} value learning, we will therefore not avoid but embrace the use of bootstrapped target estimation.
+
 \paragraph{Policy improvement}
 
 After establishing a loss function that can be used to learn parametric value function approximations, we can apply (approximate) \ac{vi} or \ac{pi} to obtain policy updates.
@@ -339,7 +357,7 @@ In this thesis, we will mostly rely on the \ac{dpg}, which is introduced in \aut
 
 \paragraph{On- and off-policy learning}
 
-, we also need data to train on.
+In addition to a loss function, we also need a dataset to train on.
 Here, two major strategies dominate: on-policy and off-policy learning.
 
 In \emph{on-policy} learning, all data comes from a single policy, the one for which we are attempting to estimate the value.
@@ -388,15 +406,15 @@ The double critic's loss function is
 \end{align}
 The actor update also maximizes this minimum over both critics
 \begin{align}
-    \mathcal{L}(\pi| \state, Q_1, Q_2) = - \min_{j \in [1,2]} Q_i(\state, \pi(\state)).
+    \mathcal{L}(\pi| \state, Q_1, Q_2) = - \min_{j \in \{1,2\}} Q_i(\state, \pi(\state)).
 \end{align}
 With some assumptions on the noise this max-min structure can be proven to prevent overestimation.
 However, as will be discussed in \autoref{chap:overestimation}, these assumptions are not met in practice.
 Therefore, while this trick is helpful, by itself it is insufficient by itself to prevent overestimation.
 In addition to statistical error, the optimization process of the critic can be unstable and lead to overestimation.
 
-\ac{sac} uses the same double critic structure of \ac{td3} and modifies the critic to optimize a maximum entropy objective.
-For this, the critic target is modified to include the stochastic policies entropy over the next state
+\ac{sac} uses the double critic structure of \ac{td3} and modifies the critic to optimize a maximum entropy objective.
+For this, the critic target is modified to include the stochastic policy's entropy over the next state
 \begin{align}
     \mathcal{L}(Q_i| \state, a, r, \state', \pi) = \left(Q_i(\state,a) - \left[r + \gamma \min_{j \in [1,2]}Q_j(\state', a') - \log \pi(a'|\state')\right]\right)^2, \quad a'\sim\pi(\cdot|\state').
 \end{align}
@@ -406,12 +424,13 @@ The policy objective function is similarly modified
 \end{align}
 This maximum entropy modification can be interpreted in the framework of ``control-as-inference'' \parencite{levine2018reinforcement} and has been shown to be empirically more stable than \ac{td3}.
 However, it is also computationally slightly more expensive as it involves a sampling operation, and so several algorithms proposed in this thesis will use \ac{td3} instead of \ac{sac}.
+Our insights are generalizable to most algorithms from the \ac{dpg}/\ac{td3}/\ac{sac} family.
 
 \section{Model-Based Reinforcement Learning}
 \label{sec:model_learning}
 
 Many reinforcement learning algorithms compute their value functions and policies directly based on past data from the environment.
-In \ac{mbrl} on the other hand, a predictive \emph{model}\footnote{\emph{Model} is a notoriously ambiguous term in machine learning. In the context of this thesis, the word \emph{model} is used solely to describe an approximation of a transition function, reward function, or a similar object, while neural networks and other architectures will be referred to as \emph{function approximators} or simply \emph{functions}.} of the environment is trained and used in the \ac{rl} algorithm.
+In \ac{mbrl} on the other hand, a predictive \emph{model}\footnote{\emph{Model} is a notoriously ambiguous term in machine learning. In the context of this thesis, the word \emph{model} is used solely to describe an approximation of a transition function, reward function, or a similar object, while neural networks and other types of function approximators will be referred to as \emph{function approximators} or simply \emph{functions}.} of the environment is trained and used in the \ac{rl} algorithm.
 This model can be used to augment the learning, either by providing additional data as in the Dyna architecture \parencite{dyna}, or by providing gradient estimates \parencite{hafner2020dream,amos2021model}, or simply to enhance the representation learning as we will discuss in \autoref{chap:understanding}.
 
 The most common kind of model used in \ac{mbrl} is a \emph{forward prediction model}.
@@ -445,7 +464,7 @@ Given a dataset, an approximate model $\hat{p}$ can be trained using a \ac{mle} 
 \end{align}
 For example, a Gaussian environment model, such as the ones used by \textcite{pets,janner2019mbpo} as well as in \autoref{chap:vagram}, uses the Gaussian negative log likelihood over a dataset as the loss function
 \begin{align}
-    &\mathcal{L}_\mathrm{model}(\mu_\theta, \Sigma_\theta; D) = - \frac{1}{N} \sum_{i=1}^N \left[\log |\Sigma_\theta(x_i, a_i)| + (x'_i - \mu_\theta(x_i, a_i))^\top \left(\Sigma^{-1}_\theta(x_i, a_i) \right) (x'_i - \mu_\theta(x_i, a_i)) \right].
+    &\mathcal{L}_\mathrm{model}(\mu_\theta, \Sigma_\theta; D) = - \frac{1}{N} \sum_{i=1}^N \left[\log \mathcal{N}(x_i' | \mu_\theta(x_i,a_i), \Sigma_\theta(x_i, a_i)) \right].
 \end{align}
 For deterministic models, a common objective is the \ac{mse}
 \begin{align}
@@ -518,7 +537,7 @@ In this thesis we will use \ac{mpc}-based methods in \autoref{chap:mad} to impro
 Beyond learning with Dyna and planning, models can be incorporated into learning in a variety of other ways.
 Again, while a thorough survey of model-based reinforcement learning is out of scope for this thesis, we will highlight some additional ideas here as they are relevant for this thesis and related work.
 
-\paragraph{Model-based representation learning:} Instead of using the model directly as an oracle or simulator, a model learning loss can instead be used to improve the intermediate representations of a neural network-based agent.
+\paragraph{Model-based representation learning:} Instead of using the model directly as an oracle or simulator, a model learning loss can be used to improve the intermediate representations of a neural network-based agent.
 This technique is one example of learning with \emph{auxiliary} tasks \parencite{jaderberg2017reinforcement}.
 This idea will become an important aspect of this thesis, and will be the focus of \autoref{chap:understanding}.
 Therefore we forgo a lengthy introduction here and refer readers to the upcoming chapter.
@@ -542,13 +561,13 @@ Extending their work, \textcite{oh2017value} show how to build an abstract model
 \label{chap:background:objective}
 
 One of the most important insights that form the basis of this thesis is the fact that model training objectives such as \ac{mle} are not aligned with the objective of \emph{training a good model for \ac{rl}} \parencite{schneider1997exploiting,joseph2013reinforcement,vaml,lambert202objective}.
-As a simple example, assume a Dyna setting where a sample is collected from a deterministic model and has an error ${\color{uoftred}\epsilon}$.
+As a simple example, assume a Dyna setting where a sample is collected from a deterministic model and has an error $\epsilon$.
 A value function based method will use the model sample to compute a biased bootstrap target
 \begin{align}
-    Q_k(\state,a) = r(\state,a) + \gamma Q_{k-1}(f(\state, a) {\color{uoftred} + \epsilon}).
+    Q_k(\state,a) = r(\state,a) + \gamma Q_{k-1}(f(\state, a) + \epsilon).
 \end{align}
 
-The impact of the modelling error on the value function therefore depends both on the size of the error and the local behavior of the value function, and not only on the absolute value of ${\color{uoftred}\epsilon}$. 
+The impact of the modelling error on the value function therefore depends both on the size of the error and the local behavior of the value function, and not only on the size of $\epsilon$. 
 We could colloquially say that not all errors are created equal.
 
 As another illustrative example, we can imagine a value function that only depends on a subset of all state observation dimensions. 
@@ -574,7 +593,7 @@ However, in this thesis our main focus is on value function learning, which mean
 To address the model mismatch, \textcite{vaml} proposed \emph{Value-aware Model Learning} (VAML), a loss function that captures the impact the model errors have on the one-step value estimation accuracy.
 The core idea behind VAML is to penalize a model prediction by the resulting difference in a value function. Given a distribution over the state-actions space $\mu$ and a value function $V$, it is possible to define a value-aware loss function $\mathcal{L}_V(\hat{p}, p, \mu)$
 \begin{align}
-    &\mathcal{L}_V(\hat{p}, p, \mu) = \int \mu(\state,a) \bigg|\overbrace{\int p(\state'|\state,a)V(\state')\mathrm{d}\state'}^{\text{environment value estimate}}  - \overbrace{\int \hat{p}(\state'|\state,a) V(\state') \mathrm{d}\state'}^{\text{model value estimate}}\bigg|^2 \mathrm{d} (\state,a).
+    &\mathcal{L}_V(\hat{p}, p, \mu) = \int \mu(\state,a) \bigg|\underbrace{\int p(\state'|\state,a)V(\state')\mathrm{d}\state'}_{\text{environment value estimate}}  - \underbrace{\int \hat{p}(\state'|\state,a) V(\state') \mathrm{d}\state'}_{\text{model value estimate}}\bigg|^2 \mathrm{d} (\state,a).
 \end{align}
 and its empirical approximation $\hat{\mathcal{L}}_V$ based on a dataset $D = (\state_i,a_i,\state'_i)_{i=1}^N$ of samples from $\mu$ and $p$
 \begin{align}
@@ -582,7 +601,7 @@ and its empirical approximation $\hat{\mathcal{L}}_V$ based on a dataset $D = (\
 \end{align}
 
 The main problem of this approach is that it relies on the value function, which is not known a priori while learning the model. 
-This leads to the "chicken-or-egg" problem of decision aware learning which will be the focus of \autoref{chap:vagram}:
+This leads to the "chicken-egg" problem of decision aware learning which will be the focus of \autoref{chap:vagram}:
 
 \begin{quote}
     {If a good model depends on knowing the correct decisions and good decisions need to be learned using the model, how can we learn a good model before knowing what the correct decision is?}
@@ -619,8 +638,8 @@ This has led to the establishment of research into \emph{learning dynamics} \par
 
 \subsubsection{Desirable properties of representations}
 
-Before discussing how representation learning in RL can be improved, it is necessary to characterize representations that leads to good performance in \ac{rl}.
-As discussed above, in many classic \ac{rl} approaches, that state space is taken to be a finite set of unordered states without any metric or distance between these except for the one induced by the transition function.
+Before discussing how representation learning in RL can be improved, it is necessary to characterize representations that lead to good performance in \ac{rl}.
+As discussed above, in many classic \ac{rl} approaches, the state space is taken to be a finite set of unordered states without any metric or distance between these except for the one induced by the transition function.
 Over such abstract states, one of the most commonly considered representations is a state aggregation.
 State aggregations are thoroughly discussed by \textcite{abel2020thesis}, where three core desiderata are established: good state aggregations should be easy to compute, enable efficient learning, and allow the selection of high-value policies.
 

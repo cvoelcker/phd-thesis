@@ -7,11 +7,12 @@
 
 \newcommand{\revised}[1]{#1}
 \section{Introduction}
-\ac{mbrl} is a sample-efficient approach to obtain a policy for a given control problem. 
-It solves the control optimization into two interleaved stages: model learning and policy learning or planning. 
-In the \emph{model learning} stage, an approximate model of the environment is learned which is then utilized in the \emph{planning} stage to generate new experience without having to query the original environment. 
-Often this process is repeated by continually updating the model with new experience and replanning based on the updated model. 
-\ac{mbrl} is an enticing paradigm for scenarios in which samples of the true environment are difficult or expensive to obtain, such as computationally intensive simulators, real-world robots, or environments involving humans, since the model can be used to generalize the policy to unseen regions of the state space. 
+% \ac{mbrl} is a sample-efficient approach to obtain a policy for a given control problem. 
+% It solves the control optimization into two interleaved stages: model learning and policy learning or planning. 
+% In the \emph{model learning} stage, an approximate model of the environment is learned which is then utilized in the \emph{planning} stage to generate new experience without having to query the original environment. 
+% Often this process is repeated by continually updating the model with new experience and replanning based on the updated model. 
+While our previous chapters have focussed on representation learning, we will now shift our focus to decision-aware model learning.
+Model-based RL is an enticing paradigm for scenarios in which samples of the true environment are difficult or expensive to obtain, such as computationally intensive simulators, real-world robots, or environments involving humans, since the model can be used to generalize the policy to unseen regions of the state space. 
 The approach has received a lot of attention and significant progress has been made in the field \parencite{dyna,deisenroth2011pilco,levine2013guided,hafner2020dream,moerland,schrittwieser2020mastering}.
 
 One of the core problems of model-based policy learning methods, however, is that the accuracy of the model directly influences the quality of the learned policy or plan \parencite{schneider1997exploiting,kearns2002near,ross2012agnostic,talvitie2017self,luo2018algorithmic,janner2019mbpo}. 
@@ -37,7 +38,7 @@ Beyond pedagogical domains, we show that VaGraM performs on par with a current s
 One of the main drawbacks of model-based reinforcement learning is the fact that model errors propagate and compound when the model is used for planning \parencite{schneider1997exploiting,kearns2002near,talvitie2017self}.
 As discussed in \autoref{chap:background:objective}, one attempt at addressing the objective mismatched is the IterVAML loss \parencite{itervaml}
 \begin{align}
-    &\mathcal{L}_V(\hat{p}, p, \mu) = \int \mu(\state,a) \bigg|\overbrace{\int p(\state'|\state,a)V(\state')\mathrm{d}\state'}^{\text{environment value estimate}}  - \overbrace{\int \hat{p}(\state'|\state,a) V(\state') \mathrm{d}\state'}^{\text{model value estimate}}\bigg|^2 \mathrm{d} (\state,a)
+    &\mathcal{L}_V(\hat{p}, p, \mu) = \int \mu(\state,a) \bigg|\underbrace{\int p(\state'|\state,a)V(\state')\mathrm{d}\state'}_{\text{environment value estimate}}  - \underbrace{\int \hat{p}(\state'|\state,a) V(\state') \mathrm{d}\state'}_{\text{model value estimate}}\bigg|^2 \mathrm{d} (\state,a)
 \end{align}
 
 \textcite{itervaml} present error bounds for both steps of the iteration, but did not test the algorithm to ascertain whether the presented error bounds are sufficient to guarantee \revised{a strong algorithm in practice}. 
@@ -119,11 +120,11 @@ This can be made more clear by looking at the loss for a single datapoint
 
 Assuming that $f$ is flexible and can predict any next state $\state'$, the optimal solution is obtained from an under-determined linear system of equations
 \begin{align}
-    \sum_{n=0}^{\text{dim}(\states)} (\nabla_s V(s)|_{s'})_n \cdot f_\theta(x,a)_n = 0
+    \sum_{n=0}^{\text{dim}(\states)} (\nabla_\state V(s)|_{\state'})_n \cdot f_\theta(x,a)_n = 0
 \end{align}
 
 This system admits far more solutions than either the corresponding IterVAML loss or a mean squared error, and many of them will achieve arbitrary large value prediction errors.
-In fact, the equation describes a hyperplane of minimal solutions consisting of every weight vector that is orthogonal to the gradient of the value function at the reference sample, with $\text{dim}(\mathcal{S}) - 1$ free variables.
+In fact, the equation describes a hyperplane of minimal solutions consisting of every weight vector that is orthogonal to the gradient of the value function at the reference sample, with $\text{dim}(\states) - 1$ free variables.
 Therefore we need to enforce the closeness of the model prediction and the environment sample, since the Taylor approximation is only approximately valid in a close ball around the reference sample.
 
 One way to achieve this closeness is by adding the second order Taylor term, which results in an additional MSE loss term.
@@ -133,10 +134,10 @@ Therefore, we approach the solution to this problem as outlined below.
 \subsection{Bounding the first-order Taylor loss}
 
 To prevent these suboptimal solutions and achieve our second design goal, we consider an upper bound on the value-gradient loss by applying the Cauchy Schwartz inequality $\left(\sum_{i=1}^n x_i \right) ^2 \leq n \sum x_i^2$ to change the square of the sum with a sum of squares.
-We denote the diagonal matrix with vector $a$ on the diagonal as $\text{diag}(a)$ and refer to the dimensionality of the state space as $\text{dim}(\mathcal{S})$ and rephrase the sum as a vector-matrix multiplication:
+We denote the diagonal matrix with vector $a$ on the diagonal as $\text{diag}(a)$ and refer to the dimensionality of the state space as $\text{dim}(\states)$ and rephrase the sum as a vector-matrix multiplication:
 \begin{align}
     &\sum_{\{x_i,a_i,x'_i\}\in\mathcal{D}} {\left((\nabla_x V(x)|_{x'_i})^\intercal(f_\theta(x_i,a_i) - x'_i) \right)^2}\\
-    \leq {\text{dim}(\mathcal{S})} &\sum_{\{x_i,a_i,x'_i\}\in\mathcal{D}}\left((f_\theta(x_i,a_i) - x'_i)^\intercal\text{diag}(\nabla_x V(s)|_{x'_i})^2(f_\theta(x_i,a_i) - x'_i) \right) \label{eq:vagram:upper_bound}.
+    \leq {\text{dim}(\states)} &\sum_{\{x_i,a_i,x'_i\}\in\mathcal{D}}\left((f_\theta(x_i,a_i) - x'_i)^\intercal\text{diag}(\nabla_x V(s)|_{x'_i})^2(f_\theta(x_i,a_i) - x'_i) \right) \label{eq:vagram:upper_bound}.
 \end{align}
 
 This reformulation is equivalent to a mean squared error loss function with a per-sample-dimension diagonal scaling matrix.
