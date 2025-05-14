@@ -3,6 +3,8 @@
 \usepackage{acronym}
 \usepackage[colorlinks]{hyperref} % for links
 \usepackage[style=authoryear,
+% sorted=nyt,
+natbib=true,
 uniquename=false,
 uniquelist=false,
 mincitenames = 1,
@@ -78,8 +80,7 @@ maxbibnames = 1000,
  } %
 \makeatother
 
-% \DeclareNameAlias{sortname}{family-given}
-
+\DeclareNameAlias{sortname}{given-family}
 
 \renewcommand{\chapterautorefname}{Chapter}
 \renewcommand{\sectionautorefname}{Section}

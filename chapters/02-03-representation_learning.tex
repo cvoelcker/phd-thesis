@@ -133,6 +133,7 @@ This change from one-hot vectors to arbitrary vectors allows us to account for s
 For example, if two states have almost identical observation vectors, they will be mapped to similar points in the latent representation space unless the features directly counteract this.
 We study the impact of changing the observations with a linear reparameterization in \autoref{sec:understanding:observation} by replacing $x$ with $\bar{x} = \mathcal{O}^\top x$.
 
+
 \subsection{Distracting state dynamics}
 In addition to observation functions, another common problem that many reinforcement learning algorithms face are distractions.
 While distractions have been a focus of empirical work studying the relative efficacy of different auxiliary tasks \parencite{ni2024bridging}, a simple formalism whose effect on learning dynamics can be analyzed has not been presented. 
@@ -165,8 +166,8 @@ These \emph{insights} present the basis for our empirical comparison in \autoref
 
 \textcite{tang2022understanding} show that for MDPs with symmetric transition kernels ($\mathcal{P}^\top = \mathcal{P}$), latent self-prediction converges to subspaces spanned by eigenvectors of $P^\pi$. 
 We extend this result in the following sense: if $P^\pi$ has positive real eigenvalues, invariant sub-spaces which are not spanned by the top-k eigenvectors are unstable for gradient descent.\footnote{The assumption of real \emph{positive} eigenvalues is both more and less restrictive than the symmetry assumption made by \textcite{tang2022understanding}. An extension of our result to negative eigenvalues is presented below, together with an extended comparison to the results in \textcite{tang2022understanding} and \textcite{lelan2023bootstrapped}.}
-It is interesting to note that the resulting features are identical to those obtained from the random reward assumption described in \textcite{lelan2023bootstrapped} (albeit under slightly different technical conditions), which highlights the close connection between the self-predictive approach and bootstrapped generalized value function learning.
-This furthermore suggests that using random rewards as auxiliary objectives \parencite{farebrother2023protovalue} could result in very similar features as using self-prediction, which presents an interesting avenue for further empirical study.
+Note that the resulting features are identical to those obtained from the random reward assumption described in \textcite{lelan2023bootstrapped} (albeit under slightly different technical conditions), which highlights the close connection between the self-predictive approach and bootstrapped generalized value function learning.
+This furthermore suggests that using random rewards as auxiliary objectives \parencite{farebrother2023protovalue} should result in similar features to those obtained with self-prediction.
 
 \begin{assumption}
 \label{assumption:understanding:3}
@@ -580,7 +581,7 @@ This highlights that no algorithm is clearly superior in all settings and the re
 All algorithms show themselves to be strongly impacted by this random observation distortions, which suggests that our claim of invariance of self-prediction relies too strongly on the linear gradient-flow limit.
 This can in part be explained by the use of a convolutional layer in the standard baseline implementation of DQN which we adapted.
 However, we still find that at least on two environments (Seaquest and Freeway), the latent self-prediction auxiliary task is able to recover more of the original performance than either observation prediction or DQN.
-Interestingly, the DQN baseline seems to suffer the most from the introduction of the observation change, which suggests that correlations of the existing observation space play an important role in learning correct value function prediction.
+The DQN baseline seems to suffer the most from the introduction of the observation change, which suggests that correlations of the existing observation space play an important role in learning correct value function prediction.
 
 Overall, we find that \autoref{insight:understanding:2} does not fully translate to the more complex test setting.
 In part, this may be explained by the fact that the original observation spaces of the test environments already violate our assumptions for the one-hot encoding.

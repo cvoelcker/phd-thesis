@@ -112,7 +112,7 @@ As the loss has a relatively simple quadratic form and the derivative is a linea
 
 Using the equation for the gradient flow $\dot{\theta} = - \frac{\eta}{2} \nabla_\theta L(\theta)$ with learning rate $\frac{\eta}{2}$, we obtain
 \begin{align}
-    \dot\theta &= - \eta \Phi \sum_{i=1}^n D^{\pi_i} \left(I - \gamma P^\pi \right)\Phi^\top \theta + \eta \Phi \sum_{i=1}^n D^{\pi_i} R\quad,
+    \dot\theta &= - \eta \Phi \sum_{i=1}^n D^{\pi_i} \left(I - \gamma P^\pi \right)\Phi^\top \theta + \eta \Phi \sum_{i=1}^n D^{\pi_i} R\quad.
 \end{align}
 
 This gradient flow is guaranteed to be stables (meaning it will not diverge around the stationary point $\theta^*$) if the key matrix $\sum_{i=1}^n D^{\pi_i} \left(I - \gamma P \Pi \right)$ is positive definite \textcite{sutton1988learning}. 
@@ -120,6 +120,7 @@ This gradient flow is guaranteed to be stables (meaning it will not diverge arou
 While the proof by \textcite{sutton1988learning}, which we use as a reference, discusses the stationary distribution of the Markov chain $P^\pi$, we define our loss in terms of a discounted state-action occupancy. 
 We therefore briefly prove an auxiliary result to extend the analysis to the case of discounted state occupancy probabilities.
 Note that when we talk about positive-definiteness, we use a definition which applies to potentially non-symmetric matrices, and merely requires that $u^\top X u \> 0$ for all vectors $u$.
+
 
 \begin{proposition}
 \label{prop:aux}
@@ -477,7 +478,7 @@ Previous studies have identified and combated plasticity loss using feature rank
 
 It is unclear how many improvements obtained by these changes can be explained by divergence effects~\textcite{hussing2024dissecting} or stability issues such as those established in our work as there seems to be a non-zero overlap in techniques that combat either. 
 \textcite{nauman2024overestimation} have argued that many RL training problems can be difficult to disentangle from the plasticity loss phenomenon.
-An interesting direction of future work is to test for plasticity loss with well regularized off-policy value function learning, for instance by combining our method with separate solutions established for plasticity loss such as those from~\textcite{lyle2024disentangling}. 
+% An interesting direction of future work is to test for plasticity loss with well regularized off-policy value function learning, for instance by combining our method with separate solutions established for plasticity loss such as those from~\textcite{lyle2024disentangling}. 
 
 It is also not unlikely that the training dynamics of the state-based dense-reward tasks on the DMC suite are more benign than those found in Atari games. 
 Many works on plasticity loss have studied sparse image-based control tasks with pure Q learning approaches, such as DQN on the Atari benchmark~\textcite{sokar2023dormant, lee2024slow}. 

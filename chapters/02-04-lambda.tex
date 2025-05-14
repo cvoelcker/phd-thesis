@@ -566,21 +566,17 @@ Therefore, we are now faced with several empirical questions, which we will answ
 These two domains are the most challenging in the DMC suite, and the standard comparison for current methods \parencite{voelcker2025mad,nauman2024bigger}.
 
 \begin{enumerate}
-    \item Do IterVAML and MuZero perform equivalently when used with the same deterministic latent model architecture?
+    \item Do IterVAML and MuZero perform equivalently when used with latent model architectures?
     \item Do $(m,b)$-VAML algorithms improve when combined with auxiliary losses?
     \item Can we observe the effects of calibration on deterministic environments?
-    \item Can we observe the effects of calibration in stochastic environments?
 \end{enumerate}
 
 \subsection{Experimental setup}
 
-To conduct our experiments we use a variety of neural network based models.
-
+To conduct our experiments we use two neural network architectures for the model, a stochastic and a deterministic latent model, while keeping the rest of the training setup consistent for a clean comparison.
 All experiments are conducted with latent model architectures composed of an encoder, a latent dynamics model, and a value and policy function head.
 All networks are simple fully collected feed-forward networks whose architectures are identical to those used in the DMC experiments in \autoref{chap:understanding}.
 For hyperparameters and further architectural details, see \autoref{app:cvaml:model_design}.
-
-We compare both stochastic and deterministic latent models.
 For the stochastic case, the latent models are multivariate, diagonal Gaussian distributions where mean and variance are parameterized by the latent network \cite{pets,janner2019mbpo,paster2021blast}.
 In the deterministic case we simply use a feed-forward network.
  
@@ -591,14 +587,14 @@ Model roll-outs are produced by sequentially sampling latent states from the mod
 % &\quad=\mathcal{N}\left(\hat{\mu}(\hat{z}^{(m)},a^{(m)}),\hat{\sigma}(\hat{z}^{(m)},a^{(m)})\right)
 \end{align}
 
-The auxiliary loss for stochastic models is computed as a negative log-likelihood of the next states' latent representations under the current dynamics model.
+The auxiliary loss for stochastic models is the negative log-likelihood of the next states' latent representations under the current dynamics model,
 \begin{align}
     &\mathcal{L}_{\mathrm{aux},m}\left(\hat{p},\varphi\Big|x,a^{(0:m-1)},x^{(m)}\right) \nonumber\\
     &\quad =-\log \hat{p}^m\left(\varphi(x^{(m)})\Big|\varphi(x),a^{(0:m-1)}\right),
 \end{align}
 where $a^{(0:m-1)}$ is a sequence of actions of length $m$ starting from state $x^{(0)}$.
 
-In the case of deterministic models, we use the MSE between the next states' representations and the model's predictions:
+In the case of deterministic models, we use the MSE between the next states' representations and the model's predictions,
 \begin{align}
     &\mathcal{L}_{\mathrm{aux},m}\left(\hat{p},\varphi\Big|x,a^{(0:m-1)},x^{(m)}\right) \nonumber\\
     &\quad =\left|\left|\hat{p}^m\left(\cdot\Big|\varphi(x),a^{(0:m-1)}\right)-\varphi(x^{(m)}\right|\right|^2
@@ -607,7 +603,7 @@ In the case of deterministic models, we use the MSE between the next states' rep
 For training the policy and value function, we follow a data-mixing protocol.
 We use both model-generated on-policy, and real environment data from the replay buffer to train a value and policy head using the $(m,b)$-VAML loss with a twinned critic parametrization similar to TD3  \cite{fujimoto2018addressing}.
 This means the model influences the value function both through the encoder and through on-policy model-generated data.
-The impact of the data-mixing strategy will be discussed in further detail in the next chapter, \autoref{chap:mad}.
+The impact of the data-mixing strategy will be discussed in further detail in \autoref{chap:mad}.
 
 The actions for environment interactions are obtained from the actor and the environment model using MPC \cite{hansen2022temporal}: initialized at the action produced by the actor for the current state, this algorithm iteratively refines the action to maximize the expected return.
 In total our setup uses the model for training the shared encoder, generating data for value and policy improvement, and for online model-based search.
@@ -635,26 +631,34 @@ In several cases, using a self-prediction loss even underperforms the model-free
     \label{fig:cvaml:mf_baseline}
 \end{figure}
 
-In \autoref{fig:cvaml:ablation_itervaml} and \autoref{fig:cvaml:ablation_muzero} we show the results of training $(1,0)$-CVAML and $(1,1)$-CVAML respectively without auxiliary losses.
-Comparing the results to the discussion in \autoref{chap:vagram}, we see that the combination of regularized architecture and latent model structure by itself, even without auxiliary self-prediction, leads to stable and performant models.
-However, across almost all tasks and model variants, we see increased or identical performance from adding auxiliary latent self-prediction.
-The only exception is the humanoid\_ walk task, in which the combined losses perform slightly worse over the course of training.
-However, as we will discuss in the next section, this can partially be explained by the lower performance of stochastic architectures on the humanoid tasks.
+
+
+In \autoref{fig:cvaml:ablation_itervaml} we show the results of training $(1,0)$-CVAML and $(1,1)$-CVAML respectively without auxiliary losses.
+Comparing the results to the discussion in \autoref{chap:vagram}, we see that the combination of regularized architecture and latent model structure by itself, even without auxiliary self-prediction, can lead to stable and performant models on the dog tasks.
+However, on the humanoid tasks all models fail to learn without auxiliary stabilizing loss, and on the dog tasks the auxiliary task greatly increases the performance.
+These results are perhaps surprising, given the results in the previous chapter and the relatively strong performance of MuZero in the literature.
 
 \begin{figure}[t]
 \centering
     \includegraphics[width=\textwidth]{figures/lambda/plts/ablated_reward2.pdf}
-    \caption{Comparison of CVAML with purely decision-aware $(1,0)$-CVAML models (no auxiliary self-prediction loss). With the exception of humanoid\_walk, we see a small but consistent benefit from using an auxiliary loss.}
+    \caption{Comparison of CVAML with an auxiliary task with purely decision-aware $(1,0)$-CVAML and $(1,1)$-CVAML models (no auxiliary self-prediction loss). We can see that while $(1,0)$-CVAML can learn non-trivial policies on the dog tasks, $(1,1)$-CVAML mostly fails to do so. In addition, both losses fail to learn non-trivial policies on the humanoid tasks.}
    \label{fig:cvaml:ablation_itervaml}
 \end{figure}
 
+Plotting the associated Q values allows us to understand the difference between previous results and this one.
+Training with the MuZero loss leads to greatly inflated Q values, while the IterVAML-style loss (in combination with the latent model architecture and appropriate data mixing) does not exhibit strong value divergence on the dog task.
+As we are using a stochastic model architecture, $(1,1)$ also faces the additional difficulty of being trained to predict average bootstrapped Q values for future states.
+In addition, here we are not training in a high-UTD regime in these experiment, while MBPO \parencite{janner2019mbpo} and by extension VaGrAM and previous investigations into IterVAML \parencite{lovatto2020decision} train with a rather aggressive UTD value of 20.
+Finally, the strong performance of MuZero without auxiliary losses has been attested primarily in the Arcade Learning Environemnt \parencite{schrittwieser2020mastering}.
+As our experiments in \autoref{chap:understanding} show, Atari games and continuous control tasks can show different behavior with auxiliary tasks, with the later benefitting much more strongly from their addition.
 
-\begin{figure}[t]
-\centering
-    \includegraphics[width=\textwidth]{figures/lambda/plts/ablated_reward3.pdf}
-    \caption{Comparison of CVAML with purely decision-aware $(1,1)$-CVAML models (no auxiliary self-prediction loss). With the exception of humanoid\_walk, we see a small but consistent benefit from using an auxiliary loss. In addition, the $(1,0)$ variants outperform the $(1,1)$ variants by a small margin across almost all tasks.}
-   \label{fig:cvaml:ablation_muzero}
-\end{figure}
+However, on the humanoid task we nonetheless see no meaningful learning, although the Q values are not diverging with either loss.
+This corroborates the hypothesis of \autoref{chap:understanding} further: in the humanoid environment, intial exploration is uninformative and all Q functions are close to 0 across all seen state-action pairs.
+A decision-aware loss by itself is therefore not able to learn a model that meaningfully enables the algorithm to learn meaningful state representations nonetheless.
+
+When combined with an auxiliary loss, both loss variants learn non-trivial policies across all tasks, as we will see in the next section.
+
+
 
 \subsection{Calibration experiments with latent-space models}
 \label{sec:cvaml:empirical2}
@@ -685,6 +689,12 @@ Finally, we observe a consistent advantage of $(0,1)$-updates over the $(1,1)$-u
 \autoref{fig:cvaml:total_agg} shows that averaged across all environments we obtain a clear gap between all variants of the $(1,0)$-VAML loss over the $(1,1)$-VAML loss. 
 In combination with the results from the previous section, we can therefore conclude that $(1,0)$-VAML losses can indeed lead to strong performance.
 % A wider empirical investigation into the merits of both IterVAML and MuZero style learning is an important direction for future work.
+Revisiting our empirical quesitons, we observe the folllowing:
+\begin{enumerate}
+    \item Do IterVAML and MuZero perform equivalently when used with latent model architectures? No, in fact, without additional stabilizing auxiliary loss, the IterVAML-style loss performs better than the MuZero-style loss.
+    \item Do $(m,b)$-VAML algorithms improve when combined with auxiliary losses? Yes, all variants of the (C)VAML family greatly increase in performance with a latent self-prediction auxiliary loss, and in some environments, such as the humanoid tasks, the additional auxiliary loss is necessary to achieve non-trivial performance.
+    \item Can we observe the effects of calibration on deterministic environments? Yes, we can observe the effects of calibration even in deterministic environments when using stochastic models. Especially with the $(1,1)$-(C)VAML loss, which is affected by calibration issues both in the model and value learning components, we observe a clear benefit from calibration. For the $(1,0)$-(C)VAML loss, calibration has a less clear impact. This is consistent with the fact that in deterministic environments, a deterministic latent model is sufficient to provide good value estimates. Therefore, the variance minimizing effect of the uncalibrated loss is less impactful on the final performance.
+\end{enumerate}
 
 \begin{boxinsight}[Remarks for practitioners]
 While deterministic models are theoretically sufficient for learning value-equivalent models, we observe benefits in some benchmarks from the use of stochastic models.
