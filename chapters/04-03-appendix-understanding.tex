@@ -6,6 +6,8 @@
 
 \begin{table}[t]
     \centering
+    \caption{Hyper-parameters the RL experiments}
+    \label{tab:hyper_minatar}
     \begin{tabular}{c|c|c}
         Parameter & MinAtar & DMC \\\hline 
         Initial steps (Random policy) & $5000$ & $5000$  \\
@@ -20,12 +22,10 @@
         Discount factor $\gamma$ & $0.99$ & $0.99$\\
         Model forward prediction steps & $4$ & $4$\\
     \end{tabular}
-    \caption{Hyper-parameters the RL experiments}
-    \label{tab:hyper_minatar}
 \end{table}
 
 For the Minatar experiments, we use a simple Double DQN architecture \parencite{van2016deep}.
-We find that our implementation performs roughly on par with those reported by \textcite{young19minatar}, however we changed the network architecture slightly to allow a clear "encoder" and "prediction head" split.
+We find that our implementation performs roughly on par with those reported by \textcite{young19minatar}, however we changed the network architecture slightly to allow a clear ``encoder'' and ``prediction head'' split.
 
 We implement the latent self-prediction loss using a periodically updated copy of the encoder network. This hard update of the encoder target is synchronized with the Q target network update.
 
@@ -33,6 +33,8 @@ Our networks are parameterized as presented in \autoref{tab:net_minatar}
 
 \begin{table}[t]
 \begin{center}
+\caption{Network architecture for the MinAtar experiments.}
+\label{tab:net_minatar}
 \begin{tabular}{c|c|c}
      & ConvLayer & channels=$16$, kernel=$(3,3)$, padding=$0$, stride=$(1,1)$ \\
      Encoder $\Phi$ & ELU activation & -- \\
@@ -49,8 +51,6 @@ Our networks are parameterized as presented in \autoref{tab:net_minatar}
      & Dense Layer & out\_size=action\_space
 \end{tabular}
 \end{center}
-\caption{Network architecture for the MinAtar experiments.}
-\label{tab:net_minatar}
 \end{table}
 
 Relevant hyper-parameters are shown in \autoref{tab:hyper_minatar}.
@@ -158,7 +158,7 @@ We do not present aggregate performance over the environments, as the different 
 \section{Limitations}
 \label{app:limitations}
 
-While our paper aims to minimize the theory-practice gap with careful experimentation, we nonetheless need to make several assumptions that are both limitations and also potential for additional analysis in future work.
+While \autoref{chap:understanding} aims to minimize the theory-practice gap with careful experimentation, we nonetheless need to make several assumptions that are both limitations and also potential for additional analysis in future work.
 As our aim is to make theory useful and accessible for practitioners, we aim to be very open and clear about our limitations here.
 
 \textbf{Limitations of the analytical framework:} From previous work \parencite{tang2022understanding,lelan2023bootstrapped} we inherit the limitation of studying deterministic models in potentially stochastic environments.
@@ -173,5 +173,5 @@ As our theoretical predictions are still validated, we consider this an acceptab
 While the observation space of e.g. the MinAtar games is relatively large, depending on the game a 300-1000 dimensional vector, this is still substantially smaller than the total number of states.
 Studying these kinds of nonlinear image transformations in more detail would require deviating farther from the previous literature.
 
-In this paper, we aim to (re-)introduce the notion of distraction into the learning dynamics literature, and so we use a relatively simplistic notion of distraction.
+We aim to (re-)introduce the notion of distraction into the learning dynamics literature, and so we use a relatively simplistic notion of distraction.
 Going beyond the independence assumption in the distraction model (due to the Kronecker formulation) and analyzing more complex forms of distractions e.g. processes in which the reward-relevant process causally influences the distracting process but not vice versa is an exciting direction for future work.

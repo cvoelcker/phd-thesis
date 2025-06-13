@@ -6,7 +6,7 @@
 \label{app:formal:understanding}
 
 This section contains helpful lemmata that are used for our proofs.
-Where we took these from existing work, we provide references, otherwise the proofs are our own, although probably also known in the literature.
+Where we took these from existing work, we provide references; otherwise the proofs are our own, although probably also known in the literature.
 
 \subsection{Linear Algebra}
 \label{app:formal:understanding:linalg}
@@ -58,7 +58,7 @@ For a more extensive proof, please refer to \textcite{izenman1975reduced}.
 \end{lemma}
 
 \begin{proof}
-    Let $e$ be an eigenvector of $A$ and $\lambda$ the corresponding eigenvalue. Then $$(I - \gamma A)^{-1}e = \sum_{i=0}^n \gamma^n A^ne = \sum_{i=0}^n (\gamma\lambda)^n e = \frac{1}{1 - \gamma\lambda}e.$$ As $(1-\gamma\lambda)^{-1}$ is a monotonic function for $-1 \leq \lambda \leq 1$ and $\gamma\in[0,1]$, the ordering of the eigenvalues remains the same.
+    Let $e$ be an eigenvector of $A$ and $\lambda$ the corresponding eigenvalue. Then $$(I - \gamma A)^{-1}e = \sum_{n=0}^\infty \gamma^n A^ne = \sum_{n=0}^\infty (\gamma\lambda)^n e = \frac{1}{1 - \gamma\lambda}e.$$ As $(1-\gamma\lambda)^{-1}$ is a monotonic function for $-1 \leq \lambda \leq 1$ and $\gamma\in[0,1]$, the ordering of the eigenvalues remains the same.
 \end{proof}
 
 \begin{lemma}[Basis equivalence of linear reward and value function]\label{lem:understanding:spectrum_rew_value}
@@ -100,7 +100,7 @@ This shows that the Jacobian $\ddt{x} f(Ax)|_{x=A^{-1}y_0}$ is similar to the Ja
 
 \subsection{MDP representation and TD learning}
 
-\begin{lemma}[Lemma 5 of \textcite{tang2022understanding}]\label{prop:understanding:TangResult2}
+\begin{lemma}[Lemma 5 of \citealt{tang2022understanding}]\label{prop:understanding:TangResult2}
     Suppose $P^\pi$ is real-diagonalizable, and write $u_1,\dots, u_n$ for its eigenvectors. Then any orthonormal matrix $\Phi$ which has the same span as a set of $k$ eigenvectors is a minimizer of $L_{\text{lat}}$.
 \end{lemma}
 
@@ -109,25 +109,25 @@ The next three statements are taken from \textcite{ghosh2020representations}.  T
 We changed the notation of the statements to fit our notation here, we have denoted the diagonal matrix of the state distribution as $D$ and assume that $D=I$ in \autoref{assumption:understanding:1}, while \textcite{ghosh2020representations} uses $\Xi$. They use $\theta$ for the value function weights while we use $\hat{V}$.
 They also uses $\text{Spec}(A)$ to denote the spectrum, the set of all eigenvalues of a matrix $A$.
 
-The notion of stability used in \textcite{ghosh2020representations} is that of convergence to the unique fixed point of the projected Bellman update of the linear ODE induced by the $L_\text{TD}$ loss when fixing $\Phi$. In the two-timescale scenario considered in this paper, this corresponds to the ``inner'' ODE over $\hat{V}$.
+The notion of stability used in \textcite{ghosh2020representations} is that of convergence to the unique fixed point of the projected Bellman update of the linear ODE induced by the $L_\text{TD}$ loss when fixing $\Phi$. In the two-timescale scenario considered in \autoref{chap:understanding}, this corresponds to the ``inner'' ODE over $\hat{V}$.
 
-\begin{lemma}[Proposition 3.1 of \textcite{ghosh2020representations}]\label{prop:understanding:gosh1}
+\begin{lemma}[Proposition 3.1 of \citealt{ghosh2020representations}]\label{prop:understanding:gosh1}
     TD(0) is stable if and only if the eigenvalues of the implied iteration matrix $A_\Phi = \Phi^\top D (I - \gamma P^\pi) \Phi$ have positive real components, that is $$\text{Spec}\left(A_\Phi\right) \subset \mathbb{C}_+ \coloneq \{z : \text{Re}(z) > 0 \}.$$
     We say that a particular choice of representation $\Phi$ is stable for $(P^\pi, \gamma, D)$ when $A_\Phi$ satisfies the above condition.
 \end{lemma}
 
-\begin{lemma}[Proposition 3.2 of \textcite{ghosh2020representations}]\label{prop:understanding:gosh2}
+\begin{lemma}[Proposition 3.2 of \citealt{ghosh2020representations}]\label{prop:understanding:gosh2}
     An orthogonal representation $\Phi$ is stable if and only if the real part of the eigenvalues of the induced transition matrix $\Pi P^\pi \Pi$ where $\Pi = \Phi\Phi^\top$ is bounded above, according to $$\text{Spec}\left(\Pi P^\pi \Pi\right) \subset \{z \in \mathbb{C}: \text{Re}(z) < \frac{1}{\gamma} \}.$$
     In particular, $\Phi$ is stable if $\rho(\Pi P^\pi\Pi) < \frac{1}{\gamma}$.
 \end{lemma}
 
-\begin{lemma}[Theorem 4.1 of \textcite{ghosh2020representations}]\label{prop:understanding:gosh3}
+\begin{lemma}[Theorem 4.1 of \citealt{ghosh2020representations}]\label{prop:understanding:gosh3}
     An orthogonal invariant representation $\Phi$ (meaning $\text{span}(P^\pi \Phi) \subseteq \text{span}(\Phi)$) satisfies $$\text{Spec}\left(\Pi P^\pi \Pi\right) \subseteq \text{Spec}(P^\pi) \cup \{0\}$$ and is therefore stable.
 \end{lemma}
 
 As a corollary of their proof we have that 
 
-\begin{lemma}[Corollary of \textcite{ghosh2020representations}]\label{lem:understanding:gosh:corr}
+\begin{lemma}[Corollary of \citealt{ghosh2020representations}]\label{lem:understanding:gosh:corr}
     Let $\Phi$ be an orthogonal (but not necessarily square) invariant representation of $P^\pi$. Then the spectral radius $\rho(\Phi^\top P^\pi \Phi) \leq 1.$ 
 \end{lemma}
 
@@ -152,8 +152,6 @@ The following two results are our own, although closely related results exist in
     \end{align}
 \end{proof}
 
-
-
 \section{\autoref{chap:cvaml}: Helpful definitions and lemmata}
 \label{app:formal:cvaml}
 
@@ -177,13 +175,6 @@ Let $\P^*$ be the set of distributions for which both $\P^* = \Argmin_{p'} \math
 Let $k$ be an integer.
 Finally, let $g(\xi) = \EEX{x \sim p}{\left(\EEX{y \sim \xi}{f(y)} - f(x)\right)^2} + \frac{1}{k}\mathrm{Var}_\xi[f(x)].$
 
-We assume the following condition on a distribution $p$ and a function $f$ for all the lemmata in this section.
-\begin{assumption}
-Let $p$ be a probability distribution over $\mathcal{X}$ with $\EEX{p}{f(x)}$, for which no $x$ exists so that $f(x) = \EEX{p}{f(x)}$.
-This is an assumption both on $f$ and $p$.
-\end{assumption}
-This is an important assumption as it guarantees that there is no distribution $q$ with $0$ variance such that $\EEX{q}{f(x)} = \EEX{p}{f(x)}.$
-This excludes a corner case of our proof, as fully deterministic environments and models do not lead to an uncalibrated IterVAML loss.
 
 We now obtain three simple lemmata about the minima of the function $g$.
 
@@ -242,7 +233,7 @@ As our Garnet experiments show, many randomly generated transition distributions
     \end{align}
     \autoref{eq:cvaml:final_line} follows from the assumption on q.
     
-    By the assumptions on $p$ and $f$ there does not exist a $x\in\mathcal{X}$ so that $f(x) = \EEX{p}{f(x)}$. However, as $\mathrm{Var}_q[f(x)] = 0$, $\EEX{q}{f(x)} = f(x_i)$ for some $x_i\in\mathcal{X}$. Therefore, $\EEX{q}{f(x)} \neq \EEX{p}{f(x)}$, which concludes the proof.
+    By \autoref{ass:cvaml_mdp} there does not exist a $x\in\mathcal{X}$ so that $f(x) = \EEX{p}{f(x)}$. However, as $\mathrm{Var}_q[f(x)] = 0$, $\EEX{q}{f(x)} = f(x_i)$ for some $x_i\in\mathcal{X}$. Therefore, $\EEX{q}{f(x)} \neq \EEX{p}{f(x)}$, which concludes the proof.
 \end{proof}
 
 As a consequence, we obtain the following, final lemma.

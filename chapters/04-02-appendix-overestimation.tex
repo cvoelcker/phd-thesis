@@ -17,13 +17,13 @@ We employ two commonly used implementations, one for fast iterations on priming 
       \hline
       Adam $\beta_2$ & $0.999$ \\ 
       \hline
-      Adam $\varepsilon$ & $1e-8$ \\ 
+      Adam $\varepsilon$ & $1\times 10^{-8}$ \\ 
       \hline
-      Actor Learning Rate & $4e-3$ \\ 
+      Actor Learning Rate & $4\times 10^{-3}$ \\ 
       \hline
-      Critic Learning Rate & $4e-3$ \\ 
+      Critic Learning Rate & $4\times 10^{-3}$ \\ 
       \hline
-      Temp. Learning Rate & $3e-4$ \\ 
+      Temp. Learning Rate & $3\times 10^{-4}$ \\ 
       \hline
       Batch Size
       & $256$ \\ 
@@ -134,21 +134,20 @@ We employ two commonly used implementations, one for fast iterations on priming 
 
 Here, we take a look at the gradient of the unit norm projection.
 
-Let $i \in {1, ..., N}$, for all $\mathbf{x} = (x_1, ..., x_n) \in \mathbb{R}^n \setminus \{0\}$. Suppose $f(\mathbf{x}) = \cfrac{\mathbf{x}}{\| \mathbf{x} \|}$. 
+Let $i \in {1, \dots, n}$, for all $\mathbf{x} = (x_1, ..., x_n) \in \mathbb{R}^n \setminus \{0\}$. Suppose $f(\mathbf{x}) = \cfrac{\mathbf{x}}{\| \mathbf{x} \|}$. 
 
 Then, 
 \begin{align}
     \partial_i f(\mathbf{x}) 
-    &= \cfrac{\| \mathbf{x} \| e_i - \mathbf{x} \partial_i \| \cdot \| (\mathbf{x}) }{\|\mathbf{x} \|^2} \\
     &= \cfrac{\| \mathbf{x} \| e_i - \cfrac{x_i}{\|\mathbf{x} \|} \mathbf{x}}{\|\mathbf{x} \|^2} \\
-    &= \cfrac{1}{\|\mathbf{x} \|} e_i - \cfrac{x_i}{\|\mathbf{x} \|^3} \mathbf{x}
+    &= \cfrac{1}{\|\mathbf{x} \|} e_i - \cfrac{x_i}{\|\mathbf{x} \|^3} \mathbf{x}.
 \end{align}
 
 Note that the second term can grow quite large if the norm of $\mathbf{x}$ is relatively small. Despite this, we are able to remedy the exploding gradients using unit norm projection, likely because gradients are small when the norm is small.
 
 \section{Open Problems and Limitations} \label{app:open}
 
-Feature divergence without regularization is an important problem that contributes substantially to the issues facing high-UTD learning
+Feature divergence without regularization is an important problem that contributes substantially to the issues facing high-UTD learning.
 However, as our experiments show, there are many additional open problems that introducing normalization does not address.
 
 \textbf{Understanding actor issues}~~The resetting experiments in \autoref{fig:overestimation:aggregate} highlight that a part of the performance impact of high UTD comes from the actor optimization, not the critic optimization, as resetting the actor can boost performance without changing the critic.

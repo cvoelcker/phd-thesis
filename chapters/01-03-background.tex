@@ -31,7 +31,7 @@ For a probability kernel $\mathcal{P}: \mathcal{X} \rightarrow \mathcal{Y}$ we w
 
 Given a suitable probability (density) $p(x)$ for the probability space $(\Omega,\mathcal{F},p)$, we will denote the expectation of a random variable $X: \Omega \rightarrow \mathbb{R}^n$ drawn from $p$ as $\mathbb{E}_{X \sim p}\left[X\right] = \int_{\Omega} X(\omega) \mathrm{d} p(\omega)$.
 This makes it clear from what distributions random variables are drawn when several distributions are involved such as in the case of the \ac{kl}.
-In a discrete case ($|\states \times \actions| < \infty$), the Lebesgue integral can be simplified to $\sum_{x \in \mathcal{X}} p(x) x$, and in the case of regular real vector valued distributions such as the Gaussian, we will similarly write $\int p(x) x \mathrm{d} x$ and forgo a full measure theoretic treatment.
+In a discrete case ($|\states \times \actions| < \infty$), the Lebesgue integral can be simplified to $\sum_{x \in \mathcal{X}} p(x) x$, and in the case of standard real vector-valued distributions such as the Gaussian, we will similarly write $\int p(x) x \mathrm{d} x$ and forgo a full measure theoretic treatment.
 In these cases we will also not distinguish between random variables $X$ and members of the underlying spaces $x \in \mathcal{X}$ and write $x$ for simplicity.
 
 
@@ -53,7 +53,7 @@ There is no strict distinction between internal and external state in the formal
 The transition kernel is then used to sample a possible next state $\state_{t+1} \in \states$ which the agent transitions to by drawing a sample from $\mathcal{P}(\state'|\state,a)$.
 At every timestep, after choosing an action $a$ in state $\state$, the agent receives the reward $r(\state,a)$.
 In the case of discrete state-action sets, the next state is drawn from a discrete distributions.
-For some results additional care is needed to treat continuous state-action spaces rigorously.
+For some results, additional care is needed to treat continuous state-action spaces rigorously.
 In this thesis, such results are presented in \autoref{chap:cvaml}, where we draw on results from \textcite{bertsekasshreve1978}.
 Interested readers are referred there for a more in-depth discussion on continuous state-action spaces.
 
@@ -129,9 +129,9 @@ If this distribution is independent of the start state-action pair (which requir
 
 \subsection{State and action observations}
 
-In the most general formulation of the \ac{mdp}   presented here, we do not place additional assumptions on the structure and relationships between the states and actions in $\states$ and $\actions$.
+In the most general formulation of the \ac{mdp} presented here, we do not place additional assumptions on the structure and relationships between the states and actions in $\states$ and $\actions$.
 In practice, however, such structure exists for many interesting problems and can be exploited for learning.
-One important way in which structure is captured in practice is through state and an actions \emph{observations}, which are crucial for the success of an \ac{rl} algorithm.
+One important way in which structure is captured in practice is through state and an actions \emph{observations}, which are crucial for the success of many \ac{rl} algorithms.
 The observation of the state and action space can be seen as a mapping from the abstract state space to a concrete observation space, such as a vector of real numbers or an image.
 
 A state observation function maps each state $\state\in\states$ into an observation space $\mathcal{Y}$, often one that is equipped with structure such as $\mathbb{R}^n$.
@@ -253,19 +253,19 @@ To understand how to achieve this, we will quickly review some core concepts in 
 
 In machine learning, the most common way to find the optimal parameters of a function is by minimizing a loss function.
 Given a parametric function $f_\theta(x): \states \rightarrow \mathcal{Y}$ from some function class $\mathcal{F}_\theta$, and prediction targets $y$, the loss function $l: \mathcal{Y} \times \mathcal{Y} \rightarrow \mathbb{R}$ is computed to measure the error between the prediction and the target.
-Often, these loss functions are distance functions such as the squared $L_2$ distance $l(y, f_\theta(x)) = \|y - f_\theta(x)\|^2.$
+Often, these loss functions are derived from distance functions or metrics such as the squared $L_2$ distance $l(y, f_\theta(x)) = \|y - f_\theta(x)\|^2.$
 
 The goal of \ac{erm} is minimize the expected loss of our function estimation under some distribution $P$ over data points $x$ and targets $y$.
 Formally, we aim to find $$f^* = \argmin_{f_\theta\in\mathcal{F}_\theta} \int l(y, f_\theta(x)) \mathrm{d} P(x,y).$$
 However, we generally do not have access to the distribution $\mu$ in a way that allows us to freely sample unlimited data points $(x,y)$.
-Therefore, we instead assume access to a fixed dataset $D = \{(x_1, y_1) \dots, (x_N, y_N)\}$ which is distributed according to $P$ and define $\mathcal{L}(f_\theta,D) = \frac{1}{|D|} \sum_{i=1}^N l(y_i, f(x_i))$.
+Therefore, we instead assume access to a fixed dataset $D = \{(x_1, y_1) \dots, (x_N, y_N)\}$ which is i.i.d. with regard to $P$ and define $\mathcal{L}(f_\theta,D) = \frac{1}{|D|} \sum_{i=1}^N l(y_i, f(x_i))$.
 Then the optimal function $f^*$ according to the empirical measure defined via $D$ is $$\hat{f}^* = \argmin_{f_\theta \in \mathcal{F}_\theta} \mathcal{L}(f_\theta,D).$$
 We will generally use the notation $\mathbb{E}_D$ interchangeably with $\mathbb{E}_P$ throughout this thesis to signify an expectation taken across every possible dataset taken from $P$.
 
 The study of when and how quickly the empirically optimal function $\hat{f}^*$ approaches the function that minimizes the expected loss over the underlying distribution $f^*$ is an important area of research in machine learning.
-In this thesis, we will focus on examples of loss functions which are mis-calibrated, which means that $\hat{f}^*$ does not converge to $f^*$ as we increase the size of the dataset.
+In this thesis, we will focus on examples of loss functions which are miscalibrated, which means that $\hat{f}^*$ does not converge to $f^*$ as we increase the size of the dataset.
 In the next section, we will review the well-known case of the double sampling problem, and we will encounter this problem again in \autoref{chap:cvaml} in the context of decision-aware model losses.
-We will also introduce the notion of mis-calibration formally there.
+We will also introduce the notion of miscalibration formally there.
 
 \subsubsection{Loss functions for Value Learning}
 The value function $V^\pi$ could in principle be obtained from trajectories of the current policy, by computing $$\mathcal{L}(\hat{V}, \{\state, \tau_{\state}\}_N) = \frac{1}{N} \sum_{i=1}^N \left(J(\tau_{\state_i}) - \hat{V}(\state_i)\right)^2.$$
@@ -280,7 +280,7 @@ Naively, we might want to try and minimize a loss function of the form
 $$\mathcal{L}_\mathrm{res}\left(\hat{V}, \{\state, r, \state'\}_{N}\right) = \frac{1}{N} \sum_{i=1}^N \left(\hat{V}(\state_i) - r_n - \gamma \hat{V}(\state'_i)\right)^2.$$
 This is called \emph{Bellman Residual Minimization}, and we can show that it does not lead to a correct value function estimate.
 This result is well known in the reinforcement learning literature, see e.g. \textcite[p. 299]{suttonbook}.
-We will briefly review the proof here as similar techniques will be relevant to show issues with similar loss functions in \autoref{chap:cvaml}.
+We will briefly review a proof here as similar techniques will be relevant to show issues with similar loss functions in \autoref{chap:cvaml}.
 
 
 \begin{proposition}[The Double Sampling Problem]
@@ -364,17 +364,20 @@ As this thesis is interested in \emph{efficient} learning, we instead focus on o
 
 In \emph{Off-policy} learning we reuse samples from old policies, which makes the approach more sample-efficient, but introduces several algorithmic challenges.
 % Firstly, we are forced to rely on state-action value functions (Q) instead of state value functions (V), as we cannot improve our policy otherwise.
-Many algorithms can diverge when used with off-policy samples, even when their on-policy counterparts converge.
+Many algorithms can diverge when used with samples collected from different policies, even when their on-policy counterparts converge.
 The combination of bootstrapped value estimation, function approximation, and off-policy learning has therefore been termed as the \emph{deadly triad} by \textcite{suttonbook}.
 Nonetheless, all components of the deadly triad are useful or sometimes even necessary (in the case of function approximation) to scale \ac{rl} to complex problems.
 While most chapters in this thesis deal with problems resulting from the deadly triad in one form or another, we will focus on off-policy learning specifically in \autoref{chap:mad}.
+
+While the textbook definition of the terms ``on-policy'' and ``off-policy'' refers to methods, we will in the following also use them in a slightly expanded way to refer to data.
+On-policy data is therefore collected with the target policy, while off-policy data is collected with one, or several, different behavior or data collection policies.
 
 \subsection{Deep Reinforcement Learning in Continuous Action Spaces}
 \label{sec:background:drl}
 
 
 Current \ac{drl} methods use several additional mechanisms to ensure stable training of the \ac{rl} agent's value function and policy with neural networks.
-Here, we take a brief look at the \ac{td3} \parencite{td3} and \ac{sac} \parencite{sac} algorithms, as they are used throughout the empirical work presented in this thesis.
+Here, we take a brief look at the \ac{td3} \parencite{td3} and \ac{sac} \parencite{sac} algorithms, which both build on \ac{ddpg} \parencite{ddpg}, as they are used throughout the empirical work presented in this thesis.
 
 Both \ac{td3} and \ac{sac} are actor-critic algorithms, which interleave value function and policy updates.
 They are built for continuous state-action spaces and estimate state-action value functions.
@@ -404,7 +407,7 @@ The actor update also maximizes this minimum over both critics
 \begin{align}
     \mathcal{L}(\pi| \state, Q_1, Q_2) = - \min_{j \in \{1,2\}} Q_i(\state, \pi(\state)).
 \end{align}
-With some assumptions on the noise this max-min structure can be proven to prevent overestimation.
+With some assumptions on the error in both critics this max-min structure can be proven to prevent overestimation.
 However, as will be discussed in \autoref{chap:overestimation}, these assumptions are not met in practice.
 Therefore, while this trick is helpful, by itself it is insufficient by itself to prevent overestimation.
 In addition to statistical error, the optimization process of the critic can be unstable and lead to overestimation.
@@ -420,7 +423,7 @@ The policy objective function is similarly modified
 \end{align}
 This maximum entropy modification can be interpreted in the framework of ``control-as-inference'' \parencite{levine2018reinforcement} and has been shown to be empirically more stable than \ac{td3}.
 However, it is also computationally slightly more expensive as it involves a sampling operation, and so several algorithms proposed in this thesis will use \ac{td3} instead of \ac{sac}.
-Our insights are generalizable to most algorithms from the \ac{dpg}/\ac{td3}/\ac{sac} family.
+Our insights are generalizable to most algorithms from the \ac{ddpg}/\ac{td3}/\ac{sac} family.
 
 \section{Model-Based Reinforcement Learning}
 \label{sec:model_learning}
@@ -483,10 +486,10 @@ However, many more ways of using a model have been proposed in the literature, a
 
 \subsubsection{Dyna}
 
-\begin{figure}
+\begin{figure}[!t]
     \centering
     \includegraphics[width=.8\textwidth]{illustrations/thesis_background_dyna.pdf}
-    \caption{A sketch of the Dyna framework. The RL agent collects data from the real environment and stores this in a replay buffer. This replay buffer is used to train a model of the environment, which acts as a copy of the environment from the perspective of the agent. Algorithms differ in the question how long model generated data is stored in the replay buffer. While \textcite{janner2019mbpo} for example keeps model generated data for a few thousand update steps, the model-based algorithms presented in \autoref{chap:cvaml} and \autoref{chap:mad} do not store the data for multiple steps at all and generate it anew for each agent update.}
+    \caption{A sketch of the Dyna framework. The RL agent collects data from the real environment and stores this in a replay buffer. This replay buffer is used to train a model of the environment, which acts as a copy of the environment from the perspective of the agent. Algorithms differ in the question how long model generated data is stored in the replay buffer, with some, such as MBPO, keeping the model generated experiences in a separate replay buffer for a few thousand steps, while others, like the MAD-TD algorithm we introduce in \autoref{chap:mad} using model-generated data only for a single gradient step before discarding it. While \textcite{janner2019mbpo} for example keeps model generated data for a few thousand update steps, the model-based algorithms presented in \autoref{chap:cvaml} and \autoref{chap:mad} do not store the data for multiple steps at all and generate it anew for each agent update.}
     \label{fig:background:dyna}
 \end{figure}
 
@@ -538,7 +541,7 @@ This technique is one example of learning with \emph{auxiliary} tasks \parencite
 This idea will become an important aspect of this thesis, and will be the focus of \autoref{chap:understanding}.
 Therefore we forgo a lengthy introduction here and refer readers to the upcoming chapter.
 
-\paragraph{Differentiating a learned model:} As neural networks have become the de-facto standard way to obtain an environment model in the current machine learning literature, we automatically obtain an additional useful characteristic from this choice: gradients.
+\paragraph{First-order policy gradient estimation with a learned model:} As neural networks have become the de-facto standard way to obtain an environment model in the current machine learning literature, we automatically obtain an additional useful algorithmic component from them: gradients.
 As most neural networks are end-to-end differentiable with regard to both their parameters and their inputs, we can use this fact to directly differentiate the model-based return estimate with regard to an action sequence or policy to improve learned policies by differentiating straight through a multi-step bootstrapped rollout.
 This technique is succinctly described in \textcite{amos2021model} and used in works such as \textcite{hafner2020dream}.
 \textcite{voelcker2022value} discusses differentiable models in the context of decision-aware learning.
@@ -551,6 +554,8 @@ The goal of their system is to learn the reward function of this process, which 
 The core difference of their approach to other model-based reinforcement learning approaches is that they learn an abstract transition model where the states do not have a one-to-one correspondence to the environment observations.
 
 Extending their work, \textcite{oh2017value} show how to build an abstract model of a fully controllable \ac{mdp}  and highlight how such a model can be used for planning in latent space with a tree search approach such as \ac{mcts} \parencite{schrittwieser2020mastering} or beam search.
+
+These abstract models will form the main backbone of our stable model-based architectures used in \autoref{chap:cvaml} and \autoref{chap:mad}.
 
 \section{Objective mismatch phenomenon}
 
@@ -687,7 +692,7 @@ As discussed in the introduction, reinforcement learning is fundamentally non-st
 To understand the problem intuitively, a sparse reward setting is instructive: when the task requires exploration, the value function is driven to predict $0$ for all visited states until the agent has actually reached the goal and observed positive reward.
 A model or representation can then collapse the whole state space into a single feature, as no value other than 0 needs to be predicted, and potentially completely prevent further exploration.
 
-This phenomenon is for example partially discussed by \textcite{tomar2023learning}, who show that many techniques for value-based abstractions fail in hard-exploration scenarios.
+This phenomenon is alluded to by \textcite{tomar2023learning}, who show that many techniques for value-based abstractions fail in hard-exploration scenarios.
 Similarly, \textcite{kemertas2021towards} show that auxiliary training objectives strongly improve the performance of bisimulation-based representation learning, especially with sparse rewards.
 A related discussion in the the context of IterVAML will be presented in \autoref{chap:vagram}.
 Finally, \textcite{nikishin2022primacy} conjecture the existence of a \emph{primacy bias}, the tendency of neural network-based value functions to overfit initial experience and to lose capacity to represent information obtained later in training.

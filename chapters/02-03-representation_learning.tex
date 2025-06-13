@@ -16,7 +16,7 @@ However, as we have seen, the RL setting contains additional complications such 
 These hurdles generally add instability to the RL training process, and as discussed, \emph{the failure to learn good features} is a central problem in deep RL \parencite{kumar2021implicit,lyle2022understanding,nikishin2022primacy,hussing2024dissecting}.
 
 To mitigate this failure, one common approach is to add auxiliary tasks to the learning objective \parencite{jaderberg2017reinforcement}. 
-Popular examples include predicting next state observations \parencite{jaderberg2016reinforcement} and predicting functions of the next state, or latent self-prediction, \parencite{schwarzer2021dataefficient,ni2024bridging}.
+Popular examples include predicting next state observations \parencite{jaderberg2017reinforcement} and predicting functions of the next state, or latent self-prediction, \parencite{schwarzer2021dataefficient,ni2024bridging}.
 To understand the performance of these approaches, recent literature \parencite{tang2022understanding,lelan2023bootstrapped} considers the \emph{learning dynamics} of auxiliary task learning in simple linear surrogate models \parencite{saxe2014exact}.
 Findings in the literature show that observation reconstruction should provide better features than latent self-prediction \parencite{behzadian2019fast,tang2022understanding}. 
 However, this causes a theory-practice gap as empirical work has found that latent self-prediction outperforms observation reconstruction across many benchmarks \parencite{schwarzer2021dataefficient,ni2024bridging}.
@@ -558,7 +558,7 @@ Detailed information about the implementation and hyperparameters can be found i
 
 \textbf{Auxiliary task learning vs general purpose feature learning (\autoref{fig:understanding:aux} and \autoref{fig:understanding:sta}):}
 First, we compare both the auxiliary task and stand-alone feature learning scenarios.
-As expected from prior work \parencite{jaderberg2016reinforcement,schwarzer2021dataefficient,farebrother2023protovalue}, in all cases using an auxiliary loss performs no worse (and often better) than vanilla DQN.
+As expected from prior work \parencite{jaderberg2017reinforcement,schwarzer2021dataefficient,farebrother2023protovalue}, in all cases using an auxiliary loss performs no worse (and often better) than vanilla DQN.
 We find that as expected from \autoref{insight:understanding:3}, latent self-prediction is a stronger auxiliary loss function than observation reconstruction in three out of five environments.
 However, when using the general-purposes losses alone, we clearly see observation reconstruction performing significantly better than latent self-prediction, which fails to learn any relevant features in several cases. This verifies \autoref{insight:understanding:1}.
 

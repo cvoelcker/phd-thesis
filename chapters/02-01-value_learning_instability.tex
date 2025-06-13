@@ -5,24 +5,24 @@
     This chapter is based on \longfullcite{hussing2024dissecting}.
 \end{quote}
 
-To improve sample efficiency, contemporary work in off-policy deep reinforcement learning (RL) has begun increasing the number of gradient updates per collected environment step~\parencite{janner2019mbpo,fedus2020revisiting,chen2021randomized, hiraoka2022dropout, nikishin2022primacy, doro2023barrier, schwarzer2023bigger, kim2023resetensemble}.  
+To improve sample efficiency in off-policy, value-based \ac{rl} contemporary work has begun increasing the number of gradient updates per collected environment step~\parencite{janner2019mbpo,fedus2020revisiting,chen2021randomized, hiraoka2022dropout, nikishin2022primacy, doro2023barrier, schwarzer2023bigger, kim2023resetensemble}.  
 However, as this update-to-data (UTD) ratio increases, value function learning seems to become unstable.
-This is surprising, as neural networks have shown themselves to be generally robust to the number of update steps in other areas such as supervised classification.
-In some cases, training for a very large number of steps actually increases the performance of neural networks, due to phenomena such as grokking \parencite{power2022grokking} or double descent \parencite{belkin2019reconciling}.
+This is perhaps surprising, as neural networks have shown themselves to be generally robust to the number of update steps in other areas such as supervised classification.
+In many cases, training for a very large number of steps actually increases the performance of neural networks, due to phenomena such as grokking \parencite{power2022grokking} or double descent \parencite{belkin2019reconciling}.
 As such, this phenomenon should raise our suspicion that training \ac{drl} agents causes issues with neural networks that are not observed in other domains.
 
 Notably, a recent study conjectured the emergence of a \emph{primacy bias} in deep actor critic algorithms, defined as ``a tendency to overfit initial experiences that damages the rest of the learning process''~\parencite{nikishin2022primacy}. 
 This is a fairly broad explanation of the phenomenon, leaving room for investigation into \emph{how} fitting early experiences causes suboptimal learning behavior.
 
 First approaches to tackle the learning failure challenges have been suggested, such as completely resetting networks periodically during the training process and then retraining them using the contents of the replay buffer~\parencite{nikishin2022primacy, doro2023barrier}. 
-Resetting network parameters is a useful technique in that, in some sense, it can circumvent any ongoing optimization failures. 
+Resetting network parameters is a useful technique that, in some sense, can circumvent any ongoing optimization failures. 
 Yet it seems likely that a more nuanced treatment of the various optimization challenges in deep RL might lead to more efficient training down the line, and provide more useful insights into how learning in \ac{drl} evolves more generally. 
 Especially for achieving efficient learning, throwing away all learned parameters and starting from scratch periodically is counter-productive, for instance in scenarios where, keeping all previous experience is infeasible. %
 As such, we set out to study the components of early training that impair learning more closely and examine whether high-UTD learning without resetting is possible.
 
 
 To motivate our study, we repeat the priming experiment of \textcite{nikishin2022primacy}, in which a network is updated for a large number of gradient steps on limited data. We show that during priming stages of training, value estimates diverge so far -- and become so extreme -- that it takes very long to unlearn them using new 
-data. However, contrary to prior work, we find that it is not \emph{impossible} to learn even after priming, it merely takes a long time and many samples. 
+data. However, contrary to prior work, we find that it is not \emph{impossible} to learn even after priming, it merely takes a long time and many samples to start achieving non-trivial returns. 
 This sparks hope for our endeavor of smooth learning in high-UTD regimes.
 We show that preventing value function divergence allows learning to proceed. 
 This suggests that the failure to learn does not stem from overfitting early data, which would result in correct value function on seen data, but rather from improperly fitting Q-values. 
@@ -202,8 +202,8 @@ However, in practice we do not know when divergence sets in, which limits the ap
 
 Regularization is a common way to mitigate gradient explosion and is  often used to address overestimation~\parencite{farebrother2018generalization, chen2021randomized, liu2021regularization, hiraoka2022dropout, li2023efficient}. We investigate the priming experiments under techniques such as using weight decay~\parencite{krogh1991simple} or adding dropout~\parencite{srivastava14dropout} to our networks in Figure~\ref{fig:overestimation:priming_abl}.
 
-Both weight decay as well as dropout can somewhat reduce the divergence during priming, however not to a sufficient degree.
-While we fail to attain strong performance with weight decay, dropout is able to recover a good amount of final return.
+Both weight decay as well as dropout can somewhat reduce the divergence during priming, but not to a sufficient degree to allow for fast learning afterwards.
+While we completely fail to attain strong performance with weight decay, dropout is able to recover a good amount of final return.
 However, both methods require tuning of a hyperparameter that trades off the regularization term with the main loss.
 This hyperparameter is environment-dependent and tuning it becomes infeasible for large UTD-ratios due to computational resource limitations. 
 Still, the results imply that it is in fact possible to overcome the divergence in priming and continue to learn good policies.
@@ -226,8 +226,10 @@ Still, the results imply that it is in fact possible to overcome the divergence 
 
 One question that remains is whether we can find these divergence effects outside of the priming setup. We find that, while priming is an artificially constructed worst case, similar phenomena happen in regular training on standard benchmarks when increasing update ratios (see Figure~\ref{fig:overestimation:humanoid_failure}). Further, the divergence is not limited to early stages of training as it happens at arbitrary points in time.
 
-We therefore conjecture that divergence is not solely a consequence of the amount of experience gathered but rather happens due to state-action space coverage. Note that the reported Q-values have been measured on the training data, not on a separate validation set. 
-The respective critic losses become very large. All this points toward a failure to fit Q-values. This behavior also does not align with our common understanding of overfitting~\parencite{bishop2006pattern},  challenging the hypothesis that high-UTD learning fails merely due to large validation error~\parencite{li2023efficient}.
+We therefore conjecture that divergence is not solely a consequence of the amount of experience gathered but rather happens due to state-action space coverage. 
+We will revisit and test this conjecture in \autoref{chap:mad}.
+Note that the reported Q-values have been measured on the training data, not on a separate validation set. 
+The respective critic losses become very large. All this points toward a failure to fit Q-values. This behavior also does not align with our common understanding of overfitting~\parencite{bishop2006pattern}, challenging the hypothesis that high-UTD learning fails merely due to large validation error~\parencite{li2023efficient}.
 
 \section{Towards high-UTD optimization without resetting} \label{sec:method}
 
@@ -294,7 +296,7 @@ For brevity, we will refer to this method as {\em output feature normalization} 
 
 To test the efficacy of the OFN-based approach, we repeat the priming experiment in Figure~\ref{fig:overestimation:priming_norm}.
 We find that OFN achieves high reward and Q-value divergence during priming is fully mitigated. 
-We therefore expect the average Q-values to be roughly at $10\%$ of the undiscounted return which seems correct for the OFN network. 
+We therefore expect the average Q-values to be roughly at $10\%$ of the undiscounted return which is roughly achieved by the OFN network. 
 In addition, as shown in Figure~\ref{fig:overestimation:weight_norm}, the weight norm of all layers of the networks are smaller, with the largest weights in the final layer.
 
 \section{Experimental evaluation}
@@ -339,24 +341,24 @@ First, we observe that in both cases, $\mathrm{UTD}=8$ and $\mathrm{UTD}=32$, OF
 
 \subsection{Other failure modes: Exploration limitations} \label{sec:otherfailure}
 
-
-To validate the hypothesis of other failures and answer \textbf{Q2}, we run two additional experiments. First, our current focus is on failures of the critic; our proposed mitigation does not address any further failures that might stem from the actor. To understand the actor's contribution to the performance increases from resetting, we test the OFN-based architecture again and, simply reset the actor.
+To validate the hypothesis of other failures and answer \textbf{Q2}, we run two additional experiments. First, our current focus is on failures of the critic; our proposed mitigation does not address any further failures that might stem from the actor. To understand the actor's contribution to the performance increases from resetting, we test the OFN-based architecture again and simply reset the actor.
 For comparison, we also run a second experiment in which we reset all learned parameters, including the critic.
 This settings are referred to as ``Actor Reset'' and ``Full Reset'' respectively in \autoref{fig:overestimation:aggregate}.
 
 The results in Figure~\ref{fig:overestimation:aggregate} indicate that actor resetting can account for a meaningful portion of OFN's performance decline when going from $\mathrm{UTD}=8$ to $\mathrm{UTD}=32$. The actor-reset results are within variance of the full-resetting standard baseline. Further, we observe that there is still some additional benefit to resetting the critic as well. 
 This does not invalidate the premise of our hypothesis, value divergence might not be the \emph{only} cause of problems in the high UTD case. We have provided evidence that it is a \emph{major} contributor.
-Resetting both networks of OFN with $\mathrm{UTD}=32$  outperforms all other baselines on mean and IQM comparisons. %
+Resetting both networks of OFN with $\mathrm{UTD}=32$ outperforms all other baselines on mean and IQM comparisons.
 
 To explain the remaining efficacy of critic resets, we examine the hopper-hop environment where standard SAC with resets outperforms OFN. 
 In RL with function approximation, one might not only encounter over- but also under-estimation~\parencite{wu2020reducing, lan2020maxmin, saglam2021estimation}.
-We believe that hopper  is sensitive to pessimism, and periodically resetting the networks might partially and temporarily counteract the inherent pessimism of the dual critic setup.
+We believe that hopper is sensitive to pessimism, and periodically resetting the networks might partially and temporarily counteract the inherent pessimism of the dual critic setup.
 
-To corroborate this conjecture, we repeated some experiments with a single critic. As OFN handles divergence it might not require a minimization over two critics~\parencite{fujimoto2018addressing}. We compare OFN using a single critic and $32$ updates per environment step to standard SAC and OFN in Figure~\ref{fig:overestimation:hopper_hop}. With a single critic, OFN does not get stuck in a local minimum and outperforms full resetting. Note that this is only true in few environments, leading us to believe that the effects of high-update training are MDP-dependent.
+To corroborate this conjecture, we repeated some experiments with a single critic. As OFN handles divergence it might not require a minimization over two critics~\parencite{fujimoto2018addressing}. We compare OFN using a single critic and $32$ updates per environment step to standard SAC and OFN in Figure~\ref{fig:overestimation:hopper_hop}. With a single critic, OFN does not get stuck in a local minimum and outperforms full resetting. Note that this is only true in few environments, leading us to believe that the effects of high-update training are at least in part MDP-dependent.
 In some environments we observe unstable learning with a single critic, which highlights that the bias countered by the double critic optimization and the overestimation from optimization we study are likely orthogonal phenomena that both need to be addressed.
 % Most likely, there is a difficult trade-off between optimization stability and encouraging sufficient exploration, which is an exciting avenue for future research.
 
 \subsection{Limit-testing feature normalization}
+\label{sec:overestimation:limitations_experiment}
 
 \begin{figure}[t]
 \centering
@@ -384,7 +386,7 @@ In some environments we observe unstable learning with a single critic, which hi
     \label{fig:overestimation:all_dog}
 \end{figure}
 
-To answer \textbf{Q3}, we move to a set of training environments that is considered exceptionally hard for model-free approaches, namely the dog tasks of the DMC suite. Standard SAC can generally not obtain any reasonable reward and, due to their complex dynamics, these tasks are often tackled using model-based approaches such as TD-MPC2~\parencite{hansen2024tdmpc} with complicated update procedures and carefully tuned network architectures. We evaluate SAC and OFN on the dog tasks and compare against TD-MPC2 in Figure~\ref{fig:overestimation:all_dog}.
+To answer \textbf{Q3}, we move to a set of training environments which are considered especially hard for model-free approaches, namely the dog tasks of the DMC suite. Standard SAC can generally not obtain any reasonable reward and, due to their complex dynamics, these tasks are often tackled using model-based approaches such as TD-MPC2~\parencite{hansen2024tdmpc} with complicated update procedures and carefully tuned network architectures. We evaluate SAC and OFN on the dog tasks and compare against TD-MPC2 in Figure~\ref{fig:overestimation:all_dog}.
 
 First, observe that resetting without OFN does not result in only minor performance increases over the course of training. However, OFN with $\mathrm{UTD}=1$ can already obtain very good performance across all tasks, indicating that a major problem for SAC in these high-dimensional tasks is value divergence. When increasing the update ratio to $8$ and adding resetting, we improve the performance of the OFN agent even further and can match the reported results of the strong model-based TD-MPC2 baseline. 
 
@@ -405,7 +407,8 @@ Our work closely examines previous work on the primacy bias and the related rese
 Going beyond, overestimation and feature learning challenges are a widely studied phenomenon in the literature.
 
 {\bf Combatting overestimation}~~
-Overestimation in off-policy value function learning is a well-established problem in the RL literature that dates back far before the prime times of deep learning~\parencite{thrun1993issues, precup2001off}. 
+Overestimation in off-policy value function learning is a well-established problem.
+Discussions in the RL literature date back far before the prime times of deep learning~\parencite{thrun1993issues, precup2001off}. 
 % The effects of function approximation error and the effect on variance and bias have been studied~\parencite{pendrith1997estimator, mannor2007bias} as well.
 With the rise of deep learning, researchers have tried to address the overestimation bias via algorithmic interventions such as combining multiple Q-learning predictors to achieve underestimation~\parencite{hasselt2010double, hasselt2016deep, zongzhang2017weighted, lan2020maxmin}, using averages over previous Q-values for variance reduction~\parencite{anschel2017averaged}, or general error term correction~\parencite{donghun2013bias, fox2016taming}. In the context of actor-critic methods, the twinned critic minimization approach of \textcite{fujimoto2018addressing} has become a de-facto standard. 
 Most of these approaches are either computationally expensive, such as training Q function ensembles, or break down under very high update ratios, such as in the case of the pessimistic twinned Q learning trick.

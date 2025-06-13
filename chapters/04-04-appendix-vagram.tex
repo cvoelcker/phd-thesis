@@ -2,17 +2,17 @@
 
 \section{Full VAML for SAC}
 \label{app:vagram:vaml_sac}
-The formulation of VAML which we derive for SAC is a direct extension of the VAML loss to the SAC soft bellman backup. Specifically, given some distribution over the state-action space $\mathcal{D}$, state-action value function $Q$ and policy $\pi$, we can define a SAC-aware loss.
+The formulation of VAML which we derive for SAC is a direct extension of the VAML loss to the SAC soft Bellman backup. Specifically, given some distribution $\mathcal{D}$ over the state-action space, state-action value function $Q$ and policy $\pi$, we can define a SAC-aware loss.
 
 \begin{align}
     &\mathcal{L}_{Q, \pi}(\hat{p}, p, \mathcal{D}) = \nonumber\\
-    &\quad \int \left|\int \left(\hat{p}(s'|s,a) - p(s'|s,a)\right) \E_{a' \sim \pi(\cdot| s')}{\left(Q(s', a') - \log \pi(a'|s')\right)} \mathrm{d}s'\right|^2 \mathrm{d} \mathcal{D}(s,a)\\
-    &= \int \bigg|\int \left(\hat{p}(s'|s,a) - p(s'|s,a)\right) V^\pi(s', a')\mathrm{d}s' \nonumber\\
-    &\quad\quad\quad- \int \left(\hat{p}(s'|s,a) - p(s'|s,a)\right)\mathbb{E}_{a' \sim \pi(\cdot| s')}\left[\log \pi(a'|s')\right] \mathrm{d}s'\bigg|^2 \mathrm{d} \mathcal{D}(s,a)
+    &\quad \int \left|\int \left(\hat{p}(x'|s,a) - p(x'|s,a)\right) \E_{a' \sim \pi(\cdot| x')}{\left(Q(x', a') - \log \pi(a'|x')\right)} \mathrm{d}x'\right|^2 \mathrm{d} \mathcal{D}(x,a)\\
+    &= \int \bigg|\int \left(\hat{p}(x'|x,a) - p(x'|x,a)\right) V^\pi(x', a')\mathrm{d}x' \nonumber\\
+    &\quad\quad\quad- \int \left(\hat{p}(x'|x,a) - p(x'|x,a)\right)\mathbb{E}_{a' \sim \pi(\cdot| x')}\left[\log \pi(a'|x')\right] \mathrm{d}x'\bigg|^2 \mathrm{d} \mathcal{D}(x,a)
 \end{align}
 as well as its sample-based version:
 \begin{align}
-    &\hat{\mathcal{L}}_{Q, \pi}(\hat{p}, p, \mathcal{D}) = \sum_{i} \bigg|V^\pi(s_i') -\int \hat{p}(s'|s_i, a_i) V^\pi(s') \mathrm{d}s' - \nonumber\\&\quad\quad\left(\int \pi(a'|s_i')\log\pi(a' | s_i') \mathrm{d}a'- \int \int \hat{p}(s'|s_i,a_i)\pi(a'|s')\log\pi(a' | s')\mathrm{d}a' \mathrm{d}s' \right)\bigg|^2\label{SACVAMLLoss}
+    &\hat{\mathcal{L}}_{Q, \pi}(\hat{p}, p, \mathcal{D}) = \sum_{i} \bigg|V^\pi(x_i') -\int \hat{p}(x'|x_i, a_i) V^\pi(x') \mathrm{d}x' - \nonumber\\&\quad\quad\left(\int \pi(a'|x_i')\log\pi(a' | x_i') \mathrm{d}a'- \int \int \hat{p}(x'|x_i,a_i)\pi(a'|x')\log\pi(a' | x')\mathrm{d}a' \mathrm{d}x' \right)\bigg|^2\label{SACVAMLLoss}
 \end{align}
 
 We find that in most of our experiments, the entropy terms did not significantly contribute to the loss. 
@@ -111,20 +111,20 @@ It is likely that the HalfCHeetah environment is now over-regularized which woul
 \section{Experiment details}
 \label{app:vagram:implementation}
 
-As described in the main paper, we conducted our experiment in two domains from the OpenAI benchmark OpenAI Gym \parencite{brockman2016openai}, Pendulum-v2 and Hopper-v0.
+As described in \autoref{chap:vagram}, we conducted our experiment in two domains from the OpenAI benchmark OpenAI Gym \parencite{brockman2016openai}, Pendulum-v2 and Hopper-v0.
 We used both environments as provided by the framework without further modification in our capacity tests.
 Our algorithm is shown in pseudocode in \autoref{alg:vambpo}.
 
 \paragraph{Expanded Hopper environment}
-To test the performance of VaGraM in a setting with additional unnecessary state observations, we created a random dynamical system that evolves according to randomly initialized dynamics function, where $A$ is a fixed matrix with entries randomly drawn from $\mathcal{N}(0., 10.)$, and a fixed initial state $s_0$ with components randomly drawn from $\mathcal{N}(0., 0.1)$. We do not resample the fixed components at reset.
+To test the performance of VaGraM in a setting with additional unnecessary state observations, we created a random dynamical system that evolves according to randomly initialized dynamics function, where $A$ is a fixed matrix with entries randomly drawn from $\mathcal{N}(0, 10)$, and a fixed initial state $s$ with components randomly drawn from $\mathcal{N}(0, 0.1)$. We do not resample the fixed components at reset.
 
 The transitions are then described by the following deterministic function:
 
 \begin{align}
-    f(s_t,a_t) &= 
+    f(x_t,a_t) &= 
   \begin{cases}
-    s_t + \sin(A s) & \text{if } |f(s_t,a_t)| < 20\\
-    s_0 & \text{else}
+    x_t + \sin(A x) & \text{if } |f(x_t,a_t)| < 20\\
+    x_0 & \text{else}
   \end{cases}
 \end{align}
 
@@ -136,7 +136,9 @@ To account for varying difficulty over different random initialization of the en
 For the Pendulum experiments, we use a simple fully connected neural network with a single layer, and a linear model without feature transformations as architectures.
 The used non-linearity is ReLU.
 All experiments were implemented in PyTorch \parencite{pytorch} and were not specified, the standard initialization of the library were kept.
-The exact versions of all used libraries are documented in the provided source code.
+The exact versions of all used libraries are documented in the source code\footnote{\url{https://github.com/pairlab/vagram/tree/main}}.
+A modern re-implementation using the jax library can be found under \url{https://github.com/cvoelcker/jax_mbpo}.
+REsults differ slightly from those presented here due to library and environment version differences.
 
 To assure a fair comparison we used the hyperparameters provided by \textcite{janner2019mbpo} for all experiments with our approach and the NLL loss function used for the baseline.
 All models used were fully connected neural networks with SiLU non-linearities and standard initialization.
@@ -151,7 +153,7 @@ Hence, we used both real environment data and model data to train the value func
 We did not transition to fully using model data to ensure that real environment samples are still able to inform the value function learning.
 We found that this did not diminish the returns of \ac{mbpo} compared to solely using model samples and so used this approach for both VaGraM and MLE.
 
-To estimate the gradient of the value function, we used the four empirical value functions, two direct estimates and two target value functions used in the SAC algorithm and summed the losses using each data tuple and value function gradient independently.
+To estimate the gradient of the value function, we used four empirical value functions, two direct estimates and two target value functions used in the SAC algorithm and summed the losses using each data tuple and value function gradient independently.
 Furthermore we calculated the $L_2$ norm of all value function gradients and clipped these at the 95-th percentile.
 We found that this was necessary since the empirical value function gradients can become very large, which in some cases leads to a destabilization of the gradient descent algorithm used to update the model.
 Even then, in the Ant environment this is insufficient to prevent destabilization.
@@ -163,8 +165,8 @@ Initialize policy $\pi_\phi$, value function $v_\psi$, model $\hat{f}_\theta$, e
 \For{$N$ epochs}
 {
     \While{$\hat{p}_\theta$ not converged}{
-        Sample batch $(s,a,r,s')$ from $\mathcal{D}_\text{env}$\;
-        $\mathcal{L}_{v_\psi} = \left((s' - \hat{f}_\theta(s,a))^\intercal\text{diag}\left(\frac{d}{ds}v_\psi(s)|_{s'}\right)^2 (s' - \hat{f}_\theta(s,a))\right)$\;
+        Sample batch $(x,a,r,s')$ from $\mathcal{D}_\text{env}$\;
+        $\mathcal{L}_{v_\psi} = \left((x' - \hat{f}_\theta(x,a))^\top \text{diag}\left(\frac{d}{ds}v_\psi(x)|_{x'}\right)^2 (x' - \hat{f}_\theta(x,a))\right)$\;
         $\theta \gets \theta - \alpha \frac{d}{d \theta} \mathcal{L}_{v_\psi}$\;
         Train reward model
     }
@@ -172,13 +174,13 @@ Initialize policy $\pi_\phi$, value function $v_\psi$, model $\hat{f}_\theta$, e
     Take action in env according to $\pi_\phi$; add to $\mathcal{D}_\text{env}$\;
     \For{M model rollouts}{
         Sample $s$ from $\mathcal{D}_\text{env}$; sample $a \sim \pi_\phi(s)$\;
-        $s', r = \hat{f}_\theta(s,a)$\;
-        Add $(s,a,r,s')$ to $\mathcal{D}_\text{model}$
+        $s', r = \hat{f}_\theta(x,a)$\;
+        Add $(x,a,r,x')$ to $\mathcal{D}_\text{model}$
     }
     \For{G policy gradient updates}{
         Sample batch $(s,a,r,s')$ from $\mathcal{D}_\text{env} \cup \mathcal{D}_\text{model}$\;
-        $\psi \gets \psi - \beta \frac{d}{d\psi} (v_\psi(s) - (r + \gamma v'(s')))^2$\;
-        $\phi \gets \phi - \lambda \hat{\nabla}_\phi J(\pi_\phi, v_\psi, (s,a,r,s'))$
+        $\psi \gets \psi - \beta \frac{d}{d\psi} (v_\psi(x) - (r + \gamma v'(x')))^2$\;
+        $\phi \gets \phi - \lambda \hat{\nabla}_\phi J(\pi_\phi, v_\psi, (x,a,r,x'))$
     }
     }
 }
@@ -222,7 +224,7 @@ All other implementation details, architecture and hyperparameters were kept fix
 In this ablation, we do indeed see that a mean squared trained model capture the dynamics information better than a model that is trained using negative log likelihood.
 To the best of our knowledge, this phenomenon has not received attention in the literature, but we hypothesize that it is an artifact of training a probabilistic model with gradient descent instead of natural gradient descent (compare Figure 1 in \textcite{peters2008natural} for a visual intuition).
 
-Nonetheless, VaGraM is still able to achieve higher cumulative reward consistently than the MSE model. 
+Nonetheless, VaGraM is still consistently able to achieve higher cumulative reward than the MSE model. 
 Especially on the distraction task we find that a deterministic MSE model performs on par with the probabilistic model and fails to achieve any reward when faced with a challenging number of distractions. 
 This validates our hypothesis that value awareness is important in settings with insufficient model capacity, but crucial in cases where the environment observations are not aligned with the control problem.
 

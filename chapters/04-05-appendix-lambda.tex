@@ -59,9 +59,8 @@ Finally, we adopt the joint model-free and model-based training proposed in \tex
 For the MuZero setting ($b=1$) we update the value function both for the state and the predicted latent state.
 In the IterVAML setting, there is no meaningful way to update the model's predicted value function, and therefore we only update the current state's value function.
 
-Code is provided in the supplementary files and open-sourced after the review process.
-
 Hyperparameters can be found in \autoref{tab:cvaml:hyperparams}.
+Our source code is available under \url{https://github.com/adaptive-agents-lab/CVAML}.
 
 \subsection{Environment}
 \label{app:stoch_env}
@@ -71,8 +70,8 @@ We, therefore, restrict our experiments to the most difficult domains, \emph{hum
 
 \subsection{Additional results}
 
-In addition to the raw performance graphs in the main paper, we present the average model entropy and VAML loss curves in \autoref{fig:vaml_entropy}.
-As expected, we find that the CVAMl loss leads to a higher entropy model compared to the VAML loss.
+In addition to the raw performance graphs in \autoref{sec:cvaml:empirical2} we present the average model entropy and VAML loss curves in \autoref{fig:vaml_entropy}.
+As expected, we find that the CVAML loss leads to a higher entropy model compared to the VAML loss.
 This however does not lead to a noticeable difference in the VAML error itself.
 
 \begin{figure}[h]
