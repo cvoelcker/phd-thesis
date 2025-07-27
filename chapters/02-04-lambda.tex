@@ -515,7 +515,7 @@ Equipped with this lemma, we can now prove the main result.
     Then there exists a measurable function $f^*: \mathcal{Z} \rightarrow \mathcal{Z}$ such that we have $V(f^*(\phi(x))) = \EEX{p}{V_\mathcal{X}(x^{(1)})}$ for all $x \in \mathcal{X}$.
 
     Furthermore, the same $f^*$ is a minimizer of the expected IterVAML loss over any distribution $x \sim \rho$
-    $$f^* \in \argmin_{\hat{f}} \EEX{\rho,\P^\pi}{\hat{\mathcal{L}}_{\mathrm{IterVAML},1}(\hat{f},V_\mathcal{X}|V_\mathcal{X},x)}.$$
+    $$f^* \in \argmin_{\hat{f}} \EEX{\rho,\P^\pi}{\hat{\mathcal{L}}_{\mathrm{IterVAML},1}(\hat{f},V_\mathcal{X}|x,x')}.$$
 \end{restatable}
 
 \begin{proof}
@@ -527,7 +527,7 @@ The existence of $f^*$ follows under the stated assumptions (compact, connected,
 
 First, expand the equation to obtain:
 \begin{align}
-     &\EEX{\rho,\P^\pi}{\hat{\mathcal{L}}_{\text{IterVAML}, 1}(f, V | V_\mathcal{X} x, x' } \\
+     &\EEX{\rho,\P^\pi}{\hat{\mathcal{L}}_{\text{IterVAML}, 1}(f, V_\mathcal{X} | x, x' } \\
     &\quad = \EEX{\rho,\P^\pi}{\squareb{V\roundb{f\roundb{\phi(x)}} - V_\mathcal{X}(x')}^2}\\
     &\quad = \EEX{\rho,\P^\pi}{\Bigl(V\roundb{f\roundb{\phi(x)}} - \EEX{\P^\pi}{V_\mathcal{X}(x^{(1)})} + \EEX{\P^\pi}{V_\mathcal{X}(x')} - V_\mathcal{X}(x^{(n)}) \Bigr)^2}.
 \end{align}
